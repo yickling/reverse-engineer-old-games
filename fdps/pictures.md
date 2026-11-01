@@ -20,11 +20,22 @@ A `SAF` frame is a list of chunks, and each chunk is a grid of compressed cells.
 | `+0x2a` | `uint16` count of samples. |
 | `+0x2c` | `uint32` file offset of the sample-offset table. |
 
-A frame record still has its hold count at `+2` and its hit marker at `+5`. The chunk count is the short at `+8`. Chunks start at `+10` and are 13 bytes: a `uint16` picture index, an `int16` x, an `int16` y, then a byte that is 0 or 1. When the blit record's mode dword is 0, byte 1 selects expander mode 9 and uses the short at chunk `+7` as `0x10` minus that short. A landed hit sets that dword to 3, and the chunk byte is then ignored. That path is under [Combat animation](#combat-animation). The picture is a short column count, a short row count, and then that many cell indexes. Each cell is expanded with `FUN_0005664b` at the chunk's x,y plus the cell's column and row times the cell size.
+A frame record still has its hold count at `+2` and its hit marker at `+5`. The chunk count is the short at `+8`. Chunks start at `+10` and are 13 bytes:
+
+| Offset | Field |
+| --- | --- |
+| `+0` | `uint16` picture index |
+| `+2` | `int16` x, in the compose buffer |
+| `+4` | `int16` y |
+| `+6` | Mode byte. On the fight clips below it is 0 or 1. |
+| `+7` | `int16`. When the blit mode dword is 0, a mode byte of 1 selects expander mode 9 and this short is the value subtracted from `0x10`. |
+| `+9` | Four bytes. They are 0 on every chunk of `Back`, `Stand`, `Act`, `Magic`, and the effect members of `MISC.VFS`. |
+
+On `Back`, `Stand`, `Act`, and `Magic`, that short is 0 exactly when the mode byte is 0, and a mode byte of 1 stores 8 through 16. The effect members of `MISC.VFS` follow the same pairing, except four chunks of `MB29` and `MB31`, which store mode 1 and short 0. Their other mode-1 shorts run from 2 through 16. A landed hit sets the blit mode dword to 3, and the chunk byte is then ignored. That path is under [Combat animation](#combat-animation). The picture is a signed column count, a signed row count, and then that many cell indexes. None of those pictures has a negative count. Each cell is expanded with `FUN_0005664b` at the chunk's x,y plus the cell's column and row times the cell size.
 
 `FUN_0005664b` stores width, height, and pitch, then switches on a mode byte. Mode 0 is `FUN_0005677d`, and its body is hand-written: it has no prologue, and the source, destination, and per-row adjustment arrive in `ESI`, `EDI`, and `EDX`. `FUN_0005664b` sets that up before the call. It loads the pitch argument into `EDX` and subtracts the width, and the mode body adds `EDX` at the end of each row. Mode 0 and mode 3 both do this. The disassembly is at `0x56657`.
 
-The opcodes, from the listing at `0x5677d`. `n` is `(opcode & 0x3f) + 1`. A row stops when the width counter reaches 0, then `EDI += EDX` and the height counter drops.
+The opcodes, from the listing at `0x5677d`. `n` is `(opcode & 0x3f) + 1`. At the start of a row the body loads the width into `BX` from the word at `0x70024`. Each opcode subtracts its count from `BX`, and the row ends when `BX` is 0. `EDI` is then increased by `EDX`, and the height word at `0x70022` is decremented.
 
 ```
 opcode in 0x00..0x3f: read one byte, repeat it n times
@@ -36,7 +47,13 @@ opcode in 0xc0..0xff: skip n pixels
 
 Mode 3 is the recolor used on a landed hit, disassembled under [Combat animation](#combat-animation). Modes 1, 2, and 4 through 12 (`0x567fd` onward, apart from mode 3 at `0x56927`) were not listed. Map tiles and `SAF` cells both enter through mode 0 when no palette argument is passed, so this is the decoder an extractor needs for those pictures. `ICON.CEL` frames go through the same function from `FUN_0002cb30`.
 
-To pull the pictures out: walk the VFS directory as described in [Archives](archives.md), reject a member whose span passes the end of the archive, then run the decoder above into a buffer of `width * height` bytes. For a `SAF` clip, do that per cell and stamp the cells into the chunk's rectangle at the chunk's x,y. Hold, hit, and the mode byte stay beside the frame so a player can step it the way `FUN_00014540` does. Nothing here was checked by decoding a frame and looking at it.
+To pull the pictures out: walk the VFS directory as described in [Archives](archives.md), reject a member whose span passes the end of the archive, then run mode 0 into a buffer of `width * height` bytes. A cell's bytes run from its table offset to the next higher offset in that table, and the last cell runs to the end of the member. A picture is the column count, the row count, then that many cell indexes, one row at a time. Stamp cell (column, row) at `chunk_x + column * cell_width`, `chunk_y + row * cell_height`. Pixels the skip opcodes never write stay transparent. The chunk x and y are positions in the 368×248 compose buffer, so a tight sprite is the bounding box of the written pixels, not the cell size. Hold, hit, and the mode byte stay beside the frame so a player can step it the way `FUN_00014540` does.
+
+`Fight.pal` and the other four `.pal` members of `MISC.VFS` (`Chapter.pal`, `Dynasty.pal`, `Fde.pal`, `Stboard.pal`) are 768 bytes with components 0 through 63. Shift each component left by 2 for an 8-bit channel. The string `Fight.pal` is at `0x61cd4`. The call that opens it was not read. Every cell in the fight clips below expanded with mode 0: each row's width counter landed on 0, and the cell size is 24×24 throughout. Colored from `Fight.pal`, frames of `BACK00`, `STAND000`, `ACT000`, `MAGIC000`, and `ML00` are readable pictures. `STAND000` frame 0's written pixels sit at compose `(181, 47)`. Chunk byte 1 still expands with mode 0. There are 44 such chunks in `FIGHT.VFS` (10 in `Stand`, 34 in `Magic`), 177 in `FIGACT.VFS`, none in `BACKGRND.VFS`, and 345 in the effect members of `MISC.VFS`. The fight paints those chunks with mode 9, which is still unread, so this recovers the stored indexes and not that recolor. Chunk rectangles in `FIGHT.VFS` stay inside x 0..343 and y 0..223. `FIGACT.VFS` reaches x −1 and y 255. `BACKGRND.VFS` stays in y 28..150.
+
+`extract_fight_sprites.py` is that walk. It writes one PNG per frame that has chunks, `sheet.png` for the clip, and a JSON record of hold, hit, sample, and the cropped origin. How the sheet is registered is under [SAF clips](#saf-clips). The folders are `backdrops/` (`Back##`), `stands/` (`Stand###`, the body drawn for the defender and for the attacker until the swing), `attacks/` (`Act###`), and `effects/`. A walk of the local archives wrote 63 backdrop frames, 388 standing frames, 2117 attack frames, and 3538 effect frames.
+
+25 attack frames and 63 effect frames store a chunk count of 0. They are kept in the JSON and get no PNG, so the frame index still matches the file. The attack frames are in `ACT005` (3), `ACT020` (3), `ACT024` (2), `ACT060` (1), `ACT061` (1), `ACT062` (2), `ACT067` (2), `ACT070` (1), `ACT093` (3), `ACT094` (3), `ACT095` (3), and `ACT107` (1). Among the effect frames, `EE05`, `EE06`, `EE07`, `EE23`, `ME03`, `ME04`, `ME05`, `ME06`, `ME07`, `ME26`, `ME27`, `ME28`, `ME30`, `ME31`, `ME34`, and `ME35` are a whole file of one empty frame. The same `SAF` path covers the 67 `ICON####.SAF` members of `ICONANI.VFS`. How `ICONANI` chooses a frame was not read.
 
 ## SAF clips
 
@@ -60,7 +77,11 @@ Frame `i` begins at `file + dword[table + i*4]`. Inside a frame record:
 | `+4` | Byte read by the players. On frame 0 of an attack or spell clip, a nonzero value is how far to play a preamble before the hit sequence. |
 | `+5` | Nonzero marks a hit frame. Damage is applied when the cursor lands on one. A clip whose strike phase has none of these aborts with `ERROR: No Hit Point`. |
 
-`FUN_00014540(cursor, mode)`: mode 1 resets to frame 0. Mode 0 loops. Mode 2 stops on the last frame and returns 1. The cursor is a pair: frame index, then tick-within-frame. The `SAF` check in that function is written as three comparisons joined by `||`, so it accepts more than the three bytes `S`,`A`,`F`.
+`FUN_00014540(cursor, mode)`: mode 1 resets to frame 0. Mode 0 loops. Mode 2 stops on the last frame and returns 1. The cursor is a pair: frame index, then tick-within-frame. Each call adds one tick. When the tick reaches the hold at frame `+2`, the index moves. The `SAF` check in that function is written as three comparisons joined by `||`, so it accepts more than the three bytes `S`,`A`,`F`.
+
+One member is one sequence. Frame `i` is the record at `file + dword[table + i*4]`. Nothing else groups the frames. The hit byte, the preamble on frame 0, and the sample index mark events in that pass. They do not reorder it. The mode is the immediate pushed with the cursor, not a field in the file. Forty-one call sites push 0 and twenty push 1. Six push 2, each `mov eax, 2` then the same cursor, at `0x1aad6`, `0x1ac89`, `0x1b12d`, `0x1b41b`, `0x1b619`, and `0x1b7e5`. The calls from the strike, `0x19874` through `0x19e8f`, push 0 or 1, so an attack cursor can wrap. A pass of the animation is still frame 0 through the last frame, each shown for its hold. `Stand` is the clip the idle row loops.
+
+Cropped frames of one clip do not share an origin, so stacking the PNGs at (0, 0) moves the figure. `STAND000` has 3 origins inside a box at `(181, 47)` sized 132×152. `ACT000` has 12 origins inside a box at `(2, 42)` sized 318×158. The clamp is that box. Stamp frame `i` at `(x - box_x, y - box_y)`. `extract_fight_sprites.py` writes `sheet.png` on that grid, one cell per frame in table order, with a transparent cell where the chunk count is 0. The cell is the union of the written pixels. The last row can have unused cells after the frame count. Those are not frames. `clips.json` records the box and the grid.
 
 `FUN_00014140` blits one frame. Its second argument, when nonzero, calls `FUN_000142d0` with the frame's sample index. That function returns unless `DAT_00069d70` and `DAT_00069d71` are both nonzero. It walks eight dwords at `DAT_00069d30` and keeps the first whose status call is not 4. The sample record is `file + dword[sample_table + index * 4]`:
 
@@ -152,11 +173,21 @@ For every other id the player loads, using side prefix `E` or `M` from byte `+6`
 4. `%sE%02d.saf` played to completion (end).
 5. `%sS%02d.saf` as an extra overlay when the spell id is `0x0d`, or in `0x1a`–`0x1f`, `0x21`–`0x24`, or `0x26`–`0x27`.
 
-Those phase files live in `MISC.VFS`. Counts: `MB`/`ME`/`ML` 25 ids each, `MS` 11, `EB`/`EE`/`EL` 12 each, `EMG` 24, `ES` 1. `Emg%02d.saf` is referenced from `0x28951`, which was not decompiled. While the strike plays, a target who is actually hit also cycles a small palette (`local_50` modulo 8) keyed by a 40-long table copied from `0x18cb0`.
+Those phase files live in `MISC.VFS`. Counts: `MB`/`ME`/`ML` 25 each, `MS` 11, `EB`/`EE`/`EL` 12 each, `EMG` 25, `ES` 1. The twenty-fifth `EMG` is `EMG33-1.SAF`, beside `EMG33.SAF`. The `Emg%02d` pattern does not name the hyphenated file. `Emg%02d.saf` is referenced from `0x28951`, which was not decompiled. The same archive also holds `CURE.SAF`, `CUREMP.SAF`, `MAG11.SAF`, `MAGIC0BB.SAF`, `MAGIC0GG.SAF`, `POSEFF.SAF`, and `POSION.SAF`. They use the same `SAF` version `0x06` layout and are included with the effect clips above. Six further `.saf` members are not: `BONUS-1`, `CHAPTER`, `ENYPHASE`, `GAMEOVER`, `LOGO`, and `PLYPHASE`. `Logo.saf` is the startup clip in [Session](session.md). While the strike plays, a target who is actually hit also cycles a small palette (`local_50` modulo 8) keyed by a 40-long table copied from `0x18cb0`.
+
+## CEL pictures
+
+Map sprites, portraits, and the interface windows are `CEL` files, not `SAF`. The header begins `CEL \x01`. On every file checked, byte 6 is 0 and byte 8 is 0 or 1. The bitmap width is byte 7, plus 256 when byte 8 is 1. The bitmap height is byte 9. When byte 8 is 0 this is the same pair of big-endian shorts [Map](map.md) calls width and height, so a section tile stays 24×24. When byte 8 is 1 those shorts read high: `VILLAGE.CEL` says 64×456 and the picture that mode 0 consumes is 320×200. The reader that applies the flag was not reopened. The size above is the one at which mode 0 consumes the picture.
+
+The directory offset is the big-endian short at `+4`, and it is `0x0f` on every file checked. The dwords there are little-endian picture offsets. A picture is the bytes from one dword to the next. The uint16 at `+10` equals that picture count for every `.cel` in `MISC.VFS` and for `FACE.CEL`. It does not for `ICON.CEL`: the field is 128, and the ordered directory holds 1920 pictures.
+
+Colored from `Fde.pal`, a section tile, an `ICON.CEL` frame, `FACE.CEL` picture 0, `CUSOR.CEL` picture 0, `MESSAGE.CEL`, and `VILLAGE.CEL` are readable pictures. The call that opens `Fde.pal` was not read.
 
 ## Map sprites
 
-`ICON.CEL` header begins `CEL \x01`, and the words that follow are the directory offset `0x0f` and size 24×24, in the same zero-padded layout as the other CEL headers (`00 0f 00 18 00 18`). `FUN_00023020` seeks to `0x0f`, reads `0x2970` bytes (2652 dwords), and treats each character as 12 dwords of frame offsets. The end of character `i` is the first offset of character `i + 1`. 221 groups of 12 fill the directory exactly, so character 220 has no end offset inside the table. The loader copies one character's bytes into a cache at `DAT_00060138` and stores 12 adjusted offsets per loaded character. Frame bytes are compressed: character 0's frames are 334–424 bytes, not `24*24`. `FUN_0005664b` expands a frame onto the map buffer at 24×24. Mode 0 of that expander is the opcode loop above.
+`FUN_00023020` seeks to `0x0f` in `ICON.CEL` and reads `0x2970` bytes. The ordered dwords there increase through index 1920, where the dword equals the file size. 1920 / 12 = 160, so characters 0 through 159 each have 12 frames and a following offset. Frame `i` is `file[offset[i] : offset[i + 1]]`. The 1921 dwords end at file offset 7699, which is also where offset 0 points, so the `0x2970` read runs past the table into the first picture. There is no character 220 in the file. The loader copies one character's bytes into a cache at `DAT_00060138` and stores 12 adjusted offsets per loaded character. Frame bytes are compressed: character 0's frames are 334–424 bytes, not `24*24`, and frame 0 of that character expands with mode 0 to a 24×24 picture. `FUN_0005664b` expands a frame onto the map buffer at 24×24. Mode 0 of that expander is the opcode loop above. The string `Fde.pal` is at `0x61a78`.
+
+Every frame is already a 24×24 cell, so a character's sheet is four rows of three frames with no origin to correct. Row is the facing in the table below. The three columns are steps 0, 1, and 2. The walk shows 0, 1, 2, 1. Section tiles are the same 24×24 mode-0 pictures; which section files follow the packed directory is in [Map](map.md). `ICONANI.VFS` is a second set of icon clips. How it chooses a frame was not read.
 
 `FUN_0002cb30` picks the picture:
 
@@ -174,3 +205,33 @@ index = slot * 12 + facing * 3 + step
 | 3 | +X | 9–11 |
 
 Bit `0x80` of byte `+5` draws `facing * 3 + 1` only, through a different blit mode. Byte `+0x26` nonzero forces step 0 and adds `tick % 2` to x. The first of the two draw passes paints a shared shadow from `DAT_000643e0` using the same 3-step cycle (or its second frame when the `0x80` flag is set). A 24×11 overlay from `DAT_000643d8` is drawn under the sprite when `FUN_0002ca60` returns a frame; that function was not read.
+
+`FACE.CEL` is the same directory. Byte 8 is 0, the bitmap is 125×100, and the count at `+10` is 160, matching the directory. Picture 0 expands with mode 0.
+
+## Interface pictures
+
+`FUN_00029630` loads the shared interface from `MISC.VFS`. These are the `.cel` members. The bitmap is the size from [CEL pictures](#cel-pictures), and mode 0 consumes every picture.
+
+| File | Pictures | Bitmap | What the name lines up with |
+| --- | --- | --- | --- |
+| `CUSOR.CEL` | 20 | 24×24 | cursor |
+| `COMMAND.CEL` | 76 | 25×22 | command window |
+| `NUMBER.CEL` | 65 | 6×8 | digits |
+| `SELBAR.CEL` | 3 | 151×17 | selection bar |
+| `MESSAGE.CEL` | 1 | 302×73 | message box |
+| `SHOPWIN.CEL` | 1 | 312×76 | window |
+| `LOADKON.CEL` | 3 | 300×49 | |
+| `SHADOW.CEL` | 14 | 24×24 | shadow |
+| `ICONSTS.CEL` | 5 | 24×11 | |
+| `LEVUP.CEL` | 1 | 164×66 | level-up picture |
+| `BAR.CEL` | 3 | 117×8 | bars |
+| `EASYBAR.CEL` | 3 | 43×6 | bars |
+| `FIGBAR.CEL` | 8 | 145×9 | fight bars, under [Combat animation](#combat-animation) |
+| `STSEL.CEL` | 12 | 85×8 | |
+| `CANBAN.CEL` | 7 | 72×24 | |
+| `ADWIN.CEL` | 1 | 43×55 | |
+| `WINFAIL.CEL` | 1 | 209×133 | |
+
+Byte 8 is 1, and the bitmap is 320×200, for `VILLAGE.CEL`, `STATUS.CEL`, `STBOARD.CEL`, `LOAD.CEL`, `SAVE.CEL`, `BARSHOP.CEL`, `CHURCH.CEL`, `ITEM.CEL`, `WEAPON.CEL`, `SECRET.CEL`, and `RELIVE.CEL`. Each is one picture. The startup list names the cursor, command window, shadow, status, message box, digits, selection bar, level-up picture, window, and bars. Which call opens which of these files was not separated.
+
+`SHADOW.CEL` is 14 pictures of 24×24. `ICONSTS.CEL` is 5 pictures of 24×11. The map drawer paints a shadow from `DAT_000643e0` and a 24×11 overlay from `DAT_000643d8`. That these two files are those pictures is an inference from the sizes and the names.

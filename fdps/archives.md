@@ -34,9 +34,11 @@ Each directory entry is 26 bytes. Names are fixed 13-byte fields, not variable C
 | `FIELD.VFS` | 223 | `FDETXT.FON`, 66 `FDETXT##.TXT`, 63 `MAP##.COD`, 93 `.dat` including `MAP##.DAT` |
 | `FIELD1.VFS` | 201 | 64 `.dtl`, 69 `.cel`, 68 `.mpl` |
 | `FIELD2.VFS` | 131 `.dat` | `DSC##.DAT`, `ATTR###.DAT` |
-| `MISC.VFS` | 208 | window `.cel`, `.wav`, `.pal`, spell-phase `.saf`, `FIGBAR.CEL` |
+| `MISC.VFS` | 208 | window `.cel`, `.wav`, `.pal`, 161 `.saf`, `FIGBAR.CEL` |
 | `ICONANI.VFS` | 133 | `ICON####.SAF` (67) and `.dat` (66). Playback not followed. |
 | `ICON.CEL` | loose file, 630141 bytes | every map character |
-| `FACE.CEL` | loose file, 679928 bytes | `CEL\x01`. Not followed. |
+| `FACE.CEL` | loose file, 679928 bytes | 160 pictures, 125×100. The directory is in [Pictures](pictures.md). |
+
+Of the 161 `.saf` members in `MISC.VFS`, 155 are the fight effect clips counted in [Pictures](pictures.md). The other six are `BONUS-1.SAF`, `CHAPTER.SAF`, `ENYPHASE.SAF`, `GAMEOVER.SAF`, `LOGO.SAF`, and `PLYPHASE.SAF`.
 
 `FDETXT##.TXT` is a table of 16-bit offsets into 16-bit glyph indexes. `FDETXT.FON` is 57344 bytes and is the bitmap those indexes draw. A GBK scan of the text members found no Han characters. The table and the font cell are in [Text](text.md). Clip playback is in [Pictures](pictures.md). Scenario members are in [Scenario files](scenario.md).

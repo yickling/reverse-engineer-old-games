@@ -29,7 +29,7 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 | [Map](map.md) | Camera, tiles, terrain bytes, and movement cost. |
 | [Units](units.md) | The 80-byte unit record. |
 | [Combat](combat.md) | The map-to-fight handoff, the damage formula, and what a destroyed unit does. |
-| [Pictures](pictures.md) | The picture decoder, `SAF` clips, battle playback, and map sprites. |
+| [Pictures](pictures.md) | The picture decoder, `SAF` clips, battle playback, map sprites, and the frame extractor. |
 | [Text](text.md) | Glyph-index strings and the font cell. |
 | [Archives](archives.md) | The VFS directory. |
 | [Save](save.md) | `FDE.SAV`, including the four load slots. |
@@ -66,6 +66,7 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 - What the `DTL` byte in `DAT_00069d06` changes. The readers are at `0x13e89`, `0x18527`, `0x2ddec`, and `0x2e727`.
 - Which function writes occupancy bits `0x40` and `0x80`.
 - The ten `ATTR` files whose record count is not the CEL directory count minus one.
+- The tail after the counted pictures in `M190.CEL`, `M290.CEL`, and `M620.CEL`. `M310.CEL` is ordered to the end of the file and does not expand with mode 0.
 
 ### Units
 
@@ -93,7 +94,9 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 | `0x567fd` | Expander modes other than 0 and 3. Mode 3 is the hit recolor in [Pictures](pictures.md). |
 | `0x5738b` / `0x57503` | Expander modes 9 and 10, used when a tile is occupied. Not decompiled. |
 
-- `ICONANI.VFS`, `FACE.CEL`, and the `Emg%02d` player at `0x28951`.
+- `ICONANI.VFS` playback, and the `Emg%02d` player at `0x28951`. `EMG33-1.SAF` is in `MISC.VFS`; that pattern does not name it. `FACE.CEL` is 160 pictures of 125×100; which screen draws one was not read.
+- The calls that open `Fight.pal` (string at `0x61cd4`) and `Fde.pal` (string at `0x61a78`).
+- Who plays `BONUS-1.SAF`, `CHAPTER.SAF`, `ENYPHASE.SAF`, `GAMEOVER.SAF`, and `PLYPHASE.SAF`. `LOGO.SAF` is the startup clip in [Session](session.md).
 
 ### Text
 

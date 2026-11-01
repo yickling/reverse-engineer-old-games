@@ -1,0 +1,17 @@
+---
+description: Write analysis findings into the game notes; a chat reply is not the record
+alwaysApply: true
+---
+
+# Write findings into the notes
+
+The record of a study is the markdown in the game folder. A chat reply is not a record. The next session does not read this chat.
+
+Before finishing any study of a game:
+
+1. Read [LLMs.md](LLMs.md), then that game's `README.md`. Follow [note-shape.md](note-shape.md) when adding or reshaping notes.
+2. Write every finding into the topic file for that subject. Create the topic file when the subject is long enough to continue on its own.
+3. Put any address, file, or field you saw and did not read into that game's `README.md`, under the same heading as the topic.
+4. The chat may summarize what was written. Do not end with the result only in the chat.
+
+Do not name `__stash/` in the notes. Do not paste assets, scenario text, or other copyrighted content.

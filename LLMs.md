@@ -6,7 +6,7 @@ The goal is game design and construction: how the game is put together, how its 
 
 ## Where things go
 
-- One folder per game. The note is `<game>/README.md`.
+- One folder per game. The entry note is `<game>/README.md`. A long study keeps topic files beside it. The README links to them and keeps how to reopen the binary and what is still open.
 - The root [README.md](README.md) lists those notes. Add a row when a game folder gains one.
 - `__stash/` holds local programs waiting to be studied. Leave it out of the notes, out of commits, and out of the license.
 - This repository does not ship games. Keep binaries, archives, art, audio, and other assets on the machine doing the study. Notes describe structure. They do not paste assets, scenario text, or other copyrighted content.
@@ -24,7 +24,7 @@ Flame Dragon Plus is the worked example in [fdps/README.md](fdps/README.md). The
 
 ## What to produce
 
-Write `<game>/README.md` for a person who will make games and for a later session that will continue the study. Lead with what the program is and how to reopen it. Then cover, for whatever this game actually has:
+Write `<game>/README.md` for a person who will make games and for a later session that will continue the study. Lead with what the program is and how to reopen it. Put a long topic in its own file next to the README, and link it from there. Cover, for whatever this game actually has:
 
 - How a session starts and what the outer loop does.
 - The records the game keeps for its actors, space, and rules, with offsets that were read in code.

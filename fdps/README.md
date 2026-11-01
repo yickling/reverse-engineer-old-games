@@ -28,7 +28,7 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 | [Scenario files](scenario.md) | What a scenario index loads, and how units are placed. |
 | [Map](map.md) | Camera, tiles, terrain bytes, and movement cost. |
 | [Units](units.md) | The 80-byte unit record. |
-| [Combat](combat.md) | The shared damage formula. |
+| [Combat](combat.md) | The map-to-fight handoff, the damage formula, and what a destroyed unit does. |
 | [Pictures](pictures.md) | The picture decoder, `SAF` clips, battle playback, and map sprites. |
 | [Text](text.md) | Glyph-index strings and the font cell. |
 | [Archives](archives.md) | The VFS directory. |
@@ -55,7 +55,8 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 | --- | --- |
 | `0x6028c` | After each action, one pointer per scenario. `0x3a120` was disassembled; the rest were not. |
 | `0x10010` | What a side-`0` or side-`1` unit does on its phase. Not decompiled. |
-| `0x15cf0` | Menu after a move. Not decompiled. |
+| `0x27bf0` / `0x25280` | Menu slots 1 and 2 inside `FUN_00015cf0`. Not decompiled. |
+| `0x16120` / `0x161f0` / `0x161a0` | Draw and read that menu. Not decompiled. |
 | `0x2de50` / `0x1fa00` | Called with a side number around the phase change. Not decompiled. |
 | `0x30a30` | Called with the scenario index and 0 or 1 at the phase change. Not decompiled. |
 
@@ -75,18 +76,23 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 
 | Address | What it is |
 | --- | --- |
-| `0x12550` | Returns nonzero to skip the terrain percent. Not decompiled. |
 | `0x1a4a0` | Play a spell. The sequence is in [Pictures](pictures.md); the body was not read past that. |
 | `0x288c0` | The other spell player, for the ids listed in [Pictures](pictures.md). Not decompiled. |
+| `0x29050` | Gate on the weapon status write inside `FUN_00019f60`. Not decompiled. |
+| `0x13c90` / `0x27150` | The two actions `FUN_00012c10` takes instead of a swing. Not decompiled. |
+| `0x12230` / `0x13420` / `0x13040` | Fill the three scores that choose among those actions. Not decompiled. |
+| `0x1e340` / `0x28280` / `0x24d40` | The level-up stat write, the learned-row call, and the call beside them. Not decompiled. |
+| `0x25cf0` / `0x25990` | Called from the death-record walk when the first byte is 0. Not decompiled. |
+
+`DAT_00060010` is also touched at `0x13d6d`, `0x15268`, `0x18411`, `0x184ad`, `0x2414e`, `0x24363`, and `0x245af`. The stores were not separated from the reads. `Explo.Saf` and `Miss.wav` are named by the players. They were not among the top-level archive members already walked. `BASEWAV.VFS` inside `MISC.VFS` was not opened.
 
 ### Pictures
 
 | Address | What it is |
 | --- | --- |
-| `0x567fd` | First of the expander modes other than 0. Not decompiled. |
+| `0x567fd` | Expander modes other than 0 and 3. Mode 3 is the hit recolor in [Pictures](pictures.md). |
 | `0x5738b` / `0x57503` | Expander modes 9 and 10, used when a tile is occupied. Not decompiled. |
 
-- The value of `EDX` at the mode-0 call.
 - `ICONANI.VFS`, `FACE.CEL`, and the `Emg%02d` player at `0x28951`.
 
 ### Text

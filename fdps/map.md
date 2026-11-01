@@ -40,6 +40,8 @@ else:
 | 2 | `DAT_00069d09` | Terrain kind. Movement cost and the attack/defense percents index by this. |
 | 3 | `DAT_00069d0b` | Backdrop. Combat loads `Back%02d.saf` from it, after decrementing it when it is nonzero. |
 
+The same call stores the occupancy byte at `grid + (y * width + x) * 2 + 1` into `DAT_00069d0c`. The attack confirm rejects a tile whose stored byte is `0xff`. How that byte is marked for a swing is in [Combat](combat.md).
+
 On disk, byte 2 takes values 0, 1, 2, 5, and 6. Byte 3 takes 55 distinct values, the largest 63, which matches the 63 backdrop files. For 59 of the 69 `ATTR` files the record count equals the CEL directory count minus one. The other 10 do not, so that sentinel rule is not universal.
 
 Movement is a flood fill in `FUN_00010de0`. The occupancy grid is `width * height` byte pairs in front of which `FUN_000227b0` writes the two dimensions. `FUN_00010b20` sets each pair's second byte to `0xff` and masks the first with `0x3f`. The fill then treats the first byte's bit `0x40` as "do not enter" and bit `0x80` as "entering spends the whole remaining budget". The second byte is the best cost found so far. Cost of a step is `cost_here + move_row[terrain]`, where `move_row` is the 10-byte `ProMap.dat` row for the unit's class. Who stamps bit `0x40` and bit `0x80` was not read. The percents applied to attack and defense are signed dwords:

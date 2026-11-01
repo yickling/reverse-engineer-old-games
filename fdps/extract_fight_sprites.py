@@ -87,12 +87,12 @@ def member_map(path: Path) -> dict[str, bytes]:
     return {name.upper(): blob for name, blob in vfs_members(path)}
 
 
-def load_palette(misc: dict[str, bytes]) -> bytes:
-    blob = misc.get("FIGHT.PAL")
+def load_palette(misc: dict[str, bytes], name: str = "FIGHT.PAL") -> bytes:
+    blob = misc.get(name.upper())
     if blob is None or len(blob) != 768:
-        raise ExtractError("MISC.VFS has no 768-byte Fight.pal")
+        raise ExtractError(f"MISC.VFS has no 768-byte {name}")
     if max(blob) > 63:
-        raise ExtractError("Fight.pal components are outside 0..63")
+        raise ExtractError(f"{name} components are outside 0..63")
     rgb = bytearray(256 * 3)
     for index, component in enumerate(blob):
         rgb[index] = component << 2

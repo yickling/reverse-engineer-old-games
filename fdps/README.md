@@ -95,7 +95,7 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 | `0x5738b` / `0x57503` | Expander modes 9 and 10, used when a tile is occupied. Not decompiled. |
 
 - `ICONANI.VFS` playback, and the `Emg%02d` player at `0x28951`. `EMG33-1.SAF` is in `MISC.VFS`; that pattern does not name it. `FACE.CEL` is 160 pictures of 125×100; which screen draws one was not read.
-- The calls that open `Fight.pal` (string at `0x61cd4`) and `Fde.pal` (string at `0x61a78`).
+- Which picture `Chapter.pal` colors. It is opened at `0x20c54` and installed at `0x20d74` with bias `-step * 4` on each channel.
 - Who plays `BONUS-1.SAF`, `CHAPTER.SAF`, `ENYPHASE.SAF`, `GAMEOVER.SAF`, and `PLYPHASE.SAF`. `LOGO.SAF` is the startup clip in [Session](session.md).
 
 ### Text

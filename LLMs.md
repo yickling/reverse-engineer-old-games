@@ -6,6 +6,8 @@ The goal is game design and construction: how the game is put together, how its 
 
 Write the notes in the shape in [note-shape.md](note-shape.md). [fdps/README.md](fdps/README.md) is one filled-in example of that shape. Copy the shape, not that game's filenames or systems.
 
+Write every finding into those notes before the session ends. A reply in the chat is not a record. The next session will not see it. The same is true of an address that was seen and not read: it goes in the index, not only in the reply.
+
 ## Where things go
 
 - One folder per game. The entry note is `<game>/README.md`.

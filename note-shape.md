@@ -19,7 +19,7 @@ The first paragraph links back to the index and repeats the caution: decompiler 
 
 The rest is the findings for that subject. An observed claim names an address or a file offset. A formula that should be reproducible is pseudocode, and it says which function the arithmetic was read from. When a claim belongs to another subject, link there instead of copying it. The topic file does not repeat the open list.
 
-New findings go in the topic file. A newly seen address that was not read goes in the index, under that topic's heading.
+New findings go in the topic file. A newly seen address that was not read goes in the index, under that topic's heading. Do that in the files. A chat reply does not count, because the next session does not read the chat.
 
 ## Subjects
 

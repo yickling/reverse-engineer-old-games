@@ -13,7 +13,7 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 - A CPU turn's walk and its choice of target are written. The call that runs before the walk, the per-script hooks, the phase-change call, and the per-scenario after-action pointers are unread.
 - A character cannot yet be built from the tables alone. Unit bytes outside the written table, the unread columns of `Friaprda.dat`, `EnemyDat.dat`, `MagicDat.dat`, and `ProMap.dat`, and the rank-up read are still open.
 - A spell's mask is written. The body that plays the spell, the frames after the earthquake clip opens, and `MagicDat` bytes `+0` and `+1` are unread.
-- The map window, the command icons, and the message box are placed in [Pictures](pictures.md). Expander modes 2, 4–8, and 12 still have no role. Icon-clip playback, the two fight remap blocks, the `FIGBAR` blit, and where the remaining windows sit are unread.
+- The map window, the command icons, the message box, the expander modes, and icon-clip playback are in [Pictures](pictures.md). The two fight remap blocks, the `FIGBAR` blit, and where the remaining windows sit are unread.
 - Text placement and the save record stop early. The glyph rectangle, the level-up number, and the save bytes after the four slot flags are unread.
 
 ## Session
@@ -51,7 +51,7 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 - `MAP##.DAT` bytes `0x33` through `0x52`. Bytes 3 through `0x32` are the sixteen event rows in [Scenario files](scenario.md). The handler bodies called from `0x601c4` were not read. The first pointer is `0x36920`.
 - The short at `+4` of a `COD` record, and header byte 4 (1 or 16). Placement reads the coordinate shorts and not these.
 - `FUN_00056523`, called at the end of the map load `FUN_00022720`. Body not read.
-- `0x36920` calls `FUN_00023800`. The argument it passes, and the rest of the body, were not read. Icon opcodes 5, 9, 14, and 15 call `FUN_00021e00`, `FUN_000221b0`, `FUN_000223e0`, and `FUN_00022450`. Opcode 6 calls `FUN_00022290`, and opcode 97 calls `FUN_00023950`. Those six were not read. `FUN_00023a90` runs at the end of the roster append and was not read.
+- `0x36920` calls `FUN_00023800`. The argument it passes, and the rest of the body, were not read. Icon opcodes 5, 9, 14, and 15 call `FUN_00021e00`, `FUN_000221b0`, `FUN_000223e0`, and `FUN_00022450`. Opcode 97 calls `FUN_00023950`. Those five were not read. Opcode 6's player is in [Pictures](pictures.md). `FUN_00023a90` runs at the end of the roster append and was not read. The 66 `.dat` members beside the icon clips were not read.
 - What the `DTL` byte in `DAT_00069d06` changes. The readers are at `0x13e89`, `0x18527`, `0x2ddec`, and `0x2e727`.
 - Why `M630` has 288 `ATTR` records and 192 pictures, and why `ATTR151.DAT` has no section CEL. `M310.CEL` is 192 pictures and does not expand with mode 0.
 - `FUN_0002bfb0` and `FUN_0002cfd0`, called by the map compose `FUN_0002bcf0` around the range pictures. Bodies were not decompiled.
@@ -78,12 +78,9 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 
 | Address | What it is |
 | --- | --- |
-| `0x56895` | Expander mode 2. It starts like mode 1 and then diverges. |
-| `0x569ce` | Expander modes 4 through 8, at `0x569ce`, `0x56b9a`, `0x56e84`, `0x572c1`, `0x5735d`. |
-| `0x577e4` | Expander mode 12. |
 | `0x3edde` / `0x3f1f8` / `0x3eee2` | Called while a fight sample is started. Not decompiled. |
 
-- `ICONANI.VFS` playback inside `FUN_00022290`, which opcode 6 calls. The opcode switch is in [Scenario files](scenario.md). `FACE.CEL` picture `n` is drawn by `FUN_000177c0` at 125×100. The call at `0x207d8` is inside `FUN_00020580` and passes that function's argument. The calls at `0x16790` and `0x20c1b` were not read.
+- `FACE.CEL` picture `n` is drawn by `FUN_000177c0` at 125×100. The call at `0x207d8` is inside `FUN_00020580` and passes that function's argument. The calls at `0x16790` and `0x20c1b` were not read. `FUN_000178e0` is what the text walker compares with `0x7f`. Its body was not read. `FUN_00042a68` is the call whose result, modulo 200, starts the mode-8 hop. Its body was not read.
 - What the blocks at `DAT_000653f0` and `DAT_000643f0` hold. The fight replaces them from `FMer1.tmp` and `FMer2.tmp`, and restores `Mer1.tmp` and `Mer2.tmp` afterward.
 - The blit of `FIGBAR.CEL`. What `BaseWav.vfs` and `BaseAni.vfs` play, and what `ADWin.cel` is drawn as, were not read. `NUMBER.CEL` digits step by 6 inside `FUN_00017520`; the origin at each of its callers was not reduced. `SELBAR.CEL` picture 0 on the item list is in [Pictures](pictures.md). The other selection-bar blits, at `0x2773a`, `0x326b7`, `0x32ea4`, `0x33680`, and `0x35279`, were not reduced. The call at `0x15b31` passes 2 to `0x3d0e0` just before the viewport copy. That callee was not read.
 

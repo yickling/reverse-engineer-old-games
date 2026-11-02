@@ -12,7 +12,7 @@ Bytes filled by the spawners `FUN_00023280` and `FUN_00022bb0`, and read by the 
 | `+2` | Slot in the loaded `ICON.CEL` cache. `FUN_00023020` returns it. |
 | `+3` | Facing, 0..3. See [map sprites](pictures.md#map-sprites). |
 | `+4` | Sub-tile progress. The drawer multiplies it by a per-facing pixel step. |
-| `+5` | Flags. Bit 0: map drawer skips the unit. Bit `0x80`: map sprite locks to the middle walk frame, and the system menu treats the unit as eligible when bit 0 is clear. `FUN_000119b0` ORs in bit `0x80` when an action is committed. A unit whose pool at `+0x40` is 0 is stored as `1` by the destruction sequence, so bit 0 is set and bit `0x80` is cleared. |
+| `+5` | Flags. Bit 0: map drawer skips the unit. Bit `0x80`: map sprite locks to the middle walk frame and uses expander mode 11, and the system menu treats the unit as eligible when bit 0 is clear. `FUN_000119b0` ORs in bit `0x80` when an action is committed. A unit whose pool at `+0x40` is 0 is stored as `1` by the destruction sequence, so bit 0 is set and bit `0x80` is cleared. |
 | `+6` | Side. `0` selects the `"E"` spell prefix and one mirror sign; any other value selects `"M"`. A roster copy stores `2`. A scenario spawn copies byte 0 of its 26-byte record, which is 0, 1, or 2. The cursor commands side `2`. The two phase walks use side `0` and side `1`. |
 | `+7` | Character id. Indexes `STAND`, `ACT`, `MAGIC`, the twelve `ICON.CEL` frames, and the `FACE.CEL` portrait of the same number. Which of those files are present, and which ids share one sheet, is in [Pictures](pictures.md). `0x80` means "no sprite" on the map. |
 | `+8` | Compared with `7` and `3` while a destination is being chosen. Not followed. |

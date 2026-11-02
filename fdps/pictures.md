@@ -56,7 +56,8 @@ opcode in 0xc0..0xff: skip n pixels
 | 4–8 | `0x569ce`, `0x56b9a`, `0x56e84`, `0x572c1`, `0x5735d` | Not listed. |
 | 9 | `0x5738b` | Blend onto the pixel already in the buffer. On a map, an attribute tint and a range whose highlight is neither 0 nor 1. |
 | 10 | `0x57503` | Same tables as mode 9. The key is fixed for the blit, and the destination pixel is not read. On a map, the range on a highlight of 1. |
-| 11–12 | `0x57686`, `0x577e4` | Not listed. |
+| 11 | `0x57686` | Same tables as mode 9. The added term is one dword chosen once from the fourth dword of the blend record, not the pixel already in the buffer. The `0x40` opcode still writes every other pixel. The map sprite uses it when flag `0x80` of byte `+5` is set. |
+| 12 | `0x577e4` | Not listed. |
 
 Map tiles and `SAF` cells both enter through mode 0 when no palette argument is passed, so mode 0 is the decoder an extractor needs for the stored picture. `ICON.CEL` frames go through the same function from `FUN_0002cb30`.
 
@@ -69,7 +70,7 @@ out = byte_table[(mixed & 0xffff) | (mixed >> 12)]
 
 The four opcodes are unchanged. A skip does not read either table. The fight's two tables are the `0x4800`-byte and `0x1000`-byte files loaded at `DAT_000653f0` and `DAT_000643f0`, under [Combat animation](#combat-animation). Mode 9 cannot be replayed from the cell alone. Mode 10 was disassembled, not decompiled. It builds the same pair of tables, indexes the first once from the dword at struct+`0x0c`, and indexes the second from each source sample.
 
-For a designer, the modes the map and the fight select are these. Mode 0 leaves the stored indexes. Mode 1 remaps each stored index through a 256-byte table. Mode 3, from the first landed hit, rewrites the defender and the attack clip as `(sample & 2) + 0x80`. Inferred: that is the strike flash. Mode 9 mixes the picture with the pixel already on screen. A fight chunk picks the ramp with `0x10` minus the short at chunk `+7`. A map plate picks it with an attribute byte, or with the pulse in [Map](map.md). Inferred: the pulse is a shimmer, and the mix is what lets a plate painted over units still show them. Mode 10 recolors the picture from itself. Inferred: a ground range highlight looks the same whatever was drawn underneath. Modes 2, 4 through 8, 11, and 12 were not given a role.
+For a designer, the modes the map and the fight select are these. Mode 0 leaves the stored indexes. Mode 1 remaps each stored index through a 256-byte table. Mode 3, from the first landed hit, rewrites the defender and the attack clip as `(sample & 2) + 0x80`. Inferred: that is the strike flash. Mode 9 mixes the picture with the pixel already on screen. A fight chunk picks the ramp with `0x10` minus the short at chunk `+7`. A map plate picks it with an attribute byte, or with the pulse in [Map](map.md). Inferred: the pulse is a shimmer, and the mix is what lets a plate painted over units still show them. Mode 10 recolors the picture from itself. Inferred: a ground range highlight looks the same whatever was drawn underneath. Mode 11 recolors the picture from itself the same way, and a `0x40` run still leaves every other pixel unwritten. The map sprite takes that path when flag `0x80` of byte `+5` is set, with selector 8, and the frame is the next one in the facing. Modes 2, 4 through 8, and 12 were not given a role.
 
 To pull the pictures out: walk the VFS directory as described in [Archives](archives.md), reject a member whose span passes the end of the archive, then run mode 0 into a buffer of `width * height` bytes. A cell's bytes run from its table offset to the next higher offset in that table, and the last cell runs to the end of the member. A picture is the column count, the row count, then that many cell indexes, one row at a time. Stamp cell (column, row) at `chunk_x + column * cell_width`, `chunk_y + row * cell_height`. Pixels the skip opcodes never write stay transparent. The chunk x and y are positions in the 368×248 compose buffer, so a tight sprite is the bounding box of the written pixels, not the cell size. Hold, hit, and the mode byte stay beside the frame so a player can step it the way `FUN_00014540` does.
 
@@ -232,7 +233,11 @@ index = slot * 12 + facing * 3 + step
 | 2 | −Y | 6–8 |
 | 3 | +X | 9–11 |
 
-Bit `0x80` of byte `+5` draws `facing * 3 + 1` only, through a different blit mode. Byte `+0x26` nonzero forces step 0 and adds `tick % 2` to x. The first of the two draw passes paints a shared shadow from `DAT_000643e0` using the same 3-step cycle (or its second frame when the `0x80` flag is set). A 24×11 overlay from `DAT_000643d8` is drawn under the sprite when `FUN_0002ca60` returns a frame; that function was not read.
+Bit `0x80` of byte `+5` draws the next frame of that facing through mode 11, selector 8. A character id of `0x24` through `0x27`, `0x69`, or `0x6a` draws the ordinary frame through mode 9, selector 7. Any other id uses mode 0. Byte `+0x26` nonzero forces step 0 and adds `tick % 2` to x.
+
+The pass before the sprite paints `SHADOW.CEL` from `DAT_000643e0`. The picture is the step, 0, 1, or 2, except that flag `0x80` forces picture 1. It is 24×24, expander mode 9, selector 10, and its top is two rows below the sprite's top. The file holds 14 pictures. This pass uses the first three.
+
+`FUN_0002ca60(unit, DAT_00060168)` then picks a 24×11 mark from `ICONSTS.CEL` at `DAT_000643d8`. `DAT_00060168` increases by 1 at the start of each sprite. The five bytes tested, in picture order, are `+0x23`, `+0x22`, `+0x24`, `+0x25`, and `+0x27`. A byte of 0 is skipped. No nonzero byte returns −1 and nothing is drawn. Otherwise the tick modulo the nonzero count selects one of those bytes, and the returned index is its place in that list. The mark is mode 0, 24 wide and 11 tall, and its top is 12 rows below the sprite's top.
 
 `FACE.CEL` is the same directory. Byte 8 is 0, the bitmap is 125×100, and the count at `+10` is 160, matching the directory. `FUN_000177c0(dest, pitch, index)` frees any picture it loaded before. An index of −1 stops there. Any other index reads the two dwords at file `0x0f + index * 4`, loads that span, and expands it with mode 0 at 125×100 onto `dest` at the given pitch. The call at `0x207d8` is inside `FUN_00020580`, and the index it passes is that function's argument. The chest reader passes unit `+7`. Calls that push an immediate use a value from 0 through `0x81`. Picture `n` is character `n`. Portraits of 3 and 116 match, as do 122 and 146, 125 and 139, and 137 and 159. Mode 0 writes no pixel for 34, 36–51, 53–58, 132–136, 141–145, and 147–158. The calls at `0x16790` and `0x20c1b` were not read.
 
@@ -260,6 +265,26 @@ Bit `0x80` of byte `+5` draws `facing * 3 + 1` only, through a different blit mo
 | `ADWIN.CEL` | 1 | 43×55 | |
 | `WINFAIL.CEL` | 1 | 209×133 | |
 
-Byte 8 is 1, and the bitmap is 320×200, for `VILLAGE.CEL`, `STATUS.CEL`, `STBOARD.CEL`, `LOAD.CEL`, `SAVE.CEL`, `BARSHOP.CEL`, `CHURCH.CEL`, `ITEM.CEL`, `WEAPON.CEL`, `SECRET.CEL`, and `RELIVE.CEL`. Each is one picture. `STBOARD.CEL` is colored from `StBoard.pal`, and `FIGBAR.CEL` from `Fight.pal`, as under [CEL pictures](#cel-pictures). The other files in this list are colored from `Fde.pal`. The startup list names the cursor, command window, shadow, status, message box, digits, selection bar, level-up picture, window, and bars. Which call opens which of these files was not separated.
+`FUN_00029630` stores the open result at the global named beside the file:
 
-`SHADOW.CEL` is 14 pictures of 24×24. `ICONSTS.CEL` is 5 pictures of 24×11. The map drawer paints a shadow from `DAT_000643e0` and a 24×11 overlay from `DAT_000643d8`. That these two files are those pictures is an inference from the sizes and the names.
+| File | Global | What uses it |
+| --- | --- | --- |
+| `Fde.pal` | `0x643cc` | Map and interface palette. |
+| `Fight.pal` | `0x643e4` | Fight palette. |
+| `Cusor.cel` | `0x643c8` | Cursor and the range marks in [Combat](combat.md). |
+| `Command.cel` | `0x643c4` | Command window. |
+| `Shadow.cel` | `0x643e0` | The map shadow above. |
+| `IconSts.cel` | `0x643d8` | The 24×11 mark above. |
+| `Message.cel` | `0x643b4` | Message box. |
+| `Number.cel` | `0x643dc` | Digits. |
+| `SelBar.cel` | `0x643a8` | Selection bar. |
+| `LevUp.cel` | `0x643a0` | Level-up picture. |
+| `ADWin.cel` | `0x643c0` | |
+| `BaseWav.vfs` | `0x643ac` | |
+| `BaseAni.vfs` | `0x643bc` | |
+| `EasyBar.cel` | `0x643a4` | Decoded 43×6 picture. |
+| `Bar.cel` | `0x643b0` | Decoded 117×8 picture. |
+
+The other windows are opened later. `FUN_00016830` opens `Status.cel`. `FUN_00017c90` names `WinFail.Cel` at `0x17d30`. `FUN_000241b0` opens `Save.cel`. `FUN_00024460` opens `Load.cel`. `FUN_00024620` opens `LoadKon.cel`. `FUN_0002a280` opens `StSel.cel` and `StBoard.cel`. `FUN_00030f80` opens `ShopWin.Cel` and `Village.cel`. `FUN_00031930` opens `CanBan.cel`. `FUN_000355d0` opens `Item.cel`. `FUN_00035810` opens `Church.cel`. `FUN_00035a30` opens `BarShop.cel`. `FUN_00035d40` opens `Weapon.cel`. `FUN_00035f80` opens `Secret.cel`. `FUN_00039be0` opens `Relive.cel`. `FIGBAR.CEL` is opened at `0x18de6` and `0x1a5cb`, inside the fight players.
+
+Byte 8 is 1, and the bitmap is 320×200, for `VILLAGE.CEL`, `STATUS.CEL`, `STBOARD.CEL`, `LOAD.CEL`, `SAVE.CEL`, `BARSHOP.CEL`, `CHURCH.CEL`, `ITEM.CEL`, `WEAPON.CEL`, `SECRET.CEL`, and `RELIVE.CEL`. Each is one picture. `STBOARD.CEL` is colored from `StBoard.pal`, and `FIGBAR.CEL` from `Fight.pal`, as under [CEL pictures](#cel-pictures). The other files in this list are colored from `Fde.pal`.

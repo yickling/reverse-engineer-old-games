@@ -13,7 +13,7 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 - A CPU turn's walk and its choice of target are written. The call that runs before the walk, the per-script hooks, the phase-change call, and the per-scenario after-action pointers are unread.
 - A character cannot yet be built from the tables alone. Unit bytes outside the written table, the unread columns of `Friaprda.dat`, `EnemyDat.dat`, `MagicDat.dat`, and `ProMap.dat`, and the rank-up read are still open.
 - A spell's mask is written. The body that plays the spell, the frames after the earthquake clip opens, and `MagicDat` bytes `+0` and `+1` are unread.
-- The screen is not fully specified. Expander modes 2, 4–8, 11, and 12 have no role. The cursor picture, icon-clip playback, the shadow overlay, which interface file is which window, and the two fight remap blocks are unread.
+- The screen's windows and the map sprite are named in [Pictures](pictures.md). Expander modes 2, 4–8, and 12 still have no role. Icon-clip playback, the two fight remap blocks, the `FIGBAR` blit, and the reader of `CEL` byte 8 are unread.
 - Text placement and the save record stop early. The glyph rectangle, the level-up number, and the save bytes after the four slot flags are unread.
 
 ## Session
@@ -78,14 +78,12 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 | --- | --- |
 | `0x56895` | Expander mode 2. It starts like mode 1 and then diverges. |
 | `0x569ce` | Expander modes 4 through 8, at `0x569ce`, `0x56b9a`, `0x56e84`, `0x572c1`, `0x5735d`. |
-| `0x57686` | Expander modes 11 and 12. Mode 12 is `0x577e4`. |
-| `0x2ca60` | Returns the frame of the 24×11 overlay drawn under a map sprite. Not read. |
+| `0x577e4` | Expander mode 12. |
 | `0x3edde` / `0x3f1f8` / `0x3eee2` | Called while a fight sample is started. Not decompiled. |
 
-- The `CEL` opened into `DAT_000643c8`. The range pictures in [Combat](combat.md) index it. Which file that is was not walked.
 - `ICONANI.VFS` playback inside `FUN_00022290`, which opcode 6 calls. The opcode switch is in [Scenario files](scenario.md). `FACE.CEL` picture `n` is drawn by `FUN_000177c0` at 125×100. The call at `0x207d8` is inside `FUN_00020580` and passes that function's argument. The calls at `0x16790` and `0x20c1b` were not read.
 - What the blocks at `DAT_000653f0` and `DAT_000643f0` hold. The fight replaces them from `FMer1.tmp` and `FMer2.tmp`, and restores `Mer1.tmp` and `Mer2.tmp` afterward.
-- Which startup call opens which interface `CEL`. The names are in [Pictures](pictures.md). The blit of `FIGBAR.CEL` was not read. The reader that applies `CEL` byte 8 was not reopened.
+- The blit of `FIGBAR.CEL`. The reader that applies `CEL` byte 8 was not reopened. What `BaseWav.vfs` and `BaseAni.vfs` play, and what `ADWin.cel` is drawn as, were not read. Where `Command.cel`, `Message.cel`, `Number.cel`, and `SelBar.cel` sit on the 320×200 screen was not read. The readers of `0x643c4` start at `0x15a62`.
 
 ## Text
 

@@ -8,8 +8,8 @@ StBoard.cel (StBoard.pal) and FigBar.cel (Fight.pal).
 Folders:
 
   maps/icons/CHAR###   12 frames, sheet is 4 rows of 3 (facing, then step)
-  maps/tiles/M###      one section's tiles. A gap uses the count at header +10.
-                       A tail after that count is named in tiles.json and not drawn.
+  maps/tiles/M###      one section's tiles. The directory is the increasing
+                       dword run. The count at header +10 can be a prefix of it.
   maps/faces/          FACE.CEL, 125x100
   ui/                  every .cel in MISC.VFS
 
@@ -62,6 +62,24 @@ def read_dwords(blob: bytes, count: int) -> list[int] | None:
     return offsets
 
 
+def monotonic_offsets(blob: bytes) -> list[int] | None:
+    """Dwords at the directory while each stays inside the file and past the table."""
+    start = directory_offset(blob)
+    offsets = []
+    previous = 0
+    index = 0
+    while start + (index + 1) * 4 <= len(blob):
+        value = struct.unpack_from("<I", blob, start + index * 4)[0]
+        if value < previous or value > len(blob) or value < start + (index + 1) * 4:
+            break
+        offsets.append(value)
+        previous = value
+        index += 1
+    if len(offsets) < 2:
+        return None
+    return offsets
+
+
 def packed_offsets(blob: bytes) -> list[int] | None:
     start = directory_offset(blob)
     if start + 4 > len(blob):
@@ -88,6 +106,9 @@ def can_decode(blob: bytes, offsets: list[int], width: int, height: int) -> bool
 
 
 def choose_offsets(blob: bytes, width: int, height: int) -> tuple[list[int], str] | None:
+    monotonic = monotonic_offsets(blob)
+    if monotonic and can_decode(blob, monotonic, width, height):
+        return monotonic, "monotonic"
     packed = packed_offsets(blob)
     if packed and len(packed) >= 2 and can_decode(blob, packed, width, height):
         return packed, "packed"

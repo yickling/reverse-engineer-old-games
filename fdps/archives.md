@@ -31,10 +31,10 @@ Each directory entry is 26 bytes. Names are fixed 13-byte fields, not variable C
 | `FIGHT.VFS` | 140 `.saf` | `STAND###.SAF` (94), `MAGIC###.SAF` (46) |
 | `FIGACT.VFS` | 91 `.saf` | `ACT###.SAF` |
 | `BACKGRND.VFS` | 63 `.saf` | `BACK##.SAF`, one frame each |
-| `FIELD.VFS` | 223 | `FDETXT.FON`, 66 `FDETXT##.TXT`, 63 `MAP##.COD`, 93 `.dat` including `MAP##.DAT` |
+| `FIELD.VFS` | 223 | `FDETXT.FON`, 66 `FDETXT##.TXT`, 63 `MAP##.COD`, 93 `.dat` including `MAP##.DAT` and `SHOP00.DAT` through `SHOP29.DAT` |
 | `FIELD1.VFS` | 201 | 64 `.dtl`, 69 `.cel`, 68 `.mpl` |
 | `FIELD2.VFS` | 131 `.dat` | `DSC##.DAT`, `ATTR###.DAT` |
-| `MISC.VFS` | 208 | window `.cel`, `.wav`, `.pal`, 161 `.saf`, `FIGBAR.CEL` |
+| `MISC.VFS` | 208 | window `.cel`, `.wav`, `.pal`, 161 `.saf`, `FIGBAR.CEL`, and the item and progression tables in [Units](units.md) |
 | `ICONANI.VFS` | 133 | `ICON####.SAF` (67) and `.dat` (66). Playback not followed. |
 | `ICON.CEL` | loose file, 630141 bytes | every map character |
 | `FACE.CEL` | loose file, 679928 bytes | 160 pictures, 125×100. The directory is in [Pictures](pictures.md). |

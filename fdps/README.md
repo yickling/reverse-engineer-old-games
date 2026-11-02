@@ -44,20 +44,25 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 | `0x60074` | Scenario opener, 30 pointers. `0x20e60` and `0x20ec0` were read; the rest were not. |
 | `0x60304` | Scenario ending, 30 pointers, called when the outcome dword is 2. Bodies were not decompiled. `0x3a120` is the after-action handler, not one of these. |
 | `0x30540` | Called with `0x19` from sound startup. Not read. |
-| `0x20c30` | Called by the two openers that were read, between the icon file and the camera. Not read. |
 | `0x21620` | Loads `Icon##.dat`. Body not read. |
 | `0x241b0` | Briefing shown when a scenario skips the village. Not read. |
-| `0x35a30` | First village-menu action. Not read. The other four are `0x35810`, `0x355d0`, `0x35d40`, `0x35f80`. |
+| `0x35a30` | First village-menu action. It calls `FUN_000361d0`, which opens `Bonus-1.saf` and `Bonus.wav`. The rest of either body was not read. `0x35810` is the action that calls `FUN_00034310`. `0x355d0`, `0x35d40`, and `0x35f80` pass shop groups 0, 1, and 2. The rest of those four bodies was not read. |
 
 ### Turns
 
 | Address | What it is |
 | --- | --- |
-| `0x6028c` | After each action, one pointer per scenario. `0x3a120` was disassembled; the rest were not. |
-| `0x10010` | What a side-`0` or side-`1` unit does on its phase. Not decompiled. |
-| `0x27bf0` / `0x25280` | Menu slots 1 and 2 inside `FUN_00015cf0`. Not decompiled. |
-| `0x16120` / `0x161f0` / `0x161a0` | Draw and read that menu. Not decompiled. |
-| `0x2de50` / `0x1fa00` | Called with a side number around the phase change. Not decompiled. |
+| `0x6028c` | After each action, one pointer per scenario. `0x3a120` was disassembled; the rest were not. `FUN_00028280` is also called at `0x3a190`. |
+| `0x184e0` | Called after the menu's rest slot. At `0x186d8` it opens the item list with the second argument 0. The rest of the body was not decompiled. |
+| `0x33d70` / `0x33f80` | Also open that item list, both with the second argument 0. Not decompiled. |
+| `0x24e70` | Draws the rows of the item list. Not decompiled. |
+| `0x11460` | Picks the destination of the budget-100 walk. Not decompiled. |
+| `0x2d9b0` | Looks up the unit id in byte `+0x35` for scripts 3 and 9. Not decompiled. |
+| `0x13e10` | Returns the tile script 5 walks to. Not decompiled. |
+| `0x10760` / `0x26dd0` | Called for character ids `0x3c`..`0x3e` on script 11, and for the `Posion.saf` play on script 7. Not decompiled. |
+| `0x2ddc0` | Called with the unit's tile at the end of every script except 8. Not decompiled. |
+| `0x16120` / `0x161f0` / `0x161a0` | Draw, read, and close the menu inside slot 2. Not decompiled. |
+| `0x2de50` | Called with a side number around the phase change, beside `FUN_0001fa00`. Not decompiled. |
 | `0x30a30` | Called with the scenario index and 0 or 1 at the phase change. Not decompiled. |
 
 ### Map and scenario files
@@ -65,25 +70,24 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 - `MAP##.DAT` past byte 2, and the `COD` bytes past the x and y that spawn reads.
 - What the `DTL` byte in `DAT_00069d06` changes. The readers are at `0x13e89`, `0x18527`, `0x2ddec`, and `0x2e727`.
 - Which function writes occupancy bits `0x40` and `0x80`.
-- The ten `ATTR` files whose record count is not the CEL directory count minus one.
-- The tail after the counted pictures in `M190.CEL`, `M290.CEL`, and `M620.CEL`. `M310.CEL` is ordered to the end of the file and does not expand with mode 0.
+- Why `M630` has 288 `ATTR` records and 192 pictures, and why `ATTR151.DAT` has no section CEL. `M310.CEL` is 192 pictures and does not expand with mode 0.
 
 ### Units
 
-- The unit bytes that are not in the table, and what the six item pairs mean. `+0x44` is inferred as a second pool, not measured against a spell.
-- `ProMap.dat` and the other tables named in `FUN_00018920`, field by field. The 10-byte row stride is from the index, not from a walk of the file. The loader is `0x293d0` and was not decompiled.
+- The unit bytes that are not in the table. The eight pairs at `+0x0a` are in [Units](units.md). A cast subtracts the spell row's byte `+5` from `+0x44`. `FUN_00027570` adds to it and caps it at `+0x46`.
+- Bytes `+2` and `+8` through `+0x11` of `Friaprda.dat`, and bytes `+8` and `+9` of `EnemyDat.dat`. The `RankUp.dat` read at `0x351e1` was not separated. `FUN_0002de50`, called beside the status countdown, was not read.
+- The 26-byte roster record at `DAT_0006013c + index * 0x1a + 0x83`, past the scale byte at `+4` that spawn multiplies with.
+- `FUN_000338f0` also looks up the equipped item whose type is `0x16` through `0x27`. The shop price itself is in [Scenario files](scenario.md).
+- `FUN_00034310` adds byte `+9` to `+0x44` and is called from the village action at `0x35810`. The rest of the body was not decompiled. The copies of `+0x46` into `+0x44` at `0x3ae8f` and `0x3b3df` clear byte `+5`. The functions around those stores were not read.
+- `MagicDat.dat` is 40 rows of 7 bytes. Byte `+2` is the chance read by `FUN_00028f40`. Byte `+3` is the spell budget and byte `+5` is the pool cost. The other bytes were not walked. `ProMap.dat` is 41 rows of 10. The bytes past the move lookup and the crit byte at `+8` were not walked. The loader is `0x293d0` and was not decompiled.
 
 ### Combat
 
 | Address | What it is |
 | --- | --- |
-| `0x1a4a0` | Play a spell. The sequence is in [Pictures](pictures.md); the body was not read past that. |
-| `0x288c0` | The other spell player, for the ids listed in [Pictures](pictures.md). Not decompiled. |
-| `0x29050` | Gate on the weapon status write inside `FUN_00019f60`. Not decompiled. |
-| `0x13c90` / `0x27150` | The two actions `FUN_00012c10` takes instead of a swing. Not decompiled. |
-| `0x12230` / `0x13420` / `0x13040` | Fill the three scores that choose among those actions. Not decompiled. |
-| `0x1e340` / `0x28280` / `0x24d40` | The level-up stat write, the learned-row call, and the call beside them. Not decompiled. |
-| `0x25cf0` / `0x25990` | Called from the death-record walk when the first byte is 0. Not decompiled. |
+| `0x1a4a0` | Play a spell. It subtracts the spell row's byte `+5` through `FUN_00028590`. The sequence is in [Pictures](pictures.md); the body was not read past that cost and the call into `FUN_000288c0`. |
+| `0x288c0` | Formats `Emg%02d.saf` and, for id `0x21`, opens `Emg33-1.saf`. At `0x28942` it subtracts the spell row's byte `+5` from `+0x44`. The frames after the open were not walked. |
+| `0x118f0` / `0x11da0` / `0x13670` | Called while a score lists stand tiles and targets. Not decompiled. |
 
 `DAT_00060010` is also touched at `0x13d6d`, `0x15268`, `0x18411`, `0x184ad`, `0x2414e`, `0x24363`, and `0x245af`. The stores were not separated from the reads. `Explo.Saf` and `Miss.wav` are named by the players. They were not among the top-level archive members already walked. `BASEWAV.VFS` inside `MISC.VFS` was not opened.
 
@@ -91,16 +95,15 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 
 | Address | What it is |
 | --- | --- |
-| `0x567fd` | Expander modes other than 0 and 3. Mode 3 is the hit recolor in [Pictures](pictures.md). |
-| `0x5738b` / `0x57503` | Expander modes 9 and 10, used when a tile is occupied. Not decompiled. |
+| `0x56895` | Expander mode 2. It starts like mode 1 and then diverges. |
+| `0x569ce` | Expander modes 4 through 8, at `0x569ce`, `0x56b9a`, `0x56e84`, `0x572c1`, `0x5735d`. |
+| `0x57686` | Expander modes 11 and 12. Mode 12 is `0x577e4`. |
 
-- `ICONANI.VFS` playback, and the `Emg%02d` player at `0x28951`. `EMG33-1.SAF` is in `MISC.VFS`; that pattern does not name it. `FACE.CEL` is 160 pictures of 125×100; which screen draws one was not read.
-- Which picture `Chapter.pal` colors. It is opened at `0x20c54` and installed at `0x20d74` with bias `-step * 4` on each channel.
-- Who plays `BONUS-1.SAF`, `CHAPTER.SAF`, `ENYPHASE.SAF`, `GAMEOVER.SAF`, and `PLYPHASE.SAF`. `LOGO.SAF` is the startup clip in [Session](session.md).
+- `ICONANI.VFS` playback. `FUN_00021620` loads `Icon##.dat` and is called from each scenario opener; its body was not read. `FACE.CEL` picture `n` is drawn by `FUN_000177c0` at 125×100. The calls are at `0x16790`, `0x207d8`, and `0x20c1b`, and those callers were not read.
 
 ### Text
 
-- The glyph destination rectangle inside `FUN_00017c90` (`0x17c90`). The 16×16 cell and the 32-byte stride are stored by the font loader.
+- The glyph destination rectangle inside `FUN_00017c90` (`0x17c90`). The 16×16 cell and the 32-byte stride are stored by the font loader. `FUN_00017520` draws the amount added on a level, with id `0xa4`. Its body was not read.
 
 ### Save
 

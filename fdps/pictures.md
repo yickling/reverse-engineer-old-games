@@ -45,11 +45,33 @@ opcode in 0x80..0xbf: copy the next n bytes
 opcode in 0xc0..0xff: skip n pixels
 ```
 
-Mode 3 is the recolor used on a landed hit, disassembled under [Combat animation](#combat-animation). Modes 1, 2, and 4 through 12 (`0x567fd` onward, apart from mode 3 at `0x56927`) were not listed. Map tiles and `SAF` cells both enter through mode 0 when no palette argument is passed, so this is the decoder an extractor needs for those pictures. `ICON.CEL` frames go through the same function from `FUN_0002cb30`.
+`FUN_0005664b` stores the width, height, and pitch, then calls one body for the mode byte:
+
+| Mode | Body | What the write does |
+| --- | --- | --- |
+| 0 | `0x5677d` | The four opcodes above, stored byte unchanged. |
+| 1 | `0x567fd` | Same opcodes. Each stored byte is looked up in the 256-byte table passed as the sixth argument. |
+| 2 | `0x56895` | Starts like mode 1. The bodies diverge; the difference was not listed. |
+| 3 | `0x56927` | Hit recolor, under [Combat animation](#combat-animation). |
+| 4–8 | `0x569ce`, `0x56b9a`, `0x56e84`, `0x572c1`, `0x5735d` | Not listed. |
+| 9 | `0x5738b` | Blend onto the pixel already in the buffer. |
+| 10 | `0x57503` | Same tables as mode 9. The key is fixed for the blit, and the destination pixel is not read. |
+| 11–12 | `0x57686`, `0x577e4` | Not listed. |
+
+Map tiles and `SAF` cells both enter through mode 0 when no palette argument is passed, so mode 0 is the decoder an extractor needs for the stored picture. `ICON.CEL` frames go through the same function from `FUN_0002cb30`.
+
+Mode 9 reads a pointer of three dwords. The second selects a `0x400`-byte slot of the first, and swaps which of the two slots sits `0x2400` bytes higher when that selector is above 8 (`selector = 0x10 - selector` in that case). The third dword is a byte table. For a source sample and the pixel already at the destination:
+
+```
+mixed = (table_a[sample] + table_b[dest]) >> 4 & 0x0f0f0f
+out = byte_table[(mixed & 0xffff) | (mixed >> 12)]
+```
+
+The four opcodes are unchanged. A skip does not read either table. The fight's two tables are the `0x4800`-byte and `0x1000`-byte files loaded at `DAT_000653f0` and `DAT_000643f0`, under [Combat animation](#combat-animation). Mode 9 cannot be replayed from the cell alone. Mode 10 was disassembled, not decompiled. It builds the same pair of tables, indexes the first once from the dword at struct+`0x0c`, and indexes the second from each source sample.
 
 To pull the pictures out: walk the VFS directory as described in [Archives](archives.md), reject a member whose span passes the end of the archive, then run mode 0 into a buffer of `width * height` bytes. A cell's bytes run from its table offset to the next higher offset in that table, and the last cell runs to the end of the member. A picture is the column count, the row count, then that many cell indexes, one row at a time. Stamp cell (column, row) at `chunk_x + column * cell_width`, `chunk_y + row * cell_height`. Pixels the skip opcodes never write stay transparent. The chunk x and y are positions in the 368×248 compose buffer, so a tight sprite is the bounding box of the written pixels, not the cell size. Hold, hit, and the mode byte stay beside the frame so a player can step it the way `FUN_00014540` does.
 
-`Fight.pal` and the other four `.pal` members of `MISC.VFS` (`Chapter.pal`, `Dynasty.pal`, `Fde.pal`, `Stboard.pal`) are 768 bytes with components 0 through 63. Shift each component left by 2 for an 8-bit channel. The string `Fight.pal` is at `0x61cd4`. `FUN_00029630` opens it into `0x643e4`, and the fight players install that buffer through `FUN_00022f10`, under [CEL pictures](#cel-pictures). Every cell in the fight clips below expanded with mode 0: each row's width counter landed on 0, and the cell size is 24×24 throughout. Colored from `Fight.pal`, frames of `BACK00`, `STAND000`, `ACT000`, `MAGIC000`, and `ML00` are readable pictures. `STAND000` frame 0's written pixels sit at compose `(181, 47)`. Chunk byte 1 still expands with mode 0. There are 44 such chunks in `FIGHT.VFS` (10 in `Stand`, 34 in `Magic`), 177 in `FIGACT.VFS`, none in `BACKGRND.VFS`, and 345 in the effect members of `MISC.VFS`. The fight paints those chunks with mode 9, which is still unread, so this recovers the stored indexes and not that recolor. Chunk rectangles in `FIGHT.VFS` stay inside x 0..343 and y 0..223. `FIGACT.VFS` reaches x −1 and y 255. `BACKGRND.VFS` stays in y 28..150.
+`Fight.pal` and the other four `.pal` members of `MISC.VFS` (`Chapter.pal`, `Dynasty.pal`, `Fde.pal`, `Stboard.pal`) are 768 bytes with components 0 through 63. Shift each component left by 2 for an 8-bit channel. The string `Fight.pal` is at `0x61cd4`. `FUN_00029630` opens it into `0x643e4`, and the fight players install that buffer through `FUN_00022f10`, under [CEL pictures](#cel-pictures). Every cell in the fight clips below expanded with mode 0: each row's width counter landed on 0, and the cell size is 24×24 throughout. Colored from `Fight.pal`, frames of `BACK00`, `STAND000`, `ACT000`, `MAGIC000`, and `ML00` are readable pictures. `STAND000` frame 0's written pixels sit at compose `(181, 47)`. Chunk byte 1 still expands with mode 0. There are 44 such chunks in `FIGHT.VFS` (10 in `Stand`, 34 in `Magic`), 177 in `FIGACT.VFS`, none in `BACKGRND.VFS`, and 345 in the effect members of `MISC.VFS`. The fight paints those chunks with mode 9, so this recovers the stored indexes and not that blend. Chunk rectangles in `FIGHT.VFS` stay inside x 0..343 and y 0..223. `FIGACT.VFS` reaches x −1 and y 255. `BACKGRND.VFS` stays in y 28..150.
 
 `extract_fight_sprites.py` is that walk. It writes one PNG per frame that has chunks, `sheet.png` for the clip, and a JSON record of hold, hit, sample, and the cropped origin. How the sheet is registered is under [SAF clips](#saf-clips). The folders are `backdrops/` (`Back##`), `stands/` (`Stand###`, the body drawn for the defender and for the attacker until the swing), `attacks/` (`Act###`), and `effects/`. A walk of the local archives wrote 63 backdrop frames, 388 standing frames, 2117 attack frames, and 3538 effect frames.
 
@@ -173,7 +195,7 @@ For every other id the player loads, using side prefix `E` or `M` from byte `+6`
 4. `%sE%02d.saf` played to completion (end).
 5. `%sS%02d.saf` as an extra overlay when the spell id is `0x0d`, or in `0x1a`–`0x1f`, `0x21`–`0x24`, or `0x26`–`0x27`.
 
-Those phase files live in `MISC.VFS`. Counts: `MB`/`ME`/`ML` 25 each, `MS` 11, `EB`/`EE`/`EL` 12 each, `EMG` 25, `ES` 1. The twenty-fifth `EMG` is `EMG33-1.SAF`, beside `EMG33.SAF`. The `Emg%02d` pattern does not name the hyphenated file. `Emg%02d.saf` is referenced from `0x28951`, which was not decompiled. The same archive also holds `CURE.SAF`, `CUREMP.SAF`, `MAG11.SAF`, `MAGIC0BB.SAF`, `MAGIC0GG.SAF`, `POSEFF.SAF`, and `POSION.SAF`. They use the same `SAF` version `0x06` layout and are included with the effect clips above. Six further `.saf` members are not: `BONUS-1`, `CHAPTER`, `ENYPHASE`, `GAMEOVER`, `LOGO`, and `PLYPHASE`. `Logo.saf` is the startup clip in [Session](session.md). While the strike plays, a target who is actually hit also cycles a small palette (`local_50` modulo 8) keyed by a 40-long table copied from `0x18cb0`.
+Those phase files live in `MISC.VFS`. Counts: `MB`/`ME`/`ML` 25 each, `MS` 11, `EB`/`EE`/`EL` 12 each, `EMG` 25, `ES` 1. The twenty-fifth `EMG` is `EMG33-1.SAF`, beside `EMG33.SAF`. `Emg%02d.saf` is formatted in `FUN_000288c0`. The id is passed through, except id `0x0b`, which is formatted as id−1. Id `0x21` instead opens the separate string `Emg33-1.saf` at `0x61bc8` (`0x2898d`). The same function names `EarQu.wav`. Its callers are `FUN_0001a4a0` and `FUN_00013c90`. The frames after the open were not walked. The same archive also holds `CURE.SAF`, `CUREMP.SAF`, `MAG11.SAF`, `MAGIC0BB.SAF`, `MAGIC0GG.SAF`, `POSEFF.SAF`, and `POSION.SAF`. They use the same `SAF` version `0x06` layout and are included with the effect clips above. Six further `.saf` members are not fight effects. `Logo.saf` is the startup clip in [Session](session.md). `Chapter.saf` is played by `FUN_00020c30`, which every scenario opener calls: one frame through `FUN_00014140`, then `Chapter.pal` fades in and out by steps of 4. `EnyPhase.saf` and `PlyPhase.saf` are played by `FUN_0001ead0` from the turn change in [Turns](turns.md). That player saves the screen, blends five steps through `FUN_0002fda0` with the tables at `DAT_000653f0` and `DAT_000643f0`, plays the clip, and blends back. When the name is `PLYPHASE.SAF` it calls `FUN_0001e810` first. `GameOver.saf` is played by `FUN_0002a920`: the clip steps with `FUN_00014540` until that call returns nonzero, then sixteen blend steps run and the function waits on a key. `Bonus-1.saf` is opened, with `Bonus.wav`, by `FUN_000361d0`, which the first village-menu action `FUN_00035a30` calls. The frames inside `FUN_000361d0` were not walked. While the strike plays, a target who is actually hit also cycles a small palette (`local_50` modulo 8) keyed by a 40-long table copied from `0x18cb0`.
 
 ## CEL pictures
 
@@ -210,7 +232,7 @@ index = slot * 12 + facing * 3 + step
 
 Bit `0x80` of byte `+5` draws `facing * 3 + 1` only, through a different blit mode. Byte `+0x26` nonzero forces step 0 and adds `tick % 2` to x. The first of the two draw passes paints a shared shadow from `DAT_000643e0` using the same 3-step cycle (or its second frame when the `0x80` flag is set). A 24×11 overlay from `DAT_000643d8` is drawn under the sprite when `FUN_0002ca60` returns a frame; that function was not read.
 
-`FACE.CEL` is the same directory. Byte 8 is 0, the bitmap is 125×100, and the count at `+10` is 160, matching the directory. Picture 0 expands with mode 0.
+`FACE.CEL` is the same directory. Byte 8 is 0, the bitmap is 125×100, and the count at `+10` is 160, matching the directory. `FUN_000177c0(dest, pitch, index)` frees any picture it loaded before. An index of −1 stops there. Any other index reads the two dwords at file `0x0f + index * 4`, loads that span, and expands it with mode 0 at 125×100 onto `dest` at the given pitch. The calls are at `0x16790`, `0x207d8`, and `0x20c1b`. Those callers were not read.
 
 ## Interface pictures
 

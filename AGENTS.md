@@ -6,4 +6,6 @@ Write every finding into those files before you finish. A chat reply is not a re
 
 `__stash/` is the local copy of programs under study. Read it. Do not create or change files there. Notes go in the game folder. Every other file goes in `docs/<game>/`.
 
+The root README is the index of analysed games. Add a row there when a study starts. Do not name the game in any other top-level file.
+
 The chat may summarize what was written. Do not end with the result only in the chat.

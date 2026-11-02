@@ -12,13 +12,13 @@ Later analysis sessions should follow [LLMs.md](LLMs.md) and [AGENTS.md](AGENTS.
 | --- | --- |
 | [fdps/README.md](fdps/README.md) | Flame Dragon Plus (炎龙骑士团外传), DOS |
 
-Add the next game as a new folder with a `README.md`.
+This table is the index of analysed games. A study adds a row here and a folder with a `README.md`. It does not name the game in any other top-level file.
 
 ## Local copies
 
 `__stash/` is the local copy of programs under study. Read it. Do not create or change files there. It is not committed.
 
-Notes go in the game folder. Every other file this repository produces goes in `docs/<game>/`. Identification sheets for Flame Dragon Plus are in [docs/fdps/unit-ids](docs/fdps/unit-ids/index.html).
+Notes go in the game folder. Every other file this repository produces goes in `docs/<game>/`.
 
 ## Rights
 

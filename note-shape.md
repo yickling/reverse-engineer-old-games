@@ -1,6 +1,6 @@
 # Note shape
 
-How to lay out the notes for one game. Read [LLMs.md](LLMs.md) for how to study the program. This file is only the shape of what that study writes. [fdps/README.md](fdps/README.md) is one filled-in example. Copy this shape, not that game's filenames or systems.
+How to lay out the notes for one game. Read [LLMs.md](LLMs.md) for how to study the program. This file is only the shape of what that study writes. Copy this shape, not one game's filenames or systems. The root README is the index of analysed games. Do not name a game in this file.
 
 A game folder is an index plus one file per system that program actually has. Do not create a file for a system it does not have. Merge two subjects into one file when the program does not separate them.
 

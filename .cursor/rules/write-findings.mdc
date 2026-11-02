@@ -15,3 +15,5 @@ Before finishing any study of a game:
 4. The chat may summarize what was written. Do not end with the result only in the chat.
 
 `__stash/` is the local copy of programs under study. Read it. Do not create or change files there, and do not name it in the notes. Notes go in the game folder. Every other file goes in `docs/<game>/`. Do not paste scenario text or other copyrighted writing into the notes.
+
+The root README is the index of analysed games. Add a row there when a study starts. Do not name the game in any other top-level file.

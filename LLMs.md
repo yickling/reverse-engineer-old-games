@@ -4,14 +4,14 @@ Instructions for a later session. Read this before studying a new game, and read
 
 The goal is game design and construction: how the game is put together, how its content is represented, and how those pieces reach the player. Discover the structure this program actually has. Do not arrive with a genre in mind, and do not go looking for systems this game may not have.
 
-Write the notes in the shape in [note-shape.md](note-shape.md). [fdps/README.md](fdps/README.md) is one filled-in example of that shape. Copy the shape, not that game's filenames or systems.
+Write the notes in the shape in [note-shape.md](note-shape.md). Copy the shape, not one game's filenames or systems.
 
 Write every finding into those notes before the session ends. A reply in the chat is not a record. The next session will not see it. The same is true of an address that was seen and not read: it goes in the index, not only in the reply.
 
 ## Where things go
 
 - One folder per game. The entry note is `<game>/README.md`.
-- The root [README.md](README.md) lists those notes. Add a row when a game folder gains one.
+- The root [README.md](README.md) is the index of analysed games. Add a row when a game folder gains one. Do not name that game in any other top-level file.
 - `__stash/` is the local copy of programs under study. Read it. Do not create or change files there. Leave it out of commits and out of the license. Do not name that directory in a note.
 - Notes go in `<game>/`. Every other file this repository produces goes in `docs/<game>/`.
 - Notes describe structure. They do not paste scenario text or other copyrighted writing. Picture sheets kept for identification go in `docs/<game>/`.

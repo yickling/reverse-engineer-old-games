@@ -32,7 +32,7 @@ The offsets are nondecreasing and every span is an even number of bytes, so the 
 
 Cell `n` is the 32 bytes at `font + n * 0x20`. Indexes 0 through 1791 all occur. Every other word in the 66 files is one of the eight controls in the next section, `0xffee` through `0xffff`. A cell index is not a character code. A GBK scan of the text members finds no Han bytes.
 
-Cells 0 through 9 are the digits, and cells 10 through 35 are `A` through `Z`. The other cells were read from the bitmaps. That reading is `docs/fdps/text/glyph-map.tsv`. `extract_text.py` applies it: scenario index N is `FDETXT(N+1).TXT`, written to `docs/fdps/text/scenario-NN.txt`, and `FDETXT00.TXT` is `docs/fdps/text/interface.txt`. Two blank cells are spaces. A cell that looks like two similar characters can be off by one stroke. The notes do not carry the strings.
+Cells 0 through 9 are the digits, and cells 10 through 35 are `A` through `Z`. The other cells were read from the bitmaps. That reading is `docs/fdps/text/glyph-map.tsv`. `scripts/extract_text.py` applies it: scenario index N is `FDETXT(N+1).TXT`, written to `docs/fdps/text/scenario-NN.txt`, and `FDETXT00.TXT` is `docs/fdps/text/interface.txt`. Two blank cells are spaces. A cell that looks like two similar characters can be off by one stroke. The notes do not carry the strings.
 
 ## How a string is drawn
 

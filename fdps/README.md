@@ -35,6 +35,8 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 | [Save](save.md) | `FDE.SAV`, including the four load slots. |
 | [Gaps](gaps.md) | What is still missing for a full account of the design and the implementation. |
 
+The extractors are in [scripts](scripts/). `scripts/extract_fight_sprites.py` writes the fight frames, `scripts/extract_cel_pictures.py` writes the map and interface pictures, and `scripts/extract_text.py` writes the scenario strings. What each one writes is in [Pictures](pictures.md) and [Text](text.md).
+
 ## Still open
 
 The open list is [Gaps](gaps.md). Add an address, file, or field that was seen and not read there, under the same heading as the topic. Remove it when the topic file records the finding.

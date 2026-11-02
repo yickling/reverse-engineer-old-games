@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent
+ROOT = HERE.parent.parent
 DEFAULT_MAP = ROOT / "docs" / "fdps" / "text" / "glyph-map.tsv"
 DEFAULT_OUT = ROOT / "docs" / "fdps" / "text"
 

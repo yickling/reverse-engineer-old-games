@@ -13,7 +13,7 @@ Write every finding into those notes before the session ends. A reply in the cha
 - One folder per game. The entry note is `<game>/README.md`.
 - The root [README.md](README.md) is the index of analysed games. Add a row when a game folder gains one. Do not name that game in any other top-level file.
 - `__stash/` is the local copy of programs under study. Read it. Do not create or change files there. Leave it out of commits and out of the license. Do not name that directory in a note.
-- Notes go in `<game>/`. Every other file this repository produces goes in `docs/<game>/`.
+- Notes go in `<game>/`. A repeatable extractor goes in `<game>/scripts/`, as in [note-shape.md](note-shape.md). Every other file this repository produces goes in `docs/<game>/`.
 - Notes describe structure. They do not paste scenario text or other copyrighted writing. Picture sheets kept for identification go in `docs/<game>/`.
 - Original notes are [CC BY 4.0](LICENSE). That license does not cover any game.
 
@@ -22,7 +22,7 @@ Write every finding into those notes before the session ends. A reply in the cha
 1. Identify the container before decompiling. If the tool rejects it, build whatever image the tool can open, and record the path, the hash, the load address, and the rule that turns an address into a file offset. The note says which file was actually opened. In the first study the executable was a Watcom Linear Executable inside an MZ stub, the tool rejected it, and the session analyzed a relocated flat image instead.
 2. Record the load map: where code and data sit, the real entry, and how a wrong entry hides the startup function. Read the startup and the outer loop before naming anything those functions call. A pointer table's role is the call site that uses it. In the first study one table opens a scenario and a different table runs when that scenario ends; calling both "the scenario start" sent the next session to the wrong functions.
 3. Follow filenames. Strings such as archive names and `printf` patterns lead to the loaders. Decompile the loader, then check the on-disk bytes against what it reads. A layout is settled when the reader's field offsets and a walk of the file agree, including a check that no member runs past the end of the file.
-4. Follow use, not just storage. A count, a frame advance, or a formula comes from the function that plays it or applies it, then the same layout is counted across the files. Write a rule that should be reproducible as pseudocode. Say which function the arithmetic was read from.
+4. Follow use, not just storage. A count, a frame advance, or a formula comes from the function that plays it or applies it, then the same layout is counted across the files. Write a rule that should be reproducible as pseudocode. Say which function the arithmetic was read from. When that walk is long enough that the next session would repeat it, write the script described in [note-shape.md](note-shape.md).
 5. Name each function and each global by what it does, and keep the address. The address is how the next session reopens it. The plain name is how a person making a game reads it. When the startup path was disassembled because no function existed there, say that. Decompiler output is not original source.
 6. Stop when the question in front of you is answered. List what was seen and not read. Do not fill the gap.
 

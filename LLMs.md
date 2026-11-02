@@ -6,7 +6,7 @@ The goal is game design and construction: how the game is put together, how its 
 
 Write the notes in the shape in [note-shape.md](note-shape.md). Copy the shape, not one game's filenames or systems.
 
-Write every finding into those notes before the session ends. A reply in the chat is not a record. The next session will not see it. The same is true of an address that was seen and not read: it goes in the index, not only in the reply.
+Write every finding into those notes before the session ends. A reply in the chat is not a record. The next session will not see it. The same is true of an address that was seen and not read: it goes in `<game>/gaps.md`, not only in the reply. Remove the row when the topic file records the finding.
 
 ## Where things go
 
@@ -34,4 +34,4 @@ When the study of a binary session is finished, close it.
 
 ## What the notes look like
 
-Follow [note-shape.md](note-shape.md). The index holds how to reopen the image and everything still unread. Each topic file holds one subject this program actually has. Mark each claim observed, inferred, or unknown, as that file describes.
+Follow [note-shape.md](note-shape.md). The index holds how to reopen the image and links to `<game>/gaps.md`. That file is the open list: what a reconstruction still cannot do, then everything still unread. Each topic file holds one subject this program actually has. Mark each claim observed, inferred, or unknown, as that file describes.

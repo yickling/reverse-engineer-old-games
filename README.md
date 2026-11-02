@@ -8,11 +8,11 @@ Later analysis sessions should follow [LLMs.md](LLMs.md) and [AGENTS.md](AGENTS.
 
 ## Notes
 
-| Note | Game |
-| --- | --- |
-| [fdps/README.md](fdps/README.md) | Flame Dragon Plus (炎龙骑士团外传), DOS |
+| Note | Game | Gaps |
+| --- | --- | --- |
+| [fdps/README.md](fdps/README.md) | Flame Dragon Plus (炎龙骑士团外传), DOS | [fdps/gaps.md](fdps/gaps.md) |
 
-This table is the index of analysed games. A study adds a row here and a folder with a `README.md`. It does not name the game in any other top-level file.
+This table is the index of analysed games. A study adds a row here, a folder with a `README.md`, and a `gaps.md` in that folder. It does not name the game in any other top-level file.
 
 ## Local copies
 

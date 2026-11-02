@@ -11,7 +11,7 @@ Before finishing any study of a game:
 
 1. Read [LLMs.md](LLMs.md), then that game's `README.md`. Follow [note-shape.md](note-shape.md) when adding or reshaping notes.
 2. Write every finding into the topic file for that subject. Create the topic file when the subject is long enough to continue on its own.
-3. Put any address, file, or field you saw and did not read into that game's `README.md`, under the same heading as the topic.
+3. Put any address, file, or field you saw and did not read into that game's `gaps.md`, under the same heading as the topic. Remove the row when the topic file records the finding. `gaps.md` also states what a reconstruction still cannot do.
 4. The chat may summarize what was written. Do not end with the result only in the chat.
 
 `__stash/` is the local copy of programs under study. Read it. Do not create or change files there, and do not name it in the notes. Notes go in the game folder. Every other file goes in `docs/<game>/`. Do not paste scenario text or other copyrighted writing into the notes.

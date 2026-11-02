@@ -16,18 +16,18 @@ Add the next game as a new folder with a `README.md`.
 
 ## Local copies
 
-Programs under study are kept on this machine only. `__stash/` is local storage for those programs. It is not part of the notes, and it is not committed.
+`__stash/` is the local copy of programs under study. Read it. Do not create or change files there. It is not committed.
 
-This repository does not contain games. Binaries, archives, art, audio, scenario text, and other assets stay with the person studying them.
+Notes go in the game folder. Every other file this repository produces goes in `docs/<game>/`. Identification sheets for Flame Dragon Plus are in [docs/fdps/unit-ids](docs/fdps/unit-ids/index.html).
 
 ## Rights
 
 Every game named here remains the property of its original owner. Titles, characters, and trademarks belong to those owners. All rights in the games are reserved by them.
 
-The notes describe structure and design. They include no game software and no game assets, and they grant no right to copy, play, or redistribute a game.
+The notes describe structure and design. They grant no right to copy, play, or redistribute a game. Extracted pictures kept for identification live under `docs/` and are not covered by the license below.
 
 ## License
 
 The original notes in this repository are released under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). See [LICENSE](LICENSE).
 
-That license covers this writing only. It does not cover any game, and it does not cover anything in `__stash/`.
+That license covers this writing only. It does not cover any game, anything in `__stash/`, or the extracted pictures under `docs/`.

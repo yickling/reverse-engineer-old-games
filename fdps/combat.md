@@ -10,28 +10,7 @@ The command menu is `FUN_00015cf0`, opened when a move ends on the unit's curren
 
 `FUN_00011e50` marks that occupancy grid, then `FUN_0002b280` lets the cursor move a tile at a time. `Z` (`0x2c`) and keypad 5 (`0x4c`) step through the list and center on that unit. Confirm (`0x39` or `0x1c`) accepts when `FUN_0002b790` stored an occupancy byte other than `0xff` and `FUN_000109f0` finds a side-`0` unit on that tile. The menu sets `DAT_00069cd0` to 1 before the picker, and the distance test is strict less-than that value, so the unit has to be on the cursor tile. Escape (`0x01`) or delete (`0x53`) returns −1 and the menu stays up. A chosen target is faced with `FUN_0001c2b0`, then `FUN_00018d50` plays the clips. The menu does not read `DAT_00060010`. It always plays the screen.
 
-The phase walker is `FUN_00010010`, called for side `1` and then side `0` from `FUN_0001e3c0`. Which script runs is in [Turns](turns.md). `FUN_00012c10` fills the three scores below and returns 0 when all three are below 6. Otherwise the largest score wins:
-
-```
-swing = DAT_00063f78    # FUN_00012230
-spell = DAT_00063f88    # FUN_00013420
-item  = DAT_00063f8c    # FUN_00013040
-prefer_swing = bit 0x40 of unit[+0x34]
-
-if swing > spell and swing > item: swing
-else if swing == spell and item < spell:
-    if spell_id < 0x12:
-        swing when the spell row's first short is below attack - defense
-        else cast
-    else if prefer_swing: swing
-    else cast
-else if swing == item and spell < item:
-    item action when prefer_swing is clear, else swing
-else if swing < spell and item <= spell: cast
-else if swing < item and spell < item: item action
-```
-
-`attack` and `defense` there are the attacker's `+0x48` and the defender stored by the swing scorer, its `+0x4a`. The spell id is `DAT_00063f90`, and its row is `FUN_00018bc0`. A three-way tie at 6 or above matches none of those tests: the function still returns 1, and it does not call an action. The swing is `FUN_00012e50`. The cast is `FUN_00013c90` and the item action is `FUN_00027150`, both below. `FUN_00012e50` is the swing:
+The phase walker is `FUN_00010010`, called for side `1` and then side `0` from `FUN_0001e3c0`. Which script runs is in [Turns](turns.md). `FUN_00012c10` fills the three scores below and returns 0 when all three are below 6. Otherwise the largest score wins. The comparison is the last step of the routine at the end of this section. `attack` and `defense` there are the attacker's `+0x48` and the defender stored by the swing scorer, its `+0x4a`. The spell id is `DAT_00063f90`, and its row is `FUN_00018bc0`. A three-way tie at 6 or above matches none of those tests: the function still returns 1, and it does not call an action. The swing is `FUN_00012e50`. The cast is `FUN_00013c90` and the item action is `FUN_00027150`, both below. `FUN_00012e50` is the swing:
 
 ```
 center the camera on the attacker          # FUN_0002d7e0
@@ -51,21 +30,274 @@ The walk in `FUN_000119e0` flood-fills with the attacker's move budget. Each pat
 
 Facing, from `FUN_0001c2b0`, compares absolute dx with absolute dy. The larger axis wins. Defender to the left is facing 1, to the right is 3, above is 2, below is 0.
 
-Range marking, from `FUN_00011e50`. `+0xc` below `0x10` rebuilds the grid with the class-0 move row, then if `+0xb` is nonzero every tile whose Manhattan distance from the attacker is below `+0xb` is set to `0xff`. `+0xc` at or above `0x10` instead writes `0` along the attacker's row and column out to `+0xc - 0x10`. Tiles left at `0xff` are the ones confirm rejects. `FUN_0002b790` stores that same occupancy byte at `DAT_00069d0c`. The counter test is a third use of `+0xb`: `FUN_000137e0` returns 1 when the defender's `+0x26` is 0, the two units are one tile apart, and `+0xb` is 1.
+Range marking, from `FUN_00011e50(x, y, dest, shape, inner, side)`. The cost byte is the mask: `0xff` is outside, and any other value is inside. `shape` below `0x10` calls `FUN_00010de0` with the class-0 move row, the center, and `shape` as the budget. That fill writes `0` on the origin and does not clear the other tiles, so a caller that wants a fresh mask calls `FUN_00010b20` first. If `inner` is nonzero, every tile whose Manhattan distance from the center is below `inner` is then set back to `0xff`. `shape` at or above `0x10` subtracts `0x10` and writes `0` on the center's row where `|dx|` is at most that radius, and on the center's column where `|dy|` is at most that radius. It does not clear either. A visible unit is listed when its tile's cost byte is not `0xff` and its side matches `side`: `0` keeps side `0`, `1` keeps a side other than `0`, `2` keeps side `1`, and `3` keeps side `2`. The ids are written in unit-index order. A null `dest` only returns the count. Tiles left at `0xff` are the ones confirm rejects. `FUN_0002b790` stores that same occupancy byte at `DAT_00069d0c`. The counter test is a third use of weapon byte `+0xb`: `FUN_000137e0` returns 1 when the defender's `+0x26` is 0, the two units are one tile apart, and `+0xb` is 1.
+
+## The spell area
+
+A spell hits the units standing on the tiles this mask marks. The row is `FUN_00018bc0`. Byte `+4` is the `shape` above. Byte `+3` is a second range, used to choose where the mask is centered. Spells pass `inner` 0, so the flood is not punched back. The step costs of that flood are the class-0 row in [Map](map.md). The cast itself is `FUN_00013c90`: it paints from the stored stand with byte `+4`, copies the ids, then clears the grid.
+
+`FUN_00013420` clears between the two paints. It flood-fills from the caster with budget byte `+3`, copies the reached tiles with `FUN_00011da0`, and calls `FUN_00010b20`. Each of those tiles is then a center: `FUN_00011e50` with `shape` byte `+4` and `inner` 0, then another clear before the next center. The CPU never takes the line below. A shape of `0x10` or more is the plus.
+
+The player's aim, `FUN_00027bf0`, is the other center. Byte `+3` equal to 0 paints byte `+4` from the cursor tile, side filter 0, and does not clear first. Any other byte `+3` first paints that byte from the cursor, with side byte `+6`, and the picker runs. After the picker confirms, the grid is cleared. Byte `+3` of 15 or less then paints byte `+4` from the cursor that was confirmed. Byte `+3` of 16 or more does not paint a second area. It walks a line with `FUN_00013670` and plays `Chess.wav`. The same line is what an item uses when its range byte is `0x10` or higher: `(stand x, stand y, buffer, unit x, unit y, byte +0x10 - 0x10, side)`.
+
+`FUN_00013670(cursor x, cursor y, dest, origin x, origin y, length, side)` does not use the cost grid. The step is one tile on a single axis, from the origin toward the cursor. Equal x steps in y: a smaller cursor y steps toward smaller y, and any other cursor y, including the same tile, steps toward larger y. Any other x steps in x, toward smaller x when the cursor x is smaller, otherwise toward larger x. The origin tile is not tested. Each of the `length` steps moves the cursor pixel by 24, and a step inside the map asks `FUN_0002d830` for the unit under that pixel. Side argument 0 keeps a side other than 0. Any other argument keeps side 0. Flag bit 0 is not tested. The player passes the caster as the origin, the cursor as the aim, length `byte +3 - 0x10`, and side argument 1. The two cursor pixels are saved and restored.
+
+A marked tile is drawn from the section's highlight byte. Highlight 1, every ground plate, recolors the tile in place (expander mode 10). Highlight 0 skips the mask. Highlight 2 blends the tile over the buffer and walks the pulse selector. Which files use which pair, and the reading of them as ground, a farther plate, and a foreground shimmer, are in [Map](map.md). The player's picker runs while the aim mask is still on the grid, so that is the area on screen. The effect list is painted and then cleared by `FUN_00010b20` with no compose between the two calls.
+
+`FUN_0002c430` lays pictures on tiles around the cursor pixel when `DAT_00069cd0` is 1 through 5. That global is the cursor leash: confirm is a strict less-than against it. A spell stores byte `+4` plus 2 there before aiming, and the zero byte-`+3` path then forces it to 1. Value 6 writes cost 0 on the cursor tile and draws nothing. Any other value draws nothing. `FUN_0002c9b0` copies one 24×24 picture from the `CEL` at `DAT_000643c8` when the pixel sits in the camera window. Which file was opened into that global was not walked. Offsets below are tiles, picture index in parentheses.
+
+```
+# FUN_00011e50. Cost 0xff is outside the mask.
+# FUN_00010de0 writes 0 on the origin and does not clear.
+
+def paint(x, y, shape, inner):
+    if shape < 0x10:
+        flood(class_0_move_row, x, y, budget=shape)
+        if inner != 0:
+            set cost to 0xff where |dx| + |dy| < inner
+    else:
+        radius = shape - 0x10
+        set cost to 0 where the tile shares x or y
+            and |dx| <= radius or |dy| <= radius
+
+def line(cursor, origin, length, side):       # FUN_00013670
+    if cursor.x == origin.x:
+        step = (0, -1) if cursor.y < origin.y else (0, 1)
+    else:
+        step = (-1, 0) if cursor.x < origin.x else (1, 0)
+    tile = origin
+    hits = []
+    repeat length times:
+        tile = tile + step
+        if tile is on the map:
+            id = unit under that pixel          # FUN_0002d830, or none
+            if id exists and (side == 0) == (unit.side != 0):
+                hits.append(id)
+    return hits
+
+# FUN_0002c430. Pictures, not the hit test.
+# 1: (0,0)=0
+# 2: (0,0)=1
+# 3: (0,0)=0xe  (0,-1)=2  (-1,0)=3  (1,0)=4  (0,1)=5
+# 4: (0,0)=1  (0,-2)=2  (-2,0)=3  (2,0)=4  (0,2)=5
+#    (-1,-1)=6  (1,-1)=7  (-1,1)=8  (1,1)=9
+#    (0,-1)=10  (-1,0)=11  (1,0)=12  (0,1)=13
+# 5: (0,0)=1  (0,-3)=2  (-3,0)=3  (3,0)=4  (0,3)=5
+#    (-1,-2)=(-2,-1)=6  (1,-2)=(2,-1)=7
+#    (-1,2)=(-2,1)=8  (1,2)=(2,1)=9
+#    (0,-2)=10  (-2,0)=11  (2,0)=12  (0,2)=13
+#    (-1,-1)=0xe  (1,-1)=0xf  (1,1)=0x10  (-1,1)=0x11
+
+def player_aim(caster):                        # FUN_00027bf0
+    leash = spell[+4] + 2                      # DAT_00069cd0
+    if spell[+3] == 0:
+        leash = 1
+        list = paint_and_list(cursor, spell[+4], side=0)
+    else:
+        list = paint_and_list(cursor, spell[+3], side=spell[+6])
+        if the picker confirms:
+            clear the grid                        # FUN_00010b20
+            if spell[+3] <= 15:
+                list = paint_and_list(cursor, spell[+4], side=spell[+6])
+            else:
+                list = line(cursor, caster.tile, spell[+3] - 0x10, side=1)
+    return list
+
+def cpu_spell_area(caster):                    # FUN_00013420
+    flood(class_0_move_row, caster.tile, budget=spell[+3])
+    stands = tiles whose cost is not 0xff
+    clear the grid
+    for stand in stands:
+        list = paint_and_list(stand, spell[+4], inner=0, side=folded spell[+6])
+        clear the grid
+        score list
+```
 
 ## The three scores
 
 Each scorer writes 0, then raises its global only when it finds a candidate. All three return 0. The numbers they store are bands, not the damage formula.
 
-`FUN_00012230` is the swing. It reads the weapon through `FUN_00025110(unit, 0)` and `FUN_00018b30`, flood-fills with budget `+0x3b` on `FUN_00018b60(class + 1)`, and asks `FUN_00011da0` for the reachable tiles. From each tile, `FUN_00011e50` lists targets using weapon bytes `+0xb` and `+0xc`. For a target the band is 0 when `attack - defense` is below 3, else 8. When that margin is greater than the target's `+0x40`, the margin is doubled and the band becomes `0x12`. `FUN_000125c0` returns 1 only when the attacker's `+0x26` is 0, the two tiles are one step apart on a side (`FUN_0003d0d4` is the absolute value, and the two absolutes sum to 1), the weapon-group lookup finds a pair, and that record's byte `+0xb` is below 2. Any other case returns −1. A return of 1 adds the attacker's `+0x4a` minus the target's `+0x48` to the margin. A target whose byte `+8` is 0 multiplies the margin by 3/2. The kept candidate is the highest band, and on a tie the larger margin. It stores the target in `DAT_00063f74` and the stand tile in `DAT_00063f80` and `DAT_00063f84`. `FUN_000118f0` was not decompiled. `FUN_00011da0` returns the tile count; its body was not read.
+`FUN_00012230` is the swing. It reads the weapon through `FUN_00025110(unit, 0)` and `FUN_00018b30`, flood-fills with budget `+0x3b` on `FUN_00018b60(class + 1)`, and asks `FUN_00011da0` for the reachable tiles. `FUN_00011da0` lists every tile whose cost byte is not `0xff`, in row-major order, and returns the count. `FUN_000118f0` writes `0xff` into that byte for the other visible units on one side of the filter. The same two calls choose where a CPU walk stops, in [Turns](turns.md). From each stand tile, `FUN_00011e50` lists targets with `shape` = weapon byte `+0xc`, `inner` = byte `+0xb`, and `side` = 1 when the phase filter is 0, else 0. A phase filter of 0 is the side-`0` walk, so that walk's swing list is every visible unit whose side is not 0. Side `1` passes filter 1, and its swing list is side 0. For a target the band is 0 when `attack - defense` is below 3, else 8. When that margin is greater than the target's `+0x40`, the margin is doubled and the band becomes `0x12`. `FUN_000125c0` returns 1 only when the attacker's `+0x26` is 0, the two tiles are one step apart on a side (`FUN_0003d0d4` is the absolute value, and the two absolutes sum to 1), the weapon-group lookup finds a pair, and that record's byte `+0xb` is below 2. Any other case returns −1. A return of 1 adds the attacker's `+0x4a` minus the target's `+0x48` to the margin. A target whose byte `+8` is 0 multiplies the margin by 3/2. The kept candidate is the highest band, and on a tie the larger margin. An equal band and an equal margin keeps the earlier stand tile, and within a tile the earlier unit index. It stores the target in `DAT_00063f74` and the stand tile in `DAT_00063f80` and `DAT_00063f84`.
 
-`FUN_00013420` is the spell. `FUN_00027810` fills the id list, the same call that enables menu slot 1, and byte `+0x27` must be 0. A spell is skipped unless byte `+5` of its `FUN_00018bc0` row is at or below the word at unit `+0x44`. The flood fill uses budget byte `+3` of that row and the class-0 move row. `FUN_00013920` scores the targets on one stand tile, and the kept candidate is the higher score, then the larger first short of the row. The stand tile is `DAT_00063f9c` and `DAT_00063fa0`, and the spell id is `DAT_00063f90`.
+`FUN_00013420` is the spell. `FUN_00027810` fills the id list, the same call that enables menu slot 1, and byte `+0x27` must be 0. A spell is skipped unless byte `+5` of its `FUN_00018bc0` row is at or below the word at unit `+0x44`. The flood fill uses budget byte `+3` of that row and the class-0 move row. The reached tiles are copied, the grid is cleared, and each of them is then a center for the area mask in [The spell area](#the-spell-area). `FUN_00011e50` lists targets with `shape` = row byte `+4`, `inner` = 0, and a side taken from row byte `+6`. The grid is cleared again after that list. When the phase filter is 0, byte `+6` equal to 0 becomes list side `1`, and any other value becomes list side `0`. When the phase filter is not 0, byte `+6` is the list side as stored. `FUN_00013920` scores that list, and the kept candidate is the higher score, then the larger first short of the row. An equal score and an equal short keeps the earlier tile. The stand tile is `DAT_00063f9c` and `DAT_00063fa0`, and the spell id is `DAT_00063f90`.
 
 `FUN_00013920` sums a per-target band. Ids `0x0e`, `0x0f`, `0x10`, and `0x21` score the target's pool against its `+0x42`: 8 when the pool is below a third, 3 when it is below a half, otherwise 0, and bit 0 of `+0x34` doubles that. Id `0x11` adds 6 for each target that still has a spell list and whose `+0x27` is 0. Id `0x18` adds 6 for each target whose `+0x25`, `+0x26`, or `+0x27` is nonzero. Id `0x12` adds 10 for each target whose `+0x25` is 0. Id `0x13` does the same for `+0x26`. Id `0x14` calls that counter three times, for `+0x22`, `+0x23`, and `+0x24`, and keeps only the last return, so the score is 4 per target whose `+0x24` is 0. The counter is `FUN_00013c20`. Every other id adds 8, or `0x18` when the pool is below the row's first short. Ids `0x0a` and `0x0b` skip a target that `FUN_00012550` accepts. A target whose byte `+8` is 0 replaces that band with the value `FUN_0003d25c` leaves on the FPU stack. That helper rounds toward zero. The value loaded before the call was not separated.
 
-`FUN_00013040` is the carried item. `FUN_00025210` is the count, the same call that enables menu slot 2. Index `i` reads the id at unit `+0x0b + i * 2` and the record from `FUN_00018b30`. Byte `+0x0d` of that record must be nonzero. Byte `+0x10` below `0x10` lists targets with `FUN_00011e50`; at or above `0x10` it uses `FUN_00013670` with that byte minus `0x10`. `FUN_000132b0` scores the stand tile, and a higher score replaces `DAT_00063f8c`. The stand tile is `DAT_00063f98` and `DAT_00063f94`, and the slot index is `DAT_00063f7c`. `FUN_00013670` was not decompiled.
+`FUN_00013040` is the carried item. `FUN_00025210` is the count, the same call that enables menu slot 2. Index `i` reads the id at unit `+0x0b + i * 2` and the record from `FUN_00018b30`. Byte `+0x0d` of that record must be nonzero. The stand tiles come from one `FUN_00011e50` at the unit's own tile whose list is discarded: byte `+0x10` below `0x10` is the `shape` and `inner` is 0, and a byte at or above `0x10` is painted with `shape` 1 and `inner` 1. From each stand tile the target list uses record byte `+0x12` as `shape` and `inner` 0 when byte `+0x10` is below `0x10`. At or above `0x10` the list is the line in [The spell area](#the-spell-area), called as `(stand x, stand y, buffer, unit x, unit y, byte +0x10 - 0x10, side)`. The side is record byte `+0x11`, with the same fold the spell uses: a phase filter of 0 turns byte 0 into list side `1` and any other byte into list side `0`. `FUN_000132b0` scores that list, and a strictly higher score replaces `DAT_00063f8c`. The stand tile is `DAT_00063f98` and `DAT_00063f94`, and the slot index is `DAT_00063f7c`.
 
-`FUN_000132b0` returns 0 unless byte `+0x0d` is `0x0b` or `0x1e`. Kind `0x0b` scores each target's pool against its `+0x42`: 8 at or below a third, 3 above a third and at or below a half, otherwise 0. Bit `0x80` of `+0x34` multiplies that by 3. Kind `0x1e` adds `0x12` when the pool is at or below the short at record `+0x0e`, and 8 otherwise.
+`FUN_000132b0` returns 0 unless byte `+0x0d` is `0x0b` or `0x1e`. Kind `0x0b` uses signed division toward zero. A target whose `+0x40` is at or below `+0x42 / 3` adds 8. Above that and at or below `+0x42 / 2` adds 3. Above half adds 0. Bit `0x80` of `+0x34` multiplies that term by 3. Kind `0x1e` adds `0x12` when `+0x40` is at or below the short at record `+0x0e`, and 8 when it is above that short.
+
+## The CPU routine
+
+This is `FUN_00012c10` together with the three scorers. Rows 0, 1, 2, 3, and 5 of the script table call it first. Rows 10 and 11 do not: row 10 takes the item when that score is above 5, then the swing when its score is 6 or more, and otherwise the budget-100 walk. Row 11 is that shape with the spell and `FUN_00013c90` in place of the item. Division is toward zero.
+
+```
+# phase is the filter FUN_00010010 was given.
+# 0 is the side-0 walk. 1 is the side-1 walk.
+# A unit is visible when bit 0 of byte +5 is clear.
+
+def folded_side(phase, byte):
+    if phase == 0:
+        return 1 if byte == 0 else 0
+    return byte
+
+# FUN_00011e50. Writes ids in unit-index order.
+# side 0 keeps side 0. side 1 keeps any side other than 0.
+# side 2 keeps side 1. side 3 keeps side 2.
+def targets(x, y, shape, inner, side):
+    paint(x, y, shape, inner)                       # the mask above
+    return visible units on a tile whose cost is not 0xff
+        and whose side matches `side`
+
+def swing_margin(attacker, target, stand):             # FUN_00012230
+    margin = attacker[+0x48] - target[+0x4a]
+    band = 0 if margin < 3 else 8
+    if target[+0x40] < margin:
+        margin = margin * 2
+        band = 0x12
+    if FUN_000125c0(target, stand) == 1:
+        margin = margin + attacker[+0x4a] - target[+0x48]
+    if target[+8] == 0:
+        margin = (margin * 3) / 2
+    return band, margin
+
+def score_swing(unit, phase):                          # FUN_00012230
+    best = (0, none)
+    weapon = equipped pair of type 1..0x15             # FUN_00025110(unit, 0)
+    if weapon is missing:
+        return best
+    row = Item.dat[weapon]
+    stamp(phase)                                       # FUN_00010b90
+    fill(ProMap[class + 1], unit.tile, budget = unit[+0x3b])
+    punch the other units on the mover's side          # FUN_000118f0
+    side = 1 if phase == 0 else 0
+    for stand in tiles whose cost is not 0xff:         # FUN_00011da0, row-major
+        for target in targets(stand, row[+0xc], row[+0xb], side):
+            band, margin = swing_margin(unit, target, stand)
+            if band > best.band or (band == best.band and margin > best.margin):
+                best = (band, margin, target, stand)
+    return best
+
+def spell_band(spell_id, targets):                     # FUN_00013920
+    row = MagicDat[spell_id]
+    total = 0
+    if spell_id in (0x0e, 0x0f, 0x10, 0x21):
+        for target in targets:
+            pool, maxp = unsigned(target[+0x40]), unsigned(target[+0x42])
+            if pool < maxp / 3: term = 8
+            else if pool < maxp / 2: term = 3
+            else: term = 0
+            if bit 0 of target[+0x34] is set: term = term * 2
+            total = total + term
+    else if spell_id == 0x11:
+        total = 6 * count of targets that have a spell list and +0x27 == 0
+    else if spell_id == 0x12:
+        total = 10 * count of targets whose +0x25 == 0     # FUN_00013c20
+    else if spell_id == 0x13:
+        total = 10 * count of targets whose +0x26 == 0
+    else if spell_id == 0x14:
+        total = 4 * count of targets whose +0x24 == 0
+        # the same count for +0x22 and for +0x23 is computed and dropped
+    else if spell_id == 0x18:
+        total = 6 * count of targets whose +0x25, +0x26, or +0x27 is nonzero
+    else:
+        for target in targets:
+            if spell_id in (0x0a, 0x0b) and FUN_00012550(target) != 0:
+                continue
+            term = 0x18 if target[+0x40] < row.first_short else 8
+            if target[+8] == 0:
+                term = trunc(the value loaded before FUN_0003d25c)
+                # that load was not separated from the call
+            total = total + term
+    return total
+
+def score_spell(unit, phase):                          # FUN_00013420
+    best = (0, none)
+    if unit[+0x27] != 0 or the unit has no spell list:
+        return best
+    for spell_id in the learned list:                  # FUN_00027810
+        row = MagicDat[spell_id]
+        if row[+5] > unit[+0x44]:
+            continue
+        fill(class-0 move row, unit.tile, budget = row[+3])
+        side = folded_side(phase, row[+6])
+        for stand in tiles whose cost is not 0xff:
+            listed = targets(stand, row[+4], 0, side)
+            if listed is empty:
+                continue
+            score = spell_band(spell_id, listed)
+            if score > best.score or (score == best.score and row.first_short > best.short):
+                best = (score, row.first_short, spell_id, stand)
+    return best
+
+def item_band(record, targets):                        # FUN_000132b0
+    total = 0
+    if record[+0x0d] == 0x0b:
+        for target in targets:
+            if target[+0x42] / 3 < target[+0x40]:
+                term = 0 if target[+0x42] / 2 < target[+0x40] else 3
+            else:
+                term = 8
+            if bit 0x80 of target[+0x34] is set: term = term * 3
+            total = total + term
+    else if record[+0x0d] == 0x1e:
+        for target in targets:
+            total = total + (8 if record[+0x0e] < target[+0x40] else 0x12)
+    return total
+
+def score_item(unit, phase):                           # FUN_00013040
+    best = 0
+    for slot in carried pairs whose record[+0x0d] != 0:
+        record = Item.dat[id at unit +0x0b + slot * 2]
+        side = folded_side(phase, record[+0x11])
+        # the first list is discarded; it only paints the stand tiles
+        if record[+0x10] < 0x10:
+            targets(unit.tile, record[+0x10], 0, 0)
+        else:
+            targets(unit.tile, 1, 1, 0)
+        for stand in tiles whose cost is not 0xff:
+            if record[+0x10] < 0x10:
+                listed = targets(stand, record[+0x12], 0, side)
+            else:
+                listed = line(stand, unit.tile, record[+0x10] - 0x10, side)
+                # that body was not decompiled
+            if listed is empty:
+                continue
+            score = item_band(record, listed)
+            if score > best:
+                best = (score, slot, stand)
+    return best
+
+def choose_action(unit, phase):                        # FUN_00012c10
+    swing = score_swing(unit, phase)                   # DAT_00063f78
+    spell = score_spell(unit, phase)                   # DAT_00063f88
+    item = score_item(unit, phase)                     # DAT_00063f8c
+    if swing.band < 6 and spell.score < 6 and item.score < 6:
+        return no action
+    prefer_swing = bit 0x40 of unit[+0x34]
+    defender = the unit id score_swing stored           # DAT_00063f74, unchanged when no swing candidate
+    if swing.band > spell.score and swing.band > item.score:
+        play the swing                                  # FUN_00012e50
+    else if swing.band == spell.score and item.score < spell.score:
+        if spell.id < 0x12:
+            if MagicDat[spell.id].first_short < unit[+0x48] - defender[+0x4a]:
+                play the swing
+            else:
+                cast                                    # FUN_00013c90
+        else if prefer_swing:
+            play the swing
+        else:
+            cast
+    else if swing.band == item.score and spell.score < item.score:
+        if prefer_swing: play the swing
+        else: use the item                              # FUN_00027150
+    else if swing.band < spell.score and item.score <= spell.score:
+        cast
+    else if swing.band < item.score and spell.score < item.score:
+        use the item
+    # a three-way tie at 6 or above calls none of these
+    return acted
+```
 
 `FUN_00013c90` casts when the spell band is at least 6. It lists targets from the stored stand tile with range byte `+4` of the spell row, moves the cursor there, waits 200, and plays the clips. `DAT_00060010 == 1` calls `FUN_0001a4a0`, which subtracts the spell row's byte `+5` through `FUN_00028590`. Any other value calls `FUN_000288c0`, which subtracts that byte at `0x28942`. It then runs the death spin and the death-record walk with `DAT_00063f74`, clears the experience term, and returns 1.
 

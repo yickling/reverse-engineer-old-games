@@ -45,4 +45,4 @@ Create a file when that subject is long enough to continue on its own. Name the 
 - **Inferred.** A role guessed from how a field is written and read, such as calling a word "health" because attacks subtract from it. Say that it is an inference.
 - **Unknown.** A file or a function that was seen and not read. List it in the index. Do not fill the gap.
 
-Notes describe structure. They do not paste assets, scenario text, or other copyrighted content.
+`__stash/` is the local copy of programs under study. Read it. Do not create or change files there. Notes go in the game folder. Every other produced file goes in `docs/<game>/`. Notes describe structure. They do not paste scenario text or other copyrighted writing.

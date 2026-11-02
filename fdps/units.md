@@ -13,8 +13,8 @@ Bytes filled by the spawners `FUN_00023280` and `FUN_00022bb0`, and read by the 
 | `+3` | Facing, 0..3. See [map sprites](pictures.md#map-sprites). |
 | `+4` | Sub-tile progress. The drawer multiplies it by a per-facing pixel step. |
 | `+5` | Flags. Bit 0: map drawer skips the unit. Bit `0x80`: map sprite locks to the middle walk frame, and the system menu treats the unit as eligible when bit 0 is clear. `FUN_000119b0` ORs in bit `0x80` when an action is committed. A unit whose pool at `+0x40` is 0 is stored as `1` by the destruction sequence, so bit 0 is set and bit `0x80` is cleared. |
-| `+6` | Side. `0` selects the `"E"` spell prefix and one mirror sign; any other value selects `"M"`. Spawn writes `2`. The cursor commands side `2`. The two phase walks use side `0` and side `1`. |
-| `+7` | Character id. Indexes `STAND`, `ACT`, `MAGIC`, and the character inside `ICON.CEL`. `0x80` means "no sprite" on the map. |
+| `+6` | Side. `0` selects the `"E"` spell prefix and one mirror sign; any other value selects `"M"`. A roster copy stores `2`. A scenario spawn copies byte 0 of its 26-byte record, which is 0, 1, or 2. The cursor commands side `2`. The two phase walks use side `0` and side `1`. |
+| `+7` | Character id. Indexes `STAND`, `ACT`, `MAGIC`, the twelve `ICON.CEL` frames, and the `FACE.CEL` portrait of the same number. Which of those files are present, and which ids share one sheet, is in [Pictures](pictures.md). `0x80` means "no sprite" on the map. |
 | `+8` | Compared with `7` and `3` while a destination is being chosen. Not followed. |
 | `+9` | `FUN_00034310` adds this byte to `+0x44`. That function is called from the village action at `0x35810`. The rest of the body was not read. |
 | `+0x1a` | First byte of the learned-id bits. `FUN_00028280(unit, id)` sets bit `id % 8` of byte `+0x1a + id / 8`. The masks are `01 02 04 08 10 20 40 80` at `0x27630`. |
@@ -78,9 +78,9 @@ The first byte of the item record is the type. `FUN_00026040` keeps one equipped
 | `GetMgTab.dat` | `FUN_00018bf0(index)` | `0x0c` | 60 |
 | `RankUp.dat` | `FUN_00018c20(index)` | `0x0c` | 9 |
 
-`ProMap.dat` has 41 rows because the callers pass `class + 1`. Class 0 reads the second row, and class 39 reads the last. `Item.dat` byte `+0x16` is 0 in all 251 rows. The unsigned short at `+0x13` is the amount a shop adds to or subtracts from the dword at `0x643b8`. Across the file that short runs from 0 to 45000, and 34 rows are 0. Shops are in [Scenario files](scenario.md).
+`ProMap.dat` has 41 rows because the callers pass `class + 1`. Class 0 reads the second row, and class 39 reads the last. `MagicDat.dat` byte `+6` is the side `FUN_00013420` passes to the target list, and `Item.dat` byte `+0x11` is the same byte for `FUN_00013040`. Both folds are in [Combat](combat.md). `Item.dat` byte `+0x16` is 0 in all 251 rows. The unsigned short at `+0x13` is the amount a shop adds to or subtracts from the dword at `0x643b8`. Across the file that short runs from 0 to 45000, and 34 rows are 0. Shops are in [Scenario files](scenario.md).
 
-Spawn in `FUN_00023280` fills the bases from these rows. The multiplier is byte `+4` of the 26-byte record at `DAT_0006013c + index * 0x1a + 0x83`. For a character id below `0x3c` the rows are `Friaprda.dat` and `FriLevUp.dat`. Otherwise the row is `EnemyDat.dat` of `id - 0x3c`. The arithmetic below is that function.
+Spawn in `FUN_00023280` fills the bases from these rows and takes its tile from the `COD` record of the same index, in [Scenario files](scenario.md). The 26-byte record is at `DAT_0006013c + index * 0x1a + 0x83`. Byte 0 is the side stored at unit `+6`. Byte `+1` is the character id stored at `+7` and `+8`. Byte `+4` is the multiplier. Byte `+0x15` is the value `FUN_00023800` compares before it will spawn the record. For a character id below `0x3c` the rows are `Friaprda.dat` and `FriLevUp.dat`. Otherwise the row is `EnemyDat.dat` of `id - 0x3c`. The arithmetic below is that function.
 
 ```
 scale = roster[+4]
@@ -107,6 +107,8 @@ else:
 +0x40 = +0x42 = hp
 +0x44 = +0x46 = mp
 ```
+
+`FUN_00023b90(characterId)` appends one roster record at `DAT_00064108 + DAT_00064114 * 0x50` and then adds 1 to the count. It is the only append. Side is 2, and `+7` and `+8` are the argument. The rows are the same `Friaprda.dat` and `FriLevUp.dat` rows as a spawn whose character id is below `0x3c`, and `+0x21` is byte `+2` of the `Friaprda` row, the scale those formulas multiply by. The first two item pairs are flagged `0x40` with the ids at `Friaprda` `+0xc` and `+0xd`. Each of the next four is flagged `0x80` when the byte at `+0xe` plus the index is `0xff`, and flagged 0 otherwise. It then calls `FUN_00023a90` with the index it just filled. That body was not read. Who calls the append is in [Session](session.md). How far the copy into a battle goes is in [Scenario files](scenario.md).
 
 `FriLevUp.dat` byte 10 selects the `GetMgTab.dat` row used when a level is gained, unless that byte is `0xff`. The five pairs at bytes 0, 2, 4, 6, and 8 are the level-up rolls in [Combat](combat.md). Spawn uses only the first byte of each pair. Bytes `+2` and `+8` through `+0x11` of `Friaprda.dat`, and bytes `+8` and `+9` of `EnemyDat.dat`, were not read.
 

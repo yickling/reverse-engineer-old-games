@@ -14,4 +14,4 @@ Before finishing any study of a game:
 3. Put any address, file, or field you saw and did not read into that game's `README.md`, under the same heading as the topic.
 4. The chat may summarize what was written. Do not end with the result only in the chat.
 
-Do not name `__stash/` in the notes. Do not paste assets, scenario text, or other copyrighted content.
+`__stash/` is the local copy of programs under study. Read it. Do not create or change files there, and do not name it in the notes. Notes go in the game folder. Every other file goes in `docs/<game>/`. Do not paste scenario text or other copyrighted writing into the notes.

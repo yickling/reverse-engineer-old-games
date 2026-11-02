@@ -12,8 +12,9 @@ Write every finding into those notes before the session ends. A reply in the cha
 
 - One folder per game. The entry note is `<game>/README.md`.
 - The root [README.md](README.md) lists those notes. Add a row when a game folder gains one.
-- `__stash/` holds local programs waiting to be studied. Leave it out of the notes, out of commits, and out of the license. Do not name that directory in a note.
-- This repository does not ship games. Keep binaries, archives, art, audio, and other assets on the machine doing the study. Notes describe structure. They do not paste assets, scenario text, or other copyrighted content.
+- `__stash/` is the local copy of programs under study. Read it. Do not create or change files there. Leave it out of commits and out of the license. Do not name that directory in a note.
+- Notes go in `<game>/`. Every other file this repository produces goes in `docs/<game>/`.
+- Notes describe structure. They do not paste scenario text or other copyrighted writing. Picture sheets kept for identification go in `docs/<game>/`.
 - Original notes are [CC BY 4.0](LICENSE). That license does not cover any game.
 
 ## How to study

@@ -14,7 +14,7 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 - A character cannot yet be built from the tables alone. Unit bytes outside the written table, the unread columns of `Friaprda.dat`, `EnemyDat.dat`, `MagicDat.dat`, and `ProMap.dat`, and the rank-up read are still open.
 - A spell's mask is written. The body that plays the spell, the frames after the earthquake clip opens, and `MagicDat` bytes `+0` and `+1` are unread.
 - The map window, the command icons, the message box, the expander modes, and icon-clip playback are in [Pictures](pictures.md). The two fight remap blocks, the `FIGBAR` blit, and where the remaining windows sit are unread.
-- Text placement and the save record stop early. The glyph rectangle, the level-up number, and the save bytes after the four slot flags are unread.
+- Text placement and the save record stop early. The destinations of the remaining text calls, the level-up number, and the save bytes after the four slot flags are unread.
 
 ## Session
 
@@ -80,13 +80,16 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 | --- | --- |
 | `0x3edde` / `0x3f1f8` / `0x3eee2` | Called while a fight sample is started. Not decompiled. |
 
-- `FACE.CEL` picture `n` is drawn by `FUN_000177c0` at 125×100. The call at `0x207d8` is inside `FUN_00020580` and passes that function's argument. The calls at `0x16790` and `0x20c1b` were not read. `FUN_000178e0` is what the text walker compares with `0x7f`. Its body was not read. `FUN_00042a68` is the call whose result, modulo 200, starts the mode-8 hop. Its body was not read.
+- `FACE.CEL` picture `n` is drawn by `FUN_000177c0` at 125×100. The call at `0x207d8` is inside `FUN_00020580` and passes that function's argument. The call at `0x20c1b` is the portrait finish in [Text](text.md). The call at `0x16790` was not read. `FUN_00042a68` is the call whose result, modulo 200, starts the mode-8 hop. Its body was not read.
 - What the blocks at `DAT_000653f0` and `DAT_000643f0` hold. The fight replaces them from `FMer1.tmp` and `FMer2.tmp`, and restores `Mer1.tmp` and `Mer2.tmp` afterward.
 - The blit of `FIGBAR.CEL`. What `BaseWav.vfs` and `BaseAni.vfs` play, and what `ADWin.cel` is drawn as, were not read. `NUMBER.CEL` digits step by 6 inside `FUN_00017520`; the origin at each of its callers was not reduced. `SELBAR.CEL` picture 0 on the item list is in [Pictures](pictures.md). The other selection-bar blits, at `0x2773a`, `0x326b7`, `0x32ea4`, `0x33680`, and `0x35279`, were not reduced. The call at `0x15b31` passes 2 to `0x3d0e0` just before the viewport copy. That callee was not read.
 
 ## Text
 
-- The glyph destination rectangle inside `FUN_00017c90` (`0x17c90`). The 16×16 cell and the 32-byte stride are stored by the font loader. `FUN_00017520` draws the amount added on a level, with id `0xa4`. The 6×8 digit blit is in [Pictures](pictures.md). How the amount is split into digits was not read.
+- The destination, pitch, and palette indexes at the `FUN_0001ff30` calls other than icon opcode 3, the page pen, and the loss window. Those three are in [Text](text.md).
+- The stores of `DAT_00064030`, `DAT_00064034`, and `DAT_00064038`. The string walk inserts those two string ids and prints that number. The stores were not opened.
+- `FUN_00018340`, which supplies the three numbers on the loss window. `DAT_000643b8` is the eight-digit number drawn at `(87, 121)` there. What either one counts was not read.
+- `FUN_00017520` draws the amount added on a level, with id `0xa4`. The 6×8 digit blit is in [Pictures](pictures.md). How the amount is split into digits was not read.
 
 ## Save
 

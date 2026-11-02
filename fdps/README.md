@@ -30,7 +30,7 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 | [Units](units.md) | The 80-byte unit record. |
 | [Combat](combat.md) | The map-to-fight handoff, the damage formula, and what a destroyed unit does. |
 | [Pictures](pictures.md) | The picture decoder, `SAF` clips, battle playback, map sprites, and the frame extractor. |
-| [Text](text.md) | Glyph-index strings and the font cell. |
+| [Text](text.md) | Glyph-index strings, the font cell, and where a string is drawn. |
 | [Archives](archives.md) | The VFS directory. |
 | [Save](save.md) | `FDE.SAV`, including the four load slots. |
 | [Gaps](gaps.md) | What is still missing for a full account of the design and the implementation. |

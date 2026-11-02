@@ -54,7 +54,7 @@ Bytes 3 through `0x32` are sixteen rows of three, read by `FUN_0002de50`. For ea
 | --- | --- | --- |
 | 1 | 4, plus 2 per unit | `FUN_00021f30`. Steps the named units one tile along a facing, redrawing between frames. |
 | 2 | 3, plus 2 per unit | `FUN_000220d0`. Stores a facing on each named unit, then redraws. |
-| 3 | 2 | Shows the text id in the next byte. |
+| 3 | 2 | Shows the text id in the next byte, from the scenario text block. The walk and the pen are in [Text](text.md). |
 | 4 | 3 | Spawns a group. The next byte is the group, or `0xff` to use the value opcode 99 stored. The byte after that is the third argument of `FUN_00023800`. |
 | 6 | 2 | Plays `Icon%04d.saf` from `IconAni.vfs`. The number is the next byte. Every frame is shown for its hold, in [Pictures](pictures.md). |
 | 7 | 2 | `FUN_00030960` on the next byte, or on `-1` when that byte is `0xff`. |

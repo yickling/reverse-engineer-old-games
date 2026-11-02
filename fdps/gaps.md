@@ -13,7 +13,7 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 - A CPU turn's walk and its choice of target are written. The call that runs before the walk, the per-script hooks, the phase-change call, and the per-scenario after-action pointers are unread.
 - A character cannot yet be built from the tables alone. Unit bytes outside the written table, the unread columns of `Friaprda.dat`, `EnemyDat.dat`, `MagicDat.dat`, and `ProMap.dat`, and the rank-up read are still open.
 - A spell's mask is written. The body that plays the spell, the frames after the earthquake clip opens, and `MagicDat` bytes `+0` and `+1` are unread.
-- The screen's windows and the map sprite are named in [Pictures](pictures.md). Expander modes 2, 4–8, and 12 still have no role. Icon-clip playback, the two fight remap blocks, the `FIGBAR` blit, and the reader of `CEL` byte 8 are unread.
+- The map window, the command icons, and the message box are placed in [Pictures](pictures.md). Expander modes 2, 4–8, and 12 still have no role. Icon-clip playback, the two fight remap blocks, the `FIGBAR` blit, and where the remaining windows sit are unread.
 - Text placement and the save record stop early. The glyph rectangle, the level-up number, and the save bytes after the four slot flags are unread.
 
 ## Session
@@ -41,7 +41,9 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 | `0x13e10` | Returns the tile script 5 walks to. Not decompiled. |
 | `0x10760` / `0x26dd0` | Called for character ids `0x3c`..`0x3e` on script 11, and for the `Posion.saf` play on script 7. Not decompiled. |
 | `0x2ddc0` | Called with the unit's tile at the end of every script except 8. Not decompiled. |
-| `0x16120` / `0x161f0` / `0x161a0` | Draw, read, and close the menu inside slot 2. Not decompiled. |
+| `0x16120` | Draws the command diamond. The steps are in [Pictures](pictures.md). The body was disassembled, not decompiled. |
+| `0x161f0` / `0x161a0` | Read and close the menu inside slot 2. Not decompiled. |
+| `0x15cf0` | Calls the menu at `0x25280`. The body was not decompiled. The condition under which `0x14aa0` calls `0x14e90` was not read. |
 | `0x30a30` | Called with the scenario index and 0 or 1 at the phase change. Not decompiled. |
 
 ## Map and scenario files
@@ -83,11 +85,11 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 
 - `ICONANI.VFS` playback inside `FUN_00022290`, which opcode 6 calls. The opcode switch is in [Scenario files](scenario.md). `FACE.CEL` picture `n` is drawn by `FUN_000177c0` at 125×100. The call at `0x207d8` is inside `FUN_00020580` and passes that function's argument. The calls at `0x16790` and `0x20c1b` were not read.
 - What the blocks at `DAT_000653f0` and `DAT_000643f0` hold. The fight replaces them from `FMer1.tmp` and `FMer2.tmp`, and restores `Mer1.tmp` and `Mer2.tmp` afterward.
-- The blit of `FIGBAR.CEL`. The reader that applies `CEL` byte 8 was not reopened. What `BaseWav.vfs` and `BaseAni.vfs` play, and what `ADWin.cel` is drawn as, were not read. Where `Command.cel`, `Message.cel`, `Number.cel`, and `SelBar.cel` sit on the 320×200 screen was not read. The readers of `0x643c4` start at `0x15a62`.
+- The blit of `FIGBAR.CEL`. What `BaseWav.vfs` and `BaseAni.vfs` play, and what `ADWin.cel` is drawn as, were not read. `NUMBER.CEL` digits step by 6 inside `FUN_00017520`; the origin at each of its callers was not reduced. `SELBAR.CEL` picture 0 on the item list is in [Pictures](pictures.md). The other selection-bar blits, at `0x2773a`, `0x326b7`, `0x32ea4`, `0x33680`, and `0x35279`, were not reduced. The call at `0x15b31` passes 2 to `0x3d0e0` just before the viewport copy. That callee was not read.
 
 ## Text
 
-- The glyph destination rectangle inside `FUN_00017c90` (`0x17c90`). The 16×16 cell and the 32-byte stride are stored by the font loader. `FUN_00017520` draws the amount added on a level, with id `0xa4`. Its body was not read.
+- The glyph destination rectangle inside `FUN_00017c90` (`0x17c90`). The 16×16 cell and the 32-byte stride are stored by the font loader. `FUN_00017520` draws the amount added on a level, with id `0xa4`. The 6×8 digit blit is in [Pictures](pictures.md). How the amount is split into digits was not read.
 
 ## Save
 

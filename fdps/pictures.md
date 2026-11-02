@@ -202,7 +202,7 @@ Those phase files live in `MISC.VFS`. Counts: `MB`/`ME`/`ML` 25 each, `MS` 11, `
 
 ## CEL pictures
 
-Map sprites, portraits, and the interface windows are `CEL` files, not `SAF`. The header begins `CEL \x01`. On every file checked, byte 6 is 0 and byte 8 is 0 or 1. The bitmap width is byte 7, plus 256 when byte 8 is 1. The bitmap height is byte 9. When byte 8 is 0 this is the same pair of big-endian shorts [Map](map.md) calls width and height, so a section tile stays 24×24. When byte 8 is 1 those shorts read high: `VILLAGE.CEL` says 64×456 and the picture that mode 0 consumes is 320×200. The reader that applies the flag was not reopened. The size above is the one at which mode 0 consumes the picture.
+Map sprites, portraits, and the interface windows are `CEL` files, not `SAF`. The header begins `CEL \x01`. On every file checked, byte 6 is 0 and byte 8 is 0 or 1. The bitmap width is byte 7, plus 256 when byte 8 is 1. The bitmap height is byte 9. When byte 8 is 0 this is the same pair of big-endian shorts [Map](map.md) calls width and height, so a section tile stays 24×24. When byte 8 is 1 those shorts read high: `VILLAGE.CEL` says 64×456 and the picture that mode 0 consumes is 320×200. `FUN_0002d930(cel, index, dest, pitch, x, y, remap, mode)` is the blit that reads the size. It expands the picture at `dword[cel + index * 4 + 0x0f]` through `FUN_0005664b`, with the width taken from the little-endian short at `cel + 7` and the height from the little-endian short at `cel + 9`. That width is byte 7 plus 256 times byte 8. The destination is `dest + x + y * pitch`. The size in the tables below is the one at which mode 0 consumes the picture.
 
 The directory offset is the big-endian short at `+4`, and it is `0x0f` on every file checked. The dwords there are little-endian picture offsets. A picture is the bytes from one dword to the next. The uint16 at `+10` equals that picture count for every `.cel` in `MISC.VFS` and for `FACE.CEL`. It does not for `ICON.CEL`: the field is 128, and the ordered directory holds 1920 pictures.
 
@@ -288,3 +288,33 @@ The pass before the sprite paints `SHADOW.CEL` from `DAT_000643e0`. The picture 
 The other windows are opened later. `FUN_00016830` opens `Status.cel`. `FUN_00017c90` names `WinFail.Cel` at `0x17d30`. `FUN_000241b0` opens `Save.cel`. `FUN_00024460` opens `Load.cel`. `FUN_00024620` opens `LoadKon.cel`. `FUN_0002a280` opens `StSel.cel` and `StBoard.cel`. `FUN_00030f80` opens `ShopWin.Cel` and `Village.cel`. `FUN_00031930` opens `CanBan.cel`. `FUN_000355d0` opens `Item.cel`. `FUN_00035810` opens `Church.cel`. `FUN_00035a30` opens `BarShop.cel`. `FUN_00035d40` opens `Weapon.cel`. `FUN_00035f80` opens `Secret.cel`. `FUN_00039be0` opens `Relive.cel`. `FIGBAR.CEL` is opened at `0x18de6` and `0x1a5cb`, inside the fight players.
 
 Byte 8 is 1, and the bitmap is 320×200, for `VILLAGE.CEL`, `STATUS.CEL`, `STBOARD.CEL`, `LOAD.CEL`, `SAVE.CEL`, `BARSHOP.CEL`, `CHURCH.CEL`, `ITEM.CEL`, `WEAPON.CEL`, `SECRET.CEL`, and `RELIVE.CEL`. Each is one picture. `STBOARD.CEL` is colored from `StBoard.pal`, and `FIGBAR.CEL` from `Fight.pal`, as under [CEL pictures](#cel-pictures). The other files in this list are colored from `Fde.pal`.
+
+## The map window
+
+`FUN_0002f080(src, srcPitch, dest, destPitch, width, height)` copies `height` rows of `width` bytes. A source pitch of 0 repeats the same source row. Any other source pitch advances both pointers by their pitches. After the command icons, and again on the message path, the call is `FUN_0002f080(buffer + 0x21d8, 0x168, 0xa0504, 0x140, 0x138, 0xc0)`. `0x21d8` is column 24 of row 24 in the 360-wide compose buffer. `0xa0504` is column 4 of row 4 on the 320-wide surface at `0xa0000`. The copied rectangle is 312×192, so four pixels remain on each side of the 320×200 picture. A point at buffer `(x, y)` lands on that surface at `(x - 20, y - 20)`. The phase transition's 320×200 copy of the same origin is in [Map](map.md).
+
+`FUN_00015850` draws the four command pictures around the cursor, into that buffer, then performs this copy. It calls `FUN_0002bcf0` first, so the icons sit on a fresh map frame. The step argument is multiplied by the float `0.06544979` stored by the `mov` at `0x1585a`. The call at `0x15887` reaches `fcos` at `0x429aa`, and the call at `0x158b1` reaches `fsin` at `0x429b4`. Each result is multiplied by the step again and rounded by `frndint` in the callee at `0x3d25c`. With `cos` and `sin` those rounded offsets, and with the cursor minus the camera (`DAT_00069cd4 − DAT_00069ce4`, `DAT_00069ccc − DAT_00069ce0`), the four corners are:
+
+| Corner | Position |
+| --- | --- |
+| 0 | `(cx − cos, cy − sin)` |
+| 1 | `(cx − sin, cy + cos)` |
+| 2 | `(cx + sin, cy − cos)` |
+| 3 | `(cx + cos, cy + sin)` |
+
+A picture is drawn when its x is from −24 through 334 and its y is from −24 through 214. Both pictures come from `COMMAND.CEL` at `DAT_000643c4`, 25×22, expander mode 0. The top-left in the compose buffer is the corner plus `(24, 24)`, which is the corner plus `(4, 4)` on the 320-wide surface. The frame index is `0x1a` when the highlight argument equals the corner, and `0x1b` otherwise, plus the corner's entry in the second table. The glyph index is the first table's entry plus the second table's entry times `0x24`.
+
+The body at `0x16120` was disassembled. It calls `FUN_00015850` with steps 1, 5, 9, 13, 17, `0x18`, and `0x19`, and each call recomposes the map and copies the window. Step `0x18` rounds to a right angle, so the offsets are 0 and 24 and the four pictures sit up, left, right, and down from the cursor. The second table copied by each menu below is four zeros, so the frame is picture 26 or 27 and the glyph is the first table as listed, in corner order:
+
+| Menu | Glyphs (up, left, right, down) | Where it is opened |
+| --- | --- | --- |
+| `0x14aa0` | 22, 11, 12, 19 | No unit under the cursor, in [Turns](turns.md). The four dwords are at `0x146d0`. |
+| `0x14e90` | 23, 9, 10, 8 | Called from `0x14aa0` at `0x14b64`. The dwords are at `0x146f0`. |
+| `0x15460` | 3, 2, 1, 0 | The player's unit, in [Turns](turns.md). The dwords are at `0x14710`. |
+| `0x25280` | 7, 4, 6, 5 | Called from `0x15cf0` at `0x16056`. The dwords are at `0x24d20`. |
+
+When `FUN_0002d830` does not return −1, that unit is redrawn with `FUN_0002cb30` before the copy.
+
+At `0x20002`, inside `0x1ff30`, `FUN_0002d930` draws picture 0 of `MESSAGE.CEL` at buffer `(29, 140)`, pitch `0x168`, mode 0. The file is 302×73, so on the 320-wide surface the box is `(9, 120)`. The same function then expands a 125×100 picture from `DAT_00060120` at buffer `+ 0x9ad0`, which is buffer `(32, 110)` and surface `(12, 90)`, mode 0, and copies the window with the call above.
+
+`FUN_00017520` expands one `NUMBER.CEL` digit at 6×8, mode 0, and the next digit starts 6 pixels to the right. The origin and the pitch are the caller's. The item-list drawer at `0x24e70` draws `SELBAR.CEL` picture 0 at `0x24eb3`: x is 0, y is `8 + row * 17`, mode 0, and the pitch and destination are that function's arguments. The picture is 151×17, so the step is the picture height.

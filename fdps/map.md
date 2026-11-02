@@ -49,7 +49,7 @@ The blend record for modes 9 and 10 is four dwords: `DAT_000653f0`, the selector
 
 `tick` is `DAT_00069d64`. `blink` is `DAT_00060160`. Across the `ATTR` files, the low 3 bits are only ever 0 or 2, so the two-frame blink is unused on disk and the four-step `* 0x60` animation is the one that occurs. Mode 0 is the plain expander. Modes 9 and 10 are `FUN_0005738b` and `FUN_00057503`.
 
-The cursor pictures are in [Combat](combat.md). The visible copy out of the map buffer is 320×200 from buffer+`0x21d8` in the phase transition, and the combat copy is buffer+`0x2298` at pitch `0x170`.
+The cursor pictures are in [Combat](combat.md). The visible copy out of the map buffer is 320×200 from buffer+`0x21d8` in the phase transition, and the combat copy is buffer+`0x2298` at pitch `0x170`. The command icons and the message box are drawn into the same buffer, and the copy that follows them is 312×192 from that origin onto `(4, 4)` of the 320-wide surface, in [Pictures](pictures.md).
 
 `FUN_0002b790(x, y)` is the tile query. It reads the MPL short into `DAT_00069d04`, then the 4-byte `ATR` record for that picture:
 

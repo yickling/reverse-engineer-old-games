@@ -55,7 +55,7 @@ The cursor pictures are in [Combat](combat.md). The visible copy out of the map 
 
 | Record byte | Stored at | Use |
 | --- | --- | --- |
-| 0 | `DAT_00069d08` | The animation byte the drawer reads. |
+| 0 | `DAT_00069d08` | The animation byte the drawer reads. Bits `0x60` are the tile-search test in [Turns](turns.md). |
 | 1 | `DAT_00069d0a` | Passed to the expander when bit `0x80` of byte 0 is set. |
 | 2 | `DAT_00069d09` | Terrain kind. Movement cost and the attack/defense percents index by this. |
 | 3 | `DAT_00069d0b` | Backdrop. Combat loads `Back%02d.saf` from it, after decrementing it when it is nonzero. |
@@ -76,4 +76,4 @@ Movement is a flood fill in `FUN_00010de0`. The occupancy grid is `width * heigh
 | 5 | 0 | 0 |
 | 6 | 0, because it reads the first defense dword | the dword at `0x60070`, not copied here |
 
-`FUN_00012550` returning nonzero skips that percent for that fighter. What it tests was not read. How the percent enters the damage formula is in [Combat](combat.md).
+`FUN_00012550` returning nonzero skips that percent for that fighter. The classes it accepts are in [Combat](combat.md), with the way the percent enters the damage formula.

@@ -8,13 +8,36 @@ This is the list of what is still missing for a full account of the design and t
 
 The battle grid, the opening placement, the unit record that combat reads, the damage formula, the spell mask, and which picture a character id uses are written in the topic files. The holes below are what is still in the way of rebuilding a scenario, a turn, a character, a spell, and the screen from those notes.
 
-- A scenario's files do not yet make a playable battle. The roster prefix and group 0 are placed. Most of the 26-byte actor record is unread, as are map bytes `0x33`–`0x52`, the unread `COD` fields, the `DTL` byte, the event-row handlers, 28 of the 30 opener bodies, the ending table, and the after-action table past the first scenario.
-- Town is only partly described. The forced joins are known. The village actions, the path that skips the village, the item list, and two portrait callers are unread.
-- A CPU turn's walk and its choice of target are written. The call that runs before the walk, the per-script hooks, the phase-change call, and the per-scenario after-action pointers are unread.
+- A scenario's files do not yet make a playable battle. The roster prefix and group 0 are placed. Most of the 26-byte actor record is unread, as are the unread `COD` fields, the event-row handlers, 28 of the 30 opener bodies, the ending table, and the after-action table past the first scenario. The `DTL` byte and map bytes `0x33`–`0x82` are in [Turns](turns.md).
+- Town is only partly described. The forced joins are known. The village actions, the path that skips the village, the item list, and the portrait call at `0x16790` are unread.
+- A CPU turn's walk, its choice of target, the camera call before the walk, the script hooks, and the phase music are in [Turns](turns.md). The per-scenario after-action pointers past the first scenario are unread.
 - A character cannot yet be built from the tables alone. Unit bytes outside the written table, the unread columns of `Friaprda.dat`, `EnemyDat.dat`, `MagicDat.dat`, and `ProMap.dat`, and the rank-up read are still open.
 - A spell's mask is written. The body that plays the spell, the frames after the earthquake clip opens, and `MagicDat` bytes `+0` and `+1` are unread.
 - The map window, the command icons, the message box, the expander modes, and icon-clip playback are in [Pictures](pictures.md). The two fight remap blocks, the `FIGBAR` blit, and where the remaining windows sit are unread.
-- Text placement and the save record stop early. The destinations of the remaining text calls, the level-up number, and the save bytes after the four slot flags are unread.
+- Text placement stops early. The calls written in [Text](text.md) and [Turns](turns.md) have a destination. The other calls, and the level-up number, are unread. The save writer lists the bytes after the four slot flags in [Save](save.md). The load of those bytes is still unread.
+
+## What a modernised remake still has to decipher
+
+A battle can be assembled from the notes that exist: the grid, the roster prefix and group 0, the unit fields combat reads, the damage formula, the spell mask, character id to pictures, and the CPU walk and its choice of target. The strings are read. The map window, command icons, message box, and fight frames can be drawn. The holes below are what still stops a playable campaign. Window coordinates, the original font, digit origins, selection bars, `FIGBAR`, the fight remap blocks, and the sound-driver startup can be replaced by a new presentation.
+
+A scenario is not yet a script that can be replayed.
+
+- Twenty-eight of the thirty opener bodies. The append ids are known. What each opener does besides opening the map and appending that id is not.
+- The thirty ending bodies at `0x60304`, and the after-action pointers at `0x6028c` past the first scenario. Outcome 2 is the victory path into the village, and then into the next opener.
+- Icon opcodes 5, 9, 14, 15, and 97, and the 66 `.dat` members beside the icon clips. The other icon opcodes are in [Scenario files](scenario.md).
+- The event-row handlers called from `0x601c4`. The sixteen event rows, and the pairs and triples after them, are in [Scenario files](scenario.md).
+- The 26-byte actor record past side, character id, the scale byte, and the group byte. `FUN_00023a90`, called at the end of every roster append.
+
+A turn's scripts, the search on the fourth command corner, and the no-unit menu are in [Turns](turns.md).
+
+- The item-list drawers. Corner 2 of the no-unit menu, and corner 2 of the diamond that writes the save, are still unread.
+
+A character and a spell are not yet complete tables.
+
+- The unread columns of `Friaprda.dat`, `EnemyDat.dat`, `MagicDat.dat` bytes `+0` and `+1`, `ProMap.dat` past the move lookup and the crit byte, and the `RankUp.dat` read.
+- The unit bytes outside the table in [Units](units.md), and item types `0x16` through `0x27`.
+- The spell player `0x1a4a0` past its pool cost, and the frames after an earthquake clip opens.
+- The five village-menu actions and the skip-village path. Shop prices and the forced joins are known. The save writer is in [Save](save.md). The load still stops at the four flag bytes.
 
 ## Session
 
@@ -32,27 +55,21 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 | Address | What it is |
 | --- | --- |
 | `0x6028c` | After each action, one pointer per scenario. `0x3a120` was disassembled; the rest were not. `FUN_00028280` is also called at `0x3a190`. |
-| `0x184e0` | Called after the menu's rest slot. At `0x186d8` it opens the item list with the second argument 0. The rest of the body was not decompiled. |
-| `0x33d70` / `0x33f80` | Also open that item list, both with the second argument 0. Not decompiled. |
+| `0x33d70` / `0x33f80` / `0x34190` | `0x33d70` and `0x33f80` open the item list, both with the second argument 0. `0x34190` stores `DAT_00064030`. None of the three was decompiled. |
 | `0x24e70` | Draws the rows of the item list. Not decompiled. |
-| `0x2d7e0` | Called with the unit before `FUN_000119e0` plays a CPU walk. Not decompiled. |
-| `0x2dd20` | Called at the start of each unit in the first side-0 pass. Not decompiled. |
-| `0x2d9b0` | Looks up the unit id in byte `+0x35` for scripts 3 and 9. Not decompiled. |
-| `0x13e10` | Returns the tile script 5 walks to. Not decompiled. |
-| `0x10760` / `0x26dd0` | Called for character ids `0x3c`..`0x3e` on script 11, and for the `Posion.saf` play on script 7. Not decompiled. |
-| `0x2ddc0` | Called with the unit's tile at the end of every script except 8. Not decompiled. |
 | `0x16120` | Draws the command diamond. The steps are in [Pictures](pictures.md). The body was disassembled, not decompiled. |
-| `0x161f0` / `0x161a0` | Read and close the menu inside slot 2. Not decompiled. |
-| `0x15cf0` | Calls the menu at `0x25280`. The body was not decompiled. The condition under which `0x14aa0` calls `0x14e90` was not read. |
-| `0x30a30` | Called with the scenario index and 0 or 1 at the phase change. Not decompiled. |
+| `0x161f0` / `0x161a0` | Read and close the menu. The corners they return are in [Turns](turns.md). The bodies were not decompiled. |
+| `0x183c0` | Corner 2 of the no-unit menu. Not decompiled. |
+| `0x23df0` | Corner 2 of `FUN_00014e90`. Not decompiled. |
+| `0x17980` | Returns 0 to accept the confirm drawn before it. The keys were not read. |
+| `0x1071f`, `0x1570d`, `0x15740`, `0x157cc`, `0x2d1ff`, `0x2d308`, `0x2d416`, `0x2d540` | Other calls of `FUN_0002ddc0`. The third argument was not reduced. |
 
 ## Map and scenario files
 
-- `MAP##.DAT` bytes `0x33` through `0x52`. Bytes 3 through `0x32` are the sixteen event rows in [Scenario files](scenario.md). The handler bodies called from `0x601c4` were not read. The first pointer is `0x36920`.
+- The handler bodies called from `0x601c4`. The first pointer is `0x36920`. Bytes `0x33` through `0x82` of `MAP##.DAT` are the pairs and triples in [Scenario files](scenario.md).
 - The short at `+4` of a `COD` record, and header byte 4 (1 or 16). Placement reads the coordinate shorts and not these.
 - `FUN_00056523`, called at the end of the map load `FUN_00022720`. Body not read.
 - `0x36920` calls `FUN_00023800`. The argument it passes, and the rest of the body, were not read. Icon opcodes 5, 9, 14, and 15 call `FUN_00021e00`, `FUN_000221b0`, `FUN_000223e0`, and `FUN_00022450`. Opcode 97 calls `FUN_00023950`. Those five were not read. Opcode 6's player is in [Pictures](pictures.md). `FUN_00023a90` runs at the end of the roster append and was not read. The 66 `.dat` members beside the icon clips were not read.
-- What the `DTL` byte in `DAT_00069d06` changes. The readers are at `0x13e89`, `0x18527`, `0x2ddec`, and `0x2e727`.
 - Why `M630` has 288 `ATTR` records and 192 pictures, and why `ATTR151.DAT` has no section CEL. `M310.CEL` is 192 pictures and does not expand with mode 0.
 - `FUN_0002bfb0` and `FUN_0002cfd0`, called by the map compose `FUN_0002bcf0` around the range pictures. Bodies were not decompiled.
 
@@ -87,10 +104,10 @@ The battle grid, the opening placement, the unit record that combat reads, the d
 ## Text
 
 - The destination, pitch, and palette indexes at the `FUN_0001ff30` calls other than icon opcode 3, the page pen, and the loss window. Those three are in [Text](text.md).
-- The stores of `DAT_00064030`, `DAT_00064034`, and `DAT_00064038`. The string walk inserts those two string ids and prints that number. The stores were not opened.
-- `FUN_00018340`, which supplies the three numbers on the loss window. `DAT_000643b8` is the eight-digit number drawn at `(87, 121)` there. What either one counts was not read.
+- Stores of `DAT_00064030`, `DAT_00064034`, and `DAT_00064038` other than the ones already written. The chest stores are in [Turns](turns.md), the drop stores `DAT_00064030` in [Combat](combat.md), and `FUN_00034310` stores one of each in [Units](units.md). Further stores sit in `FUN_000338f0`, `FUN_00033d70`, `FUN_00033f80`, `FUN_00034190`, the rest of `FUN_00034310`, `FUN_0001d960` (`DAT_00064038`), `FUN_0001e340`, and `FUN_0001fa00`.
+- `FUN_00018340`, which supplies the three numbers on the loss window. `DAT_000643b8` is the eight-digit number drawn at `(87, 121)` there. The cursor search adds a short to it, and the save writes it at `0x30cd`. What `FUN_00018340` counts was not read.
 - `FUN_00017520` draws the amount added on a level, with id `0xa4`. The 6×8 digit blit is in [Pictures](pictures.md). How the amount is split into digits was not read.
 
 ## Save
 
-- The save-slot bytes after the four flag bytes that the load row reads.
+- `FUN_00024460` reads a slot at `0x312b + slot * 0xa28` through four flag bytes. The bytes after those four flags, on the load, were not read. The writer stores them as in [Save](save.md).

@@ -1,0 +1,64 @@
+# scenario 54  (FDETXT55.TXT)  13 strings
+# Read from the font bitmaps. A similar-looking character may be off by one stroke.
+
+## 0
+第九章
+
+## 1
+布蘭多與蓋亞
+
+## 2
+敵人全滅
+
+## 3
+蘭迪斯死亡
+
+## 4
+
+
+## 5
+
+
+## 6
+
+
+## 7
+
+
+## 8
+
+
+## 9
+[portrait:1]快！快！
+表演就要開始了！
+[portrait:4]人真能靠機器飛上天？
+唅唅唅～！
+我才不信呢！
+
+## 10
+[portrait:8]咳～！
+大冢可要睜大眼睛！
+看清楚啦！
+[page]
+這將會是人類第一次，
+成功地飛上天空，
+我布蘭多，
+[page]
+就是創造這紀錄的人，
+呵呵呵～！
+現在我要試飛了！
+
+## 11
+[portrait:4]咦？！哎呀？
+奇怪？
+這東西真的可以飛！
+
+## 12
+[portrait:1]哎呀～！
+[page]
+你們看那裡～！
+他掉下去了！
+[page]
+蘭迪斯，
+我們快追上去！
+[portrait:0]好！我們走！

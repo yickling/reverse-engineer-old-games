@@ -1,0 +1,59 @@
+# scenario 55  (FDETXT56.TXT)  14 strings
+# Read from the font bitmaps. A similar-looking character may be off by one stroke.
+
+## 0
+第九章
+
+## 1
+布蘭多與蓋亞
+
+## 2
+敵人全滅
+
+## 3
+蘭迪斯死亡
+
+## 4
+
+
+## 5
+
+
+## 6
+
+
+## 7
+
+
+## 8
+
+
+## 9
+[portrait:8]這裡是哪裡呀？
+有人在嗎～？
+
+## 10
+[portrait:8]咦？這個機器人是..
+呀！正好口袋裡，
+還有個飛行器電泄！
+[page]
+我來試試看吧！
+
+## 11
+[portrait:9]嗶..吱吱..
+[portrait:8]咦？真的動了？
+
+## 12
+[portrait:8]咦？
+你不要一直跟著我嘛！
+真是糟糕！
+[page]
+要是能出去就好了！
+[portrait:9]嗶..吱吱..咯咯
+
+## 13
+[portrait:9]嗶..吱吱..咯咯
+[portrait:8]你是聽我命令來做事？
+嘿～！真新鮮！
+走，我們出去吧！
+[portrait:9]嗶...

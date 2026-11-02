@@ -1,0 +1,43 @@
+# scenario 16  (FDETXT17.TXT)  12 strings
+# Read from the font bitmaps. A similar-looking character may be off by one stroke.
+
+## 0
+第十七章
+
+## 1
+人質之危機
+
+## 2
+敵人全滅
+
+## 3
+法蓮娜死亡
+
+## 4
+
+
+## 5
+
+
+## 6
+
+
+## 7
+
+
+## 8
+
+
+## 9
+[portrait:89]有人劼獄啊～！
+
+## 10
+[portrait:12]你們讓開～！
+
+## 11
+[portrait:12]亞雷斯！
+你去打開城門，
+號召義勇軍入宮！
+[page]
+我去找那個冒充我，
+可惡的混蛋算帳！

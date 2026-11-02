@@ -1,0 +1,44 @@
+# scenario 39  (FDETXT40.TXT)  11 strings
+# Read from the font bitmaps. A similar-looking character may be off by one stroke.
+
+## 0
+
+
+## 1
+
+
+## 2
+
+
+## 3
+
+
+## 4
+
+
+## 5
+
+
+## 6
+
+
+## 7
+
+
+## 8
+
+
+## 9
+[portrait:91]找到國王了！
+國王回來了！
+[portrait:14]是真的嗎？
+
+## 10
+[portrait:117]啊？！亞雷斯，
+真不好意思！
+只是去透透氣而已，
+[page]
+沒想到，
+引起這麼大的騷動。
+唅唅唅～
+[portrait:14]......

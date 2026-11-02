@@ -1,0 +1,57 @@
+# scenario 27  (FDETXT28.TXT)  11 strings
+# Read from the font bitmaps. A similar-looking character may be off by one stroke.
+
+## 0
+第廿八章
+
+## 1
+異界之封印
+
+## 2
+敵人全滅
+
+## 3
+蘭迪斯死亡
+
+## 4
+
+
+## 5
+
+
+## 6
+
+
+## 7
+
+
+## 8
+
+
+## 9
+[portrait:7]哎呀呀呀～！
+怎麼都是怪..怪物！
+好可怕！
+[portrait:1]這裡是異次元界！
+我們到不該來的地方，
+世沒有回頭的路了。
+[portrait:0]一定要打倒最終敵人！
+不要怕！
+我們一定會戰勝的。
+[page]
+只要戰勝了魔神，
+世界就可以重新恢復，
+原有柣序與和平了。
+[page]
+加油！各位！
+這是我們唯一機會了！
+
+## 10
+[portrait:7]耶～！
+我們贏了。
+[portrait:2]不！
+這只是個開始而已。
+後面考驗會更艱難！
+[portrait:0]不錯！
+我們要有心理準備。
+繼綪前進～！

@@ -1,0 +1,87 @@
+# scenario 64  (FDETXT65.TXT)  20 strings
+# Read from the font bitmaps. A similar-looking character may be off by one stroke.
+
+## 0
+第廿七章
+
+## 1
+魔導士的野望
+
+## 2
+魔導王死亡
+
+## 3
+全員死亡
+
+## 4
+
+
+## 5
+
+
+## 6
+
+
+## 7
+
+
+## 8
+
+
+## 9
+[portrait:81]可惡的小子！
+你竟敢壞了我們的事！
+你以為你跑得掉嗎？
+[portrait:0]你們這些強盜，
+到處為非怍歹，
+我早想將你除去了！
+[portrait:81]唅唅唅！是嗎？
+你確信你打得贏我們？
+大冢一起上！
+
+## 10
+[portrait:6]神呀！
+總算讓我趕上了！
+
+## 11
+[portrait:4]一個世別讓他們逃跑！
+
+## 12
+[portrait:3]唅唅唅！這種貨色！
+再來幾個，
+結果世是一樣！
+
+## 13
+[portrait:8]快呀！
+再不快點，
+敵人就要溜了！
+[portrait:9]嗶...
+
+## 14
+[portrait:5]有膽就來吃我一箭！
+嘻嘻！
+
+## 15
+[portrait:2]真是太危險了！
+凡事要考慮清楚！
+不要太衝動。
+
+## 16
+[portrait:7]嗨！大哥哥！
+你看看是誰來了～！
+
+## 17
+[portrait:0]....你們？！
+..法蓮娜？！
+[portrait:1]......
+
+## 18
+[portrait:6]前面路途還很遠，
+我們要去哪裡？
+[page]
+蘭迪斯，下決定吧！
+[portrait:0]你們大冢....
+
+## 19
+[portrait:0]喔～！
+我們出發吧～！

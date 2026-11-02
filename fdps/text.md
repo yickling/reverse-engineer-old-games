@@ -30,7 +30,9 @@ The offsets are nondecreasing and every span is an even number of bytes, so the 
 | `0x6404f` | dword `0x12` | How far a new line moves. |
 | `0x643d4` | the font pointer | `FUN_0001fd50` adds the cell index times `0x20` to this. |
 
-Cell `n` is the 32 bytes at `font + n * 0x20`. Indexes 0 through 1791 all occur. Every other word in the 66 files is one of the eight controls in the next section, `0xffee` through `0xffff`. A cell index is not a character code. A GBK scan of the text members finds no Han bytes. An extractor walks the offset table, writes the indexes, and cuts the font into 32-byte cells. The notes do not carry the strings.
+Cell `n` is the 32 bytes at `font + n * 0x20`. Indexes 0 through 1791 all occur. Every other word in the 66 files is one of the eight controls in the next section, `0xffee` through `0xffff`. A cell index is not a character code. A GBK scan of the text members finds no Han bytes.
+
+Cells 0 through 9 are the digits, and cells 10 through 35 are `A` through `Z`. The other cells were read from the bitmaps. That reading is `docs/fdps/text/glyph-map.tsv`. `extract_text.py` applies it: scenario index N is `FDETXT(N+1).TXT`, written to `docs/fdps/text/scenario-NN.txt`, and `FDETXT00.TXT` is `docs/fdps/text/interface.txt`. Two blank cells are spaces. A cell that looks like two similar characters can be off by one stroke. The notes do not carry the strings.
 
 ## How a string is drawn
 

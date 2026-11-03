@@ -33,7 +33,7 @@ Read the file for the question in front of you. Add a finding to that file. When
 | [Functions](functions.md) | Which bodies were decompiled, which were disassembled, and which were only seen, and the data tables. |
 | [Gaps](gaps.md) | What is still missing for a full account of the design and the implementation. |
 
-The extractors are in [scripts](scripts/). They write into [extract](extract/). `scripts/extract_fight_sprites.py` writes the fight frames, `scripts/extract_cel_pictures.py` writes the map and interface pictures, and `scripts/extract_text.py` writes the scenario strings. What each one writes is in [Pictures](pictures.md) and [Text](text.md).
+The extractors are in [scripts](scripts/). They write into [extract](extract/). `scripts/extract_fight_sprites.py` writes the fight frames, `scripts/extract_cel_pictures.py` writes the map and interface pictures, `scripts/extract_text.py` writes the scenario strings, and `scripts/extract_sounds.py` writes the named waves and the `SAF` samples. What each one writes is in [Pictures](pictures.md), [Text](text.md), and [File formats](formats.md).
 
 ## Still open
 

@@ -89,8 +89,40 @@ The offsets are nondecreasing and every span is even, so the strings tile the ta
 
 Sampled effects are RIFF `WAVE` files. Each one checked has a `fmt ` chunk of audio format 1, one channel, 8 bits, and a `data` chunk of that many bytes. The bytes sit around `0x80`. `BaseWav.vfs` is a `VFS` member of `MISC.VFS` with nine members, all 11025 Hz: `Beep.wav`, `Chess.wav`, `Equip.wav`, `Incom.wav`, `Miss.wav`, `OpWin.wav`, `OpWin1.wav`, `Rest.wav`, and `Sure.wav`. Three further waves sit directly in `MISC.VFS`. `Bonus.wav` and `EarQu.wav` are 11025 Hz. `Levup.wav` is 22050 Hz. Some of these files also carry `fact`, `LIST`, and `cue ` chunks after `data`. `object 1 + 0x20790` starts one. The calls that were read pass the wave, 1, −1, and −1.
 
-A `SAF` sample is not a `WAVE` file. The record at `file + dword[sample_table + index * 4]` is two flag bytes, a `uint16` rate, a `uint32` length, and that many bytes at `+8`. On the one sample in `ACT000.SAF` the `uint16` is 11025 and the length is 4464. `01 08` selects 0, `01 10` selects 1, `02 08` selects 2, and any other pair selects 3. The call order and the Miles names are in [Pictures](pictures.md).
+A `SAF` sample is not a `WAVE` file. The record at `file + dword[sample_table + index * 4]` is two flag bytes, a `uint16` rate, a `uint32` length, and that many bytes at `+8`. On the one sample in `ACT000.SAF` the `uint16` is 11025 and the length is 4464. `01 08` selects 0, `01 10` selects 1, `02 08` selects 2, and any other pair selects 3. Inferred from those pairs: the first byte is the channel count and the second byte is the sample width, so selector 0 is one channel of 8-bit samples. The call order and the Miles names are in [Pictures](pictures.md).
+
+`scripts/extract_sounds.py` is that walk. It copies each `.wav` member as stored, and writes each sample as a format-1 WAVE at the rate in the record. A walk of the local archives wrote 12 waves and 600 samples across 281 clips. Every sample was `01 08`. The bytes sit around 128, the center of an unsigned 8-bit sample, and a format-1 WAVE stores 8-bit samples that way. 483 are 11025 Hz and 117 are 22050 Hz. The files are `extract/sounds/waves/`, `extract/sounds/samples/`, and `extract/sounds/sounds.json`. `sounds.json` names the frames that point at each sample.
 
 `BaseAni.vfs` is the other nested archive in `MISC.VFS`. Its three members are `SAF` clips, not waves.
 
-Music is a track number, not a file in these archives. `object 1 + 0x20a30` reads the byte at `object 1 + 0x20230 + scenario * 2 + argument` and calls `object 1 + 0x2c5cb` with that byte plus 1. The sixty bytes are in [Turns](turns.md). No `.xmi`, `.mid`, or `.aud` member is in the archives walked. The executable names `%s\Pack.vfs` and `%s\%s.Aud`. The intro path names `FD1.Aud` beside `fd.exe` and `FD1.Vid`. Those files were not among the data files walked. `Icon%04d.wav` is the name icon opcode 8 formats. No member of that name is in `ICONANI.VFS` or `BaseWav.vfs`.
+Music is a CD audio track. The recording is not in the executable or the archives. No `FORM`/`XMID` sequence and no `MThd` header is in those files. The sixty bytes in [Turns](turns.md) are track numbers. `object 1 + 0x20a30` calls `object 1 + 0x2c5cb` with the byte plus 1, and that plus 1 is the track the drive is asked for. The title's request of 1 asks for track 2. The table's bytes run from 1 to 18, so the drive is asked for tracks 2 through 19.
+
+`object 1 + 0x2c3a6` was disassembled. It calls `object 1 + 0x32fd8` with interrupt `0x2f`. The register block at `object 2 + 0x9dc8` has `AX` = `0x1500` and `EBX` = 0. The returned `BX` is stored at `object 2 + 0x9dfc` and the returned `CL` at `object 2 + 0x9dfe`. A `BX` of 0 returns 0. Otherwise, when `object 2 + 0x9e54` is 0, `object 1 + 0x2b84e` allocates two real-mode blocks of `0x20` paragraphs through interrupt `0x31` with `AX` = `0x0100`. The first segment, shifted left by 4, is the request block at `object 2 + 0x9de8`. The second is the data block at `object 2 + 0x9da4`, and its segment in the high word is the transfer address at `object 2 + 0x9da8`. It then reads the disc. The status word at request offset 3 is compared with `0x810c`. That value returns 2. Any other value returns 1. The startup compare against 1 does not branch, in [Session](session.md).
+
+`object 1 + 0x3332c` copies its count from the second pointer onto the first. The request is copied into the real-mode block, and the driver's result is copied back. `object 1 + 0x2b8ed` fills a real-mode register block: `EAX` = `0x1510`, `EBX` = 0, `ECX` = the drive byte at `object 2 + 0x9dfe`, and `ES` = the request segment. It then calls `object 1 + 0x333c7` with interrupt `0x31`, `AX` = `0x0300`, and `BL` = `0x2f`. The stub at `object 1 + 0x3e129` is `int 0x31`, and the stub at `object 1 + 0x3e123` is `int 0x2f`. A nonzero carry dword at `object 2 + 0x9dc4` prints the string at `object 2 + 0x223c`. Inferred: `AX` = `0x0300` asks the extender to run real-mode interrupt `0x2f`, and `AX` = `0x1510` hands the request to the CD-ROM driver for that drive.
+
+The requests that were read:
+
+| Call | Length | Command | What the bytes do |
+| --- | --- | --- | --- |
+| `object 1 + 0x2bd15` | `0x1a` | 3 | Control byte `0x0a`, 7 data bytes. Byte 1 is stored at `object 2 + 0x9e06`, byte 2 at `object 2 + 0x9e07`, and the dword at byte 3 becomes the end position at `object 2 + 0x9e0b`. |
+| `object 1 + 0x2be38` | `0x1a` | 3 | Control byte `0x0b`. Byte 1 is the track. The dword at byte 2 becomes the position at `object 2 + 0x9e01`. Byte 6 is masked with `0xd0` and stored at `object 2 + 0x9e05`. |
+| `object 1 + 0x2c1c2` | `0x16` | `0x84` | Byte `0x0d` is 0. The dword at `+0x0e` is the start position. The dword at `+0x12` is the end minus the start. |
+| `object 1 + 0x2c217` | `0x0d` | `0x85` | No data bytes. |
+| `object 1 + 0x2c0bf` | `0x1a` | 3 | Control byte 6, 5 data bytes. The dword at byte 1 is stored at `object 2 + 0x9e1c`. |
+
+Inferred from those command bytes and from the arithmetic below: command 3 is an input control, `0x0a` is the disc's first track, last track, and lead-out, `0x0b` is one track's start, `0x84` plays audio, and `0x85` stops it. Byte `0x0d` of the play request is the addressing mode, and 0 selects a sector number. `object 1 + 0x2b9af` splits the returned dword into its low, middle, and high bytes, and `object 1 + 0x2b9e8` folds them:
+
+```
+position = hi * 4500 + mid * 75 + lo - 0x96    # object 1 + 0x2b9e8
+```
+
+Inferred: the three bytes are a disc time, frame then second then minute, and the result is the sector address the play request stores. 75 is the frame count of one second, 4500 is one minute, and `0x96` is the 150-frame lead-in.
+
+`object 1 + 0x2c573` was disassembled. The position just read is the start. When the track plus 1 is greater than the byte at `object 2 + 0x9e07`, the end is the dword at `object 2 + 0x9e0b`. Otherwise it asks for the next track and uses that position as the end, then asks for the original track again. `object 1 + 0x2c5cb` stops, asks for the track, takes that span, and plays it. One track is the sectors from its start up to the next track's start, or up to the lead-out when it is the last.
+
+`object 1 + 0x2c458` calls the device-status request and returns 1 when bit 9 of the status word at `object 2 + 0x9e20` is clear. The 75-tick caller in [Turns](turns.md) plays the track again when that return is nonzero. Inferred: bit 9 is the busy bit, so a track that has finished is started again. `object 1 + 0x2c681` returns 1 when the masked byte at `object 2 + 0x9e05` is not `0x40`. No direct call of it was found. Inferred: `0x40` marks a data track.
+
+Four more requests have no direct call. `object 1 + 0x2c656` stops, asks for track 1 and for the disc, and plays from sector 0 to the lead-out. `object 1 + 0x2c602` plays from one track's position to another's and returns the sector count. `object 1 + 0x2c469` sends control byte 9 and returns the following byte. `object 1 + 0x2c42c` sends output command `0x0c` with data byte 5, then returns the same not-busy test as `object 1 + 0x2c458`.
+
+`{prefix}\Pack.vfs` is named in `object 1 + 0x20a30`, and that call is not entered, in [Turns](turns.md). The intro path names `FD1.Aud` beside `fd.exe` and `FD1.Vid`. Those files were not among the data files. `Icon%04d.wav` is the name icon opcode 8 formats. No member of that name is in `ICONANI.VFS` or `BaseWav.vfs`.

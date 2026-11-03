@@ -10,9 +10,11 @@ A reconstruction of the battle, the campaign, a character, and the town is possi
 
 The original sample driver is the piece still outside that reconstruction. It becomes possible once `object 1 + 0x2da33` and `object 1 + 0x35cc0` are read. The first is the driver call that starts a sample with `0x401`. The second runs when the sample type changes. A new presentation can play the sample from the fields in [Pictures](pictures.md) without those two calls.
 
+The original music is the other piece still outside. The track numbers and the CD-ROM request are in [File formats](formats.md). The audio itself is not among the files that were walked, so that piece stays outside until the disc's tracks are present.
+
 ## Remake
 
-A modernised remake is possible from the topic files. The battle rules, the campaign order, the win and loss of an index, the town, a character, and the screen are written, and the unread items below do not block a design. The screen a new engine keeps is the last section of [Pictures](pictures.md). Handler 21 is in [Scenario files](scenario.md). No map row selects it.
+A modernised remake is possible from the topic files. The battle rules, the campaign order, the win and loss of an index, the town, a character, and the screen are written, and the unread items below do not block a design. The original music is CD audio, in [File formats](formats.md), and a remake supplies its own. The screen a new engine keeps is the last section of [Pictures](pictures.md). Handler 21 is in [Scenario files](scenario.md). No map row selects it.
 
 ## Session
 
@@ -26,7 +28,7 @@ A modernised remake is possible from the topic files. The battle rules, the camp
 
 | Address | What it is |
 | --- | --- |
-| `object 1 + 0x2c458` | Called every 75 ticks before `object 1 + 0x2c5cb` restarts the track. The body was not read. The caller is in [Turns](turns.md). |
+| `object 1 + 0x2bf87`, `object 1 + 0x2c16a`, `object 1 + 0x2c26f`, `object 1 + 0x2c316`, `object 1 + 0x2c51a` | Other device requests beside the CD play path in [File formats](formats.md). No direct call was found. The bodies were not read. |
 
 ## Map and scenario files
 

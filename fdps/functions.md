@@ -33,6 +33,23 @@ No Ghidra function existed, or the body was read from the bytes. The topic file 
 | `object 1 + 0x37080` | Stores the sample playback rate at handle `+0x3c`. | [Pictures](pictures.md) |
 | `object 1 + 0x37150` | Stores the sample loop count at handle `+0x30`. | [Pictures](pictures.md) |
 | `object 1 + 0x37160` | Starts the sample. Calls `object 1 + 0x2da33` with `0x401` when the driver has not been started. | [Pictures](pictures.md) |
+| `object 1 + 0x2b84e` | Allocates the CD request block and the data block. | [File formats](formats.md) |
+| `object 1 + 0x2b8ed` | Sends the request through interrupt 0x2f with AX 0x1510. | [File formats](formats.md) |
+| `object 1 + 0x3332c` | Copies the CD request into the real-mode block and copies the result back. | [File formats](formats.md) |
+| `object 1 + 0x2bd15` | Reads the disc's first track, last track, and lead-out. | [File formats](formats.md) |
+| `object 1 + 0x2be38` | Reads one CD track's start. | [File formats](formats.md) |
+| `object 1 + 0x2b9af` | Splits a dword into three bytes. | [File formats](formats.md) |
+| `object 1 + 0x2b9e8` | Turns those three bytes into a sector address. | [File formats](formats.md) |
+| `object 1 + 0x2c0bf` | Reads the device-status dword. | [File formats](formats.md) |
+| `object 1 + 0x2c458` | Returns 1 when bit 9 of the driver status word is clear. | [File formats](formats.md) |
+| `object 1 + 0x2c573` | Picks the start and end sectors for the track. | [File formats](formats.md) |
+| `object 1 + 0x2c1c2` | Plays the sector span. Command byte 0x84. | [File formats](formats.md) |
+| `object 1 + 0x2c3a6` | Asks interrupt 0x2f whether a CD-ROM drive is present, then reads the disc. | [File formats](formats.md) |
+| `object 1 + 0x2c42c` | Sends output byte 5 and returns the not-busy test. No direct call. | [File formats](formats.md) |
+| `object 1 + 0x2c469` | Sends control byte 9 and returns the following byte. No direct call. | [File formats](formats.md) |
+| `object 1 + 0x2c602` | Plays from one track's position to another's. No direct call. | [File formats](formats.md) |
+| `object 1 + 0x2c656` | Plays from sector 0 to the lead-out. No direct call. | [File formats](formats.md) |
+| `object 1 + 0x2c681` | Returns 1 when the track-control byte is not 0x40. No direct call. | [File formats](formats.md) |
 | `object 1 + 0x2d0e0` | Jumps to `object 1 + 0x33a20`, which waits on DOS time function 0x2c. | [Session](session.md) |
 | `object 1 + 0x4677d` | Picture mode 0. Hand-written, no prologue. The stored byte is written unchanged. | [Pictures](pictures.md) |
 | `object 1 + 0x46927` | Picture mode 3. Hand-written. Writes (sample & 2) + 0x80. | [Pictures](pictures.md) |
@@ -62,15 +79,15 @@ One line is the body the topic file records.
 | `object 1 + 0x2df06` | Forwards the tick. The log string names AIL_register_timer. |
 | `object 1 + 0x2e15a` | Forwards the handle and `0x19`. The log string names AIL_set_timer_frequency. |
 | `object 1 + 0x2e323` | Forwards the handle. The log string names AIL_start_timer. |
-| `object 1 + 0x20960` | Stores n as the music track. |
+| `object 1 + 0x20960` | Stores n and asks the CD driver for track n + 1. |
 | `object 1 + 0x209c0` | On each new tick counts to 0x4b and, when the track is set and a status call is nonzero, starts that track again. |
 | `object 1 + 0x20cb0` | Shuts sound down, blanks the palette, and passes {prefix}\fd.exe, {prefix}\FD1.Vid, and {prefix}\FD1.Aud to CRT `object 1 + 0x3df59`. |
 | `object 1 + 0x21930` | Called from this village step, cycles which roster record is shown and leaves on confirm. |
 | `object 1 + 0x24290` | (slot, id) returns the pair index of that id on that roster slot, or −1. |
 | `object 1 + 0x29b80` | Stores 0 into +0x40 of every side-0 unit, then runs the death spin. |
 | `object 1 + 0x29be0` | Opens Relive.cel. Runs after an ending's icon script and before the next-index store. |
-| `object 1 + 0x2c217` | Clears the music track. |
-| `object 1 + 0x2c5cb` | Starts a music track when sound is enabled. |
+| `object 1 + 0x2c217` | Stops CD audio. Command byte 0x85. |
+| `object 1 + 0x2c5cb` | Plays one CD track, from its start to the next track's start. |
 | `object 1 + 0x2d622` | Shuts sound down. |
 | `object 1 + 0x32b5b` | Prints an error string. |
 
@@ -127,7 +144,7 @@ One line is the body the topic file records.
 | `object 1 + 0x1ddc0` | Loads the tile under a unit, and may store a handler index when the terrain matches. |
 | `object 1 + 0x1de50` | Walks the sixteen rows at byte 3 of the map file, in [Scenario files](scenario.md): a row whose first byte is the turn counter and whose third byte is this argument calls the handler indexed by the middle byte, passing… |
 | `object 1 + 0x1e7a0` | Looks for a side-2 unit that is still eligible (flag bits 0x81 clear, +0x26 clear). |
-| `object 1 + 0x20a30` | Reads the music byte at `object 1 + 0x20230` + scenario * 2 + argument and starts that track. |
+| `object 1 + 0x20a30` | Reads the CD track byte at `object 1 + 0x20230` + scenario * 2 + argument and starts that track. |
 | `object 1 + 0x220e0` | (0xa8208, 0x140) draws command pictures 0x34 through 0x36 at VGA (8, 104) and that dword in eight digits. |
 | `object 1 + 0x22150` | A village menu that stays until the selection is −1. |
 | `object 1 + 0x222e0` | Plays ShopWin.Cel in nine steps through expander mode 4. |
@@ -393,7 +410,6 @@ Seen, and the body is not in a topic file. The longer note is in [Gaps](gaps.md)
 | `object 1 + 0x200f0` | Copies the rising experience strip. |
 | `object 1 + 0x1b030` | The channel bytes of the scenario palette pulse. Not split per scenario. |
 | `object 1 + 0x261d0` | Opens Bonus-1.saf and Bonus.wav. The frames were not walked. |
-| `object 1 + 0x2c458` | Called every 75 ticks before the track restarts. The body was not read. |
 | `object 1 + 0x2d0f3` | The heap walk `object 1 + 0x2d0e5` returns. A size of 0 returns 0. The rest was not read. |
 | `object 1 + 0x2ec6b` / `object 1 + 0x2f26e` | Called on the sample slot before the address is set. |
 | `object 1 + 0x34cb2` / `object 1 + 0x2d3e6` / `object 1 + 0x34ef3` | The log gate around the sample wrappers. |
@@ -443,7 +459,7 @@ A table the topic file already lays out. This list keeps the base, the stride, a
 | `Shop%02d.dat`, 36 bytes | Three groups of 12 item ids, at `object 2 + 0x9d80`. | [Scenario files](scenario.md) |
 | `dsc%02d.dat` | Section count, then 8 dwords a section. | [Scenario files](scenario.md) |
 | `attr` records | One 4-byte terrain record per tile picture, from file `+0x11`. | [Map](map.md) |
-| `object 1 + 0x20230`, 60 bytes | Music track bytes. `object 1 + 0x20a30` reads `scenario * 2 + argument`. | [Turns](turns.md) |
+| `object 1 + 0x20230`, 60 bytes | CD track numbers minus one. `object 1 + 0x20a30` reads `scenario * 2 + argument`. | [Turns](turns.md) |
 | `object 2 + 0x53f0` (`0x4800`) and `object 2 + 0x43f0` (`0x1000`) | The two remap tables. Fight and map each have a file. | [Pictures](pictures.md) |
 | `object 3 + 0xf`, 10 bytes | The key ring. `object 3 + 0x19` is the read index and `object 3 + 0x1d` is the other index. | [Text](text.md) |
 | `object 2 + 0x9cb0`, `object 2 + 0x9c20`, `object 2 + 0x9c98` | One pointer triple per `object 2 + 0x9cdc` entry. `object 1 + 0x212b0` frees them. What they hold was not read. | [Gaps](gaps.md) |

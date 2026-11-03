@@ -2,7 +2,7 @@
 
 Part of the [FDPS notes](README.md). Decompiled functions are Ghidra output, not original source. Nothing here was checked by running the game.
 
-`FUN_00039820` opens an archive in `"rb"`, seeks to 7, reads a dword count, seeks to 5, reads a word directory offset, and reads `count * 26` directory bytes. `FUN_0002a110(archiveName, memberName)` is the usual caller: open, `FUN_00039940` to extract one member into a malloc block, free the directory. `FUN_0003d1e8` frees those blocks. A missing archive prints `file not found` and exits. A missing member prints `Can't find the string` and exits.
+`object 1 + 0x29820` opens an archive in `"rb"`, seeks to 7, reads a dword count, seeks to 5, reads a word directory offset, and reads `count * 26` directory bytes. `object 1 + 0x1a110(archiveName, memberName)` is the usual caller: open, `object 1 + 0x29940` to extract one member into a malloc block, free the directory. `object 1 + 0x2d1e8` frees those blocks. A missing archive prints `file not found` and exits. A missing member prints `Can't find the string` and exits.
 
 On disk, checked against `FIGHT.VFS`, `FIELD.VFS`, `FIELD1.VFS`, `FIELD2.VFS`, and `MISC.VFS` with zero members past end of file:
 
@@ -24,7 +24,7 @@ Each directory entry is 26 bytes. Names are fixed 13-byte fields, not variable C
 | 21 | one byte, 0 on the members checked |
 | 22 | `uint32` file offset |
 
-`FUN_00039940` reads the size from entry+`0x0d` and seeks to entry+`0x16`. `FIGHT.VFS` is packed with no gaps: member 0 starts at 3675, which is the end of the directory.
+`object 1 + 0x29940` reads the size from entry+`0x0d` and seeks to entry+`0x16`. `FIGHT.VFS` is packed with no gaps: member 0 starts at 3675, which is the end of the directory.
 
 | Archive | Members | Contents the game asks for |
 | --- | --- | --- |

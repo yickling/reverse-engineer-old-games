@@ -11,13 +11,13 @@ Scenario index N is the member FDETXT(N+1).TXT. FDETXT00.TXT is the
 interface block, not scenario 0. Members past FDETXT30.TXT use the same
 layout for indexes past 29.
 
-Controls, from FUN_0001ff30:
+Controls, from `object 1 + 0xff30`:
 
     0xfffe  new line
     0xfffd  page
-    0xfffc  insert the interface string held in DAT_00064030
-    0xfffb  insert the interface string held in DAT_00064034
-    0xfffa  the number held in DAT_00064038
+    0xfffc  insert the interface string held in `object 2 + 0x4030`
+    0xfffb  insert the interface string held in `object 2 + 0x4034`
+    0xfffa  the number held in `object 2 + 0x4038`
     0xffef  portrait, and the next word is the lookup argument
     0xffee  portrait, and the next word is a unit slot
     0xffff  end

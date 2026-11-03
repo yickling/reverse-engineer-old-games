@@ -2,23 +2,25 @@
 
 Flame Dragon Plus (炎龙骑士团外传), a DOS/4GW game in `fdps/`. These notes are from static analysis of `FDPS.EXE` and the data files next to it. Decompiled functions are Ghidra output, not original source. Nothing here was checked by running the game.
 
-The real entry was never turned into a Ghidra function, so the top-level loop in [Session](session.md) is from disassembly of the flat image. The same is true of the thirty openers, the thirty endings, the thirty after-action checks, and the step handlers: Ghidra had not created functions there, and those notes are disassembly. A `FUN_` address those notes do not call a disassembly was decompiled. A bare address that is not already a function decompiles the wrong body, as below.
+The real entry was never turned into a Ghidra function, so the top-level loop in [Session](session.md) is from disassembly of the flat image. The same is true of the thirty openers, the thirty endings, the thirty after-action checks, and the step handlers: Ghidra had not created functions there, and those notes are disassembly. A body these notes do not call a disassembly was decompiled. A bare selector that is not already a function decompiles the wrong body, as below.
 
 ## How to reopen the binary
 
 `FDPS.EXE` is a Watcom C/C++32 (1988–1994) Linear Executable inside an MZ stub. REA rejects that (`unsupported LE executable in MZ image`) before any provider runs. The analysis target is a relocated flat image, not the EXE. The object map and the CRT are in [Binary](binary.md).
 
-- Image: `/tmp/fdps-flat.bin` (393269 bytes). SHA-256 `5f010ea722e0f449ce6d19dd1215ce01a7b39f45fdfdd8dd1b733ad6d66af291`.
-- Open as raw-binary, architecture `x86`, entry `0x10000`, provider `ghidra`. File offset 0 is address `0x10000`. Address `A` is file offset `A - 0x10000`.
+An address in these notes is an offset from an object's own base in the executable: `object 1 + 0x33008` is the entry, wherever a tool places object 1. The bases stored in the LE header, and how they line up with the flat image below, are in [Binary](binary.md). `0xa0000` is the VGA framebuffer, not one of those objects.
+
+- Image used for this study: `/tmp/fdps-flat.bin` (393269 bytes). SHA-256 `5f010ea722e0f449ce6d19dd1215ce01a7b39f45fdfdd8dd1b733ad6d66af291`. It is relocated at the header bases, so it is not required for reading the notes.
+- Open as raw-binary, architecture `x86`, entry `0x10000`, provider `ghidra`. File offset 0 is address `0x10000`. In this image, `object 1 + X` is file offset `X`, `object 2 + X` is file offset `0x50000 + X`, and `object 3 + X` is file offset `0x60000 + X`.
 - Ghidra 12.1.4 at `~/.local/opt/ghidra_12.1.4_PUBLIC`, JDK 21 at `~/.local/opt/jdk-21.0.13+9`. Language `x86:LE:32:default`, compiler spec `gcc`, loader `BinaryLoader`.
 - A bare `0x` selector that is not an existing function falls back to a file-offset mapping and decompiles the wrong body. Ask for `file-offset:0x…` of a byte that sits inside a function Ghidra already created.
-- The image was seeded at `0x10000`, not the real entry `0x43008`. Auto-analysis did not create a function at main (`0x291f0`) or at the scenario-dispatch handlers around `0x3a180`.
+- The image was seeded at `0x10000`, the header base of object 1, not the real entry `object 1 + 0x33008`. Auto-analysis did not create a function at main (`object 1 + 0x191f0`) or at the scenario-dispatch handlers around `object 1 + 0x2a180`.
 
 `DOS4GW.EXE` is the extender. `SETSOUND.EXE` and the `.DIG` files are Miles AIL 3.02. `PlayGame.exe` and the NSIS pieces are a later Windows launcher. Game logic is only in `FDPS.EXE`.
 
 ## Notes
 
-Read the file for the question in front of you. Add a finding to that file. Add an address that is still unread to [Gaps](gaps.md), under the same heading.
+Read the file for the question in front of you. Add a finding to that file. When the finding is a function or a table, add the row to [Functions](functions.md). Add an address that is still unread to [Gaps](gaps.md), under the same heading.
 
 | Note | What it holds |
 | --- | --- |
@@ -34,10 +36,11 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 | [Archives](archives.md) | The VFS directory. |
 | [File formats](formats.md) | On-disk layouts of sprites, scenario files, maps, strings, and sound. |
 | [Save](save.md) | `FDE.SAV`, including the four load slots. |
+| [Functions](functions.md) | Which bodies were decompiled, which were disassembled, and which were only seen, and the data tables. |
 | [Gaps](gaps.md) | What is still missing for a full account of the design and the implementation. |
 
 The extractors are in [scripts](scripts/). They write into [extract](extract/). `scripts/extract_fight_sprites.py` writes the fight frames, `scripts/extract_cel_pictures.py` writes the map and interface pictures, and `scripts/extract_text.py` writes the scenario strings. What each one writes is in [Pictures](pictures.md) and [Text](text.md).
 
 ## Still open
 
-The open list is [Gaps](gaps.md). Add an address, file, or field that was seen and not read there, under the same heading as the topic. Remove it when the topic file records the finding.
+The open list is [Gaps](gaps.md). Add an address, file, or field that was seen and not read there, under the same heading as the topic. Remove it when the topic file records the finding, and add the function or the table to [Functions](functions.md).

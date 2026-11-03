@@ -2,7 +2,7 @@
 
 Flame Dragon Plus (炎龙骑士团外传), a DOS/4GW game in `fdps/`. These notes are from static analysis of `FDPS.EXE` and the data files next to it. Decompiled functions are Ghidra output, not original source. Nothing here was checked by running the game.
 
-The real entry was never turned into a Ghidra function, so the top-level loop in [Session](session.md) is from disassembly of the flat image. Everything else cited as a `FUN_` address was decompiled.
+The real entry was never turned into a Ghidra function, so the top-level loop in [Session](session.md) is from disassembly of the flat image. The same is true of the thirty openers, the thirty endings, the thirty after-action checks, and the step handlers: Ghidra had not created functions there, and those notes are disassembly. A `FUN_` address those notes do not call a disassembly was decompiled. A bare address that is not already a function decompiles the wrong body, as below.
 
 ## How to reopen the binary
 
@@ -29,7 +29,7 @@ Read the file for the question in front of you. Add a finding to that file. Add 
 | [Map](map.md) | Camera, tiles, terrain bytes, movement cost, and what a section's order and highlight bytes do to a range. |
 | [Units](units.md) | The 80-byte unit record. |
 | [Combat](combat.md) | The map-to-fight handoff, the damage formula, and what a destroyed unit does. |
-| [Pictures](pictures.md) | The picture decoder, `SAF` clips, battle playback, map sprites, and the frame extractor. |
+| [Pictures](pictures.md) | The picture decoder, `SAF` clips, battle playback, map sprites, the frame extractor, and the screen a new engine keeps. |
 | [Text](text.md) | Glyph-index strings, the font cell, where a string is drawn, and the extracted reading. |
 | [Archives](archives.md) | The VFS directory. |
 | [File formats](formats.md) | On-disk layouts of sprites, scenario files, maps, strings, and sound. |

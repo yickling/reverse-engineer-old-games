@@ -24,7 +24,7 @@ else:
     play the clips                         # FUN_00018d50
 ```
 
-The settings corner flips `DAT_00060010`, and the save load restores it, both in [Turns](turns.md) and [Save](save.md). It is also touched at `0x13d6d`, `0x15268`, `0x24363`, and `0x245af`. Those four were not separated.
+The settings corner flips `DAT_00060010`, and the save load restores it, both in [Turns](turns.md) and [Save](save.md). The compare at `0x13d6d` is the branch above: 1 calls `FUN_0001a4a0`. The store at `0x15268` is the same byte at file offset `0x30d1`, in [Save](save.md).
 
 The walk in `FUN_000119e0` flood-fills with the attacker's move budget. Each path byte is one tile: `0` +Y, `1` −X, `2` −Y, anything else +X. `FUN_0002d060` plays a tile as six redraws. `FUN_0002d0f0` (the +Y step; the other three facings are the same shape) sets facing, then writes sub-tile byte `+4` from 1 through 6 and adds 4 to the camera and the cursor on each redraw. Six steps of 4 pixels is one 24-pixel tile. A key byte of `0x02` or `0x03` skips the intermediate redraws. After the last step the tile coordinate increments and `+4` returns to 0.
 
@@ -434,7 +434,7 @@ above 2: if the short is not 0xff and not -1, show that short as a text id.
    4 then stores 2 in the outcome dword. 5 stores 1.
 ```
 
-`FUN_00025cf0`, `FUN_00025990`, and the text calls were not followed. Outcome `1` and `2` are the session's game-over and scenario-end paths, in [Session](session.md).
+`FUN_00025cf0` is the give in [Units](units.md). `FUN_00025990` is the carried-item pick in [Turns](turns.md). Outcome `1` and `2` are the session's game-over and scenario-end paths, in [Session](session.md).
 
 `FUN_0001dd00` returns immediately when the term is 0, or when `FUN_000109b0` is nonzero. Character id `9` also returns at level `0x63`. Any other character returns at level `0x28`. Otherwise the term is capped at 99, added to byte `+0x3c`, and a number is drawn rising off the unit's tile for 15 map frames. If the sum passes 99, `Levup.wav` is started, `+0x21` increases by 1, the sum drops by 100, and a picture from `DAT_000643a0` is held over the map until a key below `0x80` or 250 frames. The new level is capped again: character `9` at 99, anything else at `0x28`, and the remainder byte is cleared when a cap hits. One crossing subtracts 100 once, so one fight raises the level by at most 1.
 
@@ -447,4 +447,4 @@ added = lo if span == 0 else lo + rand % span
 word = word + added
 ```
 
-`rand` is `FUN_00042a68`. The added amount is passed to `FUN_00017520` with `0xa4`. That drawer was not decompiled.
+`rand` is `FUN_00042a68`. The added amount is stored at `DAT_00064038` and passed to `FUN_00017520` with pitch `0xa4` and width 0. The card pixels and the 6×8 split are in [Pictures](pictures.md).

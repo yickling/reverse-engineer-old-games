@@ -130,7 +130,9 @@ Compose buffer for combat is `0x16480` bytes, pitch `0x170` (368), origin size s
 
 `FUN_00018d50` builds the screen. `FUN_000196b0` steps it. The pool math those hit frames apply is in [Combat](combat.md).
 
-Before any frame, the two remap tables are replaced. `FMer1.tmp` is read into `DAT_000653f0` (`0x4800` bytes) and `FMer2.tmp` into `DAT_000643f0` (`0x1000` bytes). Both files on disk are exactly those sizes. `FUN_00022f10` then writes VGA colors 0 through 255 from the block at `DAT_000643e4`. After the fight the screen at `0xa0000` is cleared for 64000 bytes, the `Mer1.tmp` / `Mer2.tmp` pair is read back over the same two tables, and `FUN_00022f10` writes the block at `DAT_000643cc`. What those two blocks hold was not read.
+Before any frame, the two remap tables are replaced. `FMer1.tmp` is read into `DAT_000653f0` (`0x4800` bytes) and `FMer2.tmp` into `DAT_000643f0` (`0x1000` bytes). Both files on disk are exactly those sizes. `FUN_00022f10` then writes VGA colors 0 through 255 from the block at `DAT_000643e4`. After the fight the screen at `0xa0000` is cleared for 64000 bytes, the `Mer1.tmp` / `Mer2.tmp` pair is read back over the same two tables, and `FUN_00022f10` writes the block at `DAT_000643cc`.
+
+Each `*1` file is 18 slots of 256 little-endian dwords, two banks of nine. That is the pair mode 9 swaps when the selector is above 8. Dword 0 of every slot is 0. The low byte of the other dwords takes 16 distinct values in a slot. Many dwords are not the same byte repeated three times. `Mer1.tmp` and `FMer1.tmp` differ in 10914 bytes. On the fight file, 43 entries of each slot are 0, and the other low bytes are multiples of that slot's step. On the map file, the low byte at index 1 is that step: 1 through 8 in the first bank, then 16 down to 8. Each `*2` file is the 4096-byte mixer the formula indexes. The two mixers differ in 4094 bytes. Index 0 contributing nothing is what leaves a stored 0 unmixed. Inferred: the other zero entries are palette indexes that do not take the tint, and the 16 steps are the blend weights.
 
 Files, by character byte `+7` and by the defender's terrain byte 3 (decremented when it is nonzero):
 
@@ -214,7 +216,7 @@ The directory offset is the big-endian short at `+4`, and it is `0x0f` on every 
 
 The two palette files share 2 of 256 entries. Coloring these pictures from `Fight.pal` is what shifts them red. On `ICON.CEL` character 1, frame 0, index 143 is the most common written pixel: `Fde.pal` stores `03 03 03` there and `Fight.pal` stores `19 07 00`. The same substitution moves the other indexes those pictures use. `scripts/extract_cel_pictures.py` colors icons, tiles, portraits, and the interface from `Fde.pal`, and writes character sheets under `maps/icons`, section tiles under `maps/tiles`, portraits under `maps/faces`, and the interface files under `ui`. The labeled contact sheet of character id, portrait, and map frame 0 is [extract/unit-ids](extract/unit-ids/index.html).
 
-`STBOARD.CEL` is opened at `0x2a56e`. `StBoard.pal` is opened at `0x2a585` and installed at `0x2a5ac` with biases 0, 0, 0. That picture is colored from `StBoard.pal`. `FIGBAR.CEL` is opened at `0x18de6` and `0x1a5cb` into `0x64004`, inside the fight players that install `Fight.pal`. The blit of the bar was not read, so coloring `FIGBAR.CEL` from `Fight.pal` is an inference.
+`STBOARD.CEL` is opened at `0x2a56e`. `StBoard.pal` is opened at `0x2a585` and installed at `0x2a5ac` with biases 0, 0, 0. That picture is colored from `StBoard.pal`. `FIGBAR.CEL` is opened at `0x18de6` and `0x1a5cb` into `0x64004`, inside the fight players that install `Fight.pal`. The blit is under [Combat animation](#combat-animation). Coloring the bar from `Fight.pal` follows that install. No separate palette is opened for the bar.
 
 ## Map sprites
 
@@ -323,4 +325,104 @@ When `FUN_0002d830` does not return −1, that unit is redrawn with `FUN_0002cb3
 
 At `0x20002`, inside `0x1ff30`, `FUN_0002d930` draws picture 0 of `MESSAGE.CEL` at buffer `(29, 140)`, pitch `0x168`, mode 0. That draw is the page word `0xfffd` in [Text](text.md). The file is 302×73, so on the 320-wide surface the box is `(9, 120)`. The same function then expands a 125×100 picture from `DAT_00060120` at buffer `+ 0x9ad0`, which is buffer `(32, 110)` and surface `(12, 90)`, mode 0, and copies the window with the call above.
 
-`FUN_00017520` expands one `NUMBER.CEL` digit at 6×8, mode 0, and the next digit starts 6 pixels to the right. The origin and the pitch are the caller's. The item-list drawer at `0x24e70` draws `SELBAR.CEL` picture 0 at `0x24eb3`: x is 0, y is `8 + row * 17`, mode 0, and the pitch and destination are that function's arguments. The picture is 151×17, so the step is the picture height.
+`FUN_00017520(dest, pitch, value, width, signed)` expands `NUMBER.CEL`. The arithmetic is that function. The template at `0x14844` is the five bytes `%.3d`. The `"%d"` is at `0x615a8` and the `"+"` is at `0x615ac`.
+
+```
+if width == 0:
+    text = sprintf("%d", value)
+else if value < 10 ** width:
+    fmt = "%.3d"
+    fmt[2] = '0' + width          # "%.Nd", zero-padded to width digits
+    text = sprintf(fmt, value)
+else:
+    text = "?" * width
+if signed and value >= 0:
+    text = "+" + text
+for i, ch in enumerate(text):
+    glyph = ch - '0'              # '0'..'9'
+    if ch == '+': glyph = 10
+    if ch == '-': glyph = 11
+    if ch == '?': glyph = 12
+    if ch is none of those: glyph = 0
+    picture = DAT_0006000c * 13 + glyph
+    expand that picture at dest + i * 6, 6×8, mode 0
+```
+
+`NUMBER.CEL` has 65 pictures, five rows of those 13 glyphs. `DAT_0006000c` is the row. The status sheet below sets row 3 while a pool is not at its maximum, and row 1 while the matching count byte is nonzero, and puts the row back to 0 after the number. Rows 2 and 4 are not selected there. Other stores of the byte were not walked.
+
+The item-list drawer at `0x24e70` draws `SELBAR.CEL` picture 0 at `0x24eb3`: x is 0, y is `8 + row * 17`, mode 0, and the pitch and destination are that function's arguments. The picture is 151×17, so the step is the picture height.
+
+## The status sheet
+
+`FUN_00016a90` is the status window. It returns at once for character ids `0x24` through `0x27`. Otherwise `FUN_00016830` opens `Status.cel`, the 320×200 picture, `OpWin1.wav` is played, and the VGA screen is saved. `FUN_000162f0` stamps the sheet onto that picture at pitch `0x140`. The coordinates are pixels on the 320-wide picture.
+
+| What | Where | Digits |
+| --- | --- | --- |
+| Map frame 0 of the icon cache | `(161, 10)` | 24×24, mode 0 |
+| Portrait, character id `+7` | `(19, 4)` | `FACE.CEL`, 125×100 |
+| Interface string `byte +8 + 1` | `(201, 5)` | ink `0xd0`, shadow `0x6d` |
+| Interface string `+0x20 + 0xa1` | `(192, 23)` | class |
+| Interface string `+0x1f + 0x97` | `(263, 23)` | the byte drawn as string `value + 0x97` in [Units](units.md) |
+| Word `+0x40`, then word `+0x42` | `(88, 122)`, `(117, 122)` | 4. Row 3 while they differ |
+| Word `+0x44`, then word `+0x46` | `(88, 141)`, `(117, 141)` | 4. Row 3 while they differ |
+| Byte `+0x21` | `(62, 155)` | 2 |
+| Byte `+0x3b` | `(118, 155)` | 2 |
+| Byte `+0x3c` | `(56, 164)` | 3. A stored `0xff` is replaced with 1000, which does not fit three digits, so the drawer writes `???` |
+| Word `+0x3e` | `(112, 164)` | 3. Row 1 while byte `+0x24` is nonzero |
+| Word `+0x4e` | `(56, 173)` | 3, same row |
+| Word `+0x4c` | `(56, 182)` | 3, same row |
+| Word `+0x48` | `(112, 173)` | 3. Row 1 while byte `+0x22` is nonzero |
+| Word `+0x4a` | `(112, 182)` | 3. Row 1 while byte `+0x23` is nonzero |
+
+`FUN_00017730` draws the two fills. The width is `(current * 0x75 + maximum - 1) / maximum` when the maximum is at least 1, and 0 otherwise. `0x75` is 117, the width of `BAR.CEL`. The first pool uses picture 1 at `(22, 118)`. The second uses picture 2 at `(22, 137)`. The body of `FUN_00017730` was not read.
+
+A 151×149 rectangle at `(152, 47)` is kept aside, and `FUN_00024e70` draws the eight item pairs there with the selection row set to −1, so no bar is drawn. `FUN_00016e70` then runs nine times. That body was not read. `FUN_000170b0` waits, which is the key read in [Text](text.md).
+
+When the unit has spells, that rectangle is revealed on the VGA screen at the same `(152, 47)` through `FUN_0002fbd0`, the margin stepping 2, 4, 6, 8, 10. `FUN_000276c0` draws the list, and the same margins run back down. More than eight spells blends a second page through `FUN_0002ffc0` with selectors 1, 3, …, 15 and the two remap tables. Both of those blitters were not decompiled.
+
+## The level-up card
+
+The rising number and the card are `FUN_0001dd00`, whose level rule is in [Combat](combat.md). Before the card, `COMMAND.CEL` picture `0x23` is drawn into a buffer of pitch `0x28`, and `FUN_00017520` writes the experience term at x `0x12` with width 0. For steps 6, 8, …, 34 a 40×8 strip of that buffer is copied onto the map. The x is the unit's sprite x. The y is the sprite's y plus 8, minus the step, and the step stops at 24. The copy passes the two remap tables and the selector `min(step, 24) / 3 + 8`. `FUN_000300f0`, which does that copy, was not decompiled.
+
+`LevUp.cel` is one 164×66 picture, drawn at pitch `0xa4`. It is copied to map buffer `(98, 88)`, which is screen `(78, 68)`, and held while `FUN_0005652e` returns a byte of `0x80` or above, for at most 250 ticks. The unit's map frame is drawn at buffer `(168, 101)`, screen `(148, 81)`, and the frame steps 0, 1, 2, 1 from `tick % 16 / 4`.
+
+On the card, from `FUN_0001dd00` and `FUN_0001e340`:
+
+| What | Card pixel |
+| --- | --- |
+| New level, byte `+0x21`, width 0 | `(38, 16)` |
+| Amount added to `+0x37`, class-row bytes 0 and 1 | `(147, 16)` |
+| Amount added to `+0x42`, bytes 6 and 7 | `(38, 26)` |
+| Amount added to `+0x39`, bytes 2 and 3 | `(147, 25)` |
+| Amount added to `+0x46`, bytes 8 and 9 | `(38, 35)` |
+| Amount added to `+0x3e`, bytes 4 and 5 | `(147, 34)` |
+| Interface string `learned id + 0x1be`, when a pair matches the level | `(72, 45)` |
+
+Each amount is the roll in [Combat](combat.md), stored at `DAT_00064038` and drawn with width 0. The pitch of those draws is `0xa4`.
+
+## A screen a new engine can keep
+
+This section is a design reading of the layout above. It is not code in the program, and the game was not run.
+
+The program has one 320×200 indexed picture. A new engine keeps that logical size and scales it, nearest-neighbor, so a 24×24 tile stays a tile. It does not keep the VGA ports or the retrace wait. The compose buffers are larger than the picture only so a slide and a camera have room: the map shows 312×192 from buffer `(24, 24)` at screen `(4, 4)`, and the fight shows 320×200 from buffer `(24, 24)`.
+
+Three pictures, back to front.
+
+A map visit is the terrain, then the shadow, the unit, and the 24×11 mark, then the range and the cursor, then whatever window is up. The command diamond is four 25×22 pictures on a circle of radius 24 around the cursor. The seven steps are the circle closing; the resting position is up, left, right, and down. A new menu can keep the four corners and drop the spin. The message is a 302×73 box at screen `(9, 120)` and a 125×100 portrait at `(12, 90)`. The terrain panel is the 43×55 picture in [Turns](turns.md), and it moves to the other side of the cursor so it does not cover the unit.
+
+A fight is a cleared buffer, the backdrop, the defender's stand, the attacker's stand or swing, then the two bars. Each bar is a frame, a second frame 10 pixels lower, and two fills 125 pixels wide. The fill width is `(current * 125 + maximum - 1) / maximum`. One side grows from the left at screen `(6, 175)`. The other grows from the right at `(171, 8)`. The slide, the shake, and the white flash on a critical hit are the motion. The hit marker on a frame is when the number changes, not a separate picture.
+
+A town screen, the status sheet, and the save slots replace the picture with one 320×200 `CEL` and stamp text and digits at fixed pixels. The status pixels are the table above. The spell list is the 151×149 rectangle at `(152, 47)`; the wipe is the list appearing, and a second page is the same rectangle again. Nothing in these screens reflows. A wider window is the same 320×200 picture scaled up, not a new layout.
+
+What stays data:
+
+- A frame is a texture. Pixels the skip opcodes never write are transparent. The extracted PNG is that texture.
+- Three palettes, chosen by the screen: `Fde.pal` for the map and the interface, `Fight.pal` for the fight, `StBoard.pal` for the board that opens with it. Components in the file are 0 through 63.
+- A clip is the frame list already in the `SAF`: hold ticks, the hit marker, the sample index. One member is one sequence. Cropped frames of one clip share the box recorded by the extractor, not the origin `(0, 0)`.
+- Glyphs are a 16×16 atlas, advance 16, line step 18, shadow one pixel down and right. The control words in [Text](text.md) are still the string format. A page is the message box. A portrait word is the portrait at `(12, 90)`.
+- Digits are the 6×8 atlas, five rows of thirteen glyphs. Row 0 is the ordinary number. Row 1 marks a count that is changing a stat. Row 3 marks a pool that is not full.
+- The tick those hold counts use becomes a fixed timestep. A sample starts when its frame is shown.
+
+What the blend tables were doing, and what replaces them. Mode 9 mixes a source index with the pixel already there, and the selector from 0 through 16 picks the ramp. A new engine can use a straight alpha of `selector / 16` on the texture, and keep index 0 transparent. That matches the selector the map pulse, the fight chunk, and the rising number already pass. The 18 ramps and the 4096-byte mixer are the pixel-identical version of that mix. A remake does not need them. The strike flash, mode 3, is the written index `(sample & 2) + 0x80` for the frames after the first hit. A white flash of the same sprites is the same moment.
+
+The fight sample calls at `0x3edde`, `0x3f1f8`, and `0x3eee2` were not decompiled. The sample record's rate and length are in [SAF clips](#saf-clips). A player that starts that span when the frame says so is the sound the clip carries. Named waves such as `Miss.wav` and `Levup.wav` are separate cues, not frames.

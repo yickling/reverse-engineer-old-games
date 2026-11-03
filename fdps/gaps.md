@@ -9,12 +9,12 @@ This is the list of what is still missing for a full account of the design and t
 The battle grid, the opening placement, the unit record that combat reads, the damage formula, the spell mask, and which picture a character id uses are written in the topic files. The holes below are what is still in the way of rebuilding a scenario, a turn, a character, a spell, and the screen from those notes.
 
 - A scenario's files do not yet make a playable battle. The roster prefix and group 0 are placed. Most of the 26-byte actor record is unread, as are the unread `COD` fields, the event-row handlers, 28 of the 30 opener bodies, the ending table, and the after-action table past the first scenario. The `DTL` byte and map bytes `0x33`–`0x82` are in [Turns](turns.md).
-- Town is only partly described. The forced joins are known. The village actions, the path that skips the village, the item list, and the portrait call at `0x16790` are unread.
+- Town is only partly described. The forced joins are known. The sell, give, and equip lists those village actions call are in [Turns](turns.md). The rest of the five village bodies, the path that skips the village, and the portrait call at `0x16790` are unread.
 - A CPU turn's walk, its choice of target, the camera call before the walk, the script hooks, and the phase music are in [Turns](turns.md). The per-scenario after-action pointers past the first scenario are unread.
 - A character cannot yet be built from the tables alone. Unit bytes outside the written table, the unread columns of `Friaprda.dat`, `EnemyDat.dat`, `MagicDat.dat`, and `ProMap.dat`, and the rank-up read are still open.
 - A spell's mask is written. The body that plays the spell, the frames after the earthquake clip opens, and `MagicDat` bytes `+0` and `+1` are unread.
 - The map window, the command icons, the message box, the expander modes, and icon-clip playback are in [Pictures](pictures.md). The two fight remap blocks, the `FIGBAR` blit, and where the remaining windows sit are unread.
-- Text placement stops early. The calls written in [Text](text.md) and [Turns](turns.md) have a destination. The other calls, and the level-up number, are unread. The save writer lists the bytes after the four slot flags in [Save](save.md). The load of those bytes is still unread.
+- Text placement stops early. The calls written in [Text](text.md) and [Turns](turns.md) have a destination. The other calls, and the level-up number, are unread. The save writer and the load of that buffer are in [Save](save.md). The title-slot load still stops at the four flag bytes.
 
 ## What a modernised remake still has to decipher
 
@@ -30,14 +30,14 @@ A scenario is not yet a script that can be replayed.
 
 A turn's scripts, the search on the fourth command corner, and the no-unit menu are in [Turns](turns.md).
 
-- The item-list drawers. Corner 2 of the no-unit menu, and corner 2 of the diamond that writes the save, are still unread.
+- The five village actions still have unread code around the lists in [Turns](turns.md).
 
 A character and a spell are not yet complete tables.
 
 - The unread columns of `Friaprda.dat`, `EnemyDat.dat`, `MagicDat.dat` bytes `+0` and `+1`, `ProMap.dat` past the move lookup and the crit byte, and the `RankUp.dat` read.
 - The unit bytes outside the table in [Units](units.md), and item types `0x16` through `0x27`.
 - The spell player `0x1a4a0` past its pool cost, and the frames after an earthquake clip opens.
-- The five village-menu actions and the skip-village path. Shop prices and the forced joins are known. The save writer is in [Save](save.md). The load still stops at the four flag bytes.
+- The five village-menu actions, past the lists they call, and the skip-village path. Shop prices, the sale credit, and the forced joins are known. The save writer and its load are in [Save](save.md). The title-slot load still stops at the four flag bytes.
 
 ## Session
 
@@ -55,13 +55,10 @@ A character and a spell are not yet complete tables.
 | Address | What it is |
 | --- | --- |
 | `0x6028c` | After each action, one pointer per scenario. `0x3a120` was disassembled; the rest were not. `FUN_00028280` is also called at `0x3a190`. |
-| `0x33d70` / `0x33f80` / `0x34190` | `0x33d70` and `0x33f80` open the item list, both with the second argument 0. `0x34190` stores `DAT_00064030`. None of the three was decompiled. |
-| `0x24e70` | Draws the rows of the item list. Not decompiled. |
 | `0x16120` | Draws the command diamond. The steps are in [Pictures](pictures.md). The body was disassembled, not decompiled. |
 | `0x161f0` / `0x161a0` | Read and close the menu. The corners they return are in [Turns](turns.md). The bodies were not decompiled. |
-| `0x183c0` | Corner 2 of the no-unit menu. Not decompiled. |
-| `0x23df0` | Corner 2 of `FUN_00014e90`. Not decompiled. |
-| `0x17980` | Returns 0 to accept the confirm drawn before it. The keys were not read. |
+| `0x15bd0` | Called after the six roster cells in `FUN_00033440`. Not decompiled. |
+| `0x2a280` / `0x30f80` / `0x3b7f0` | Store 0 or 1 into `DAT_00060158`. The conditions were not read. The panel that byte enables is in [Turns](turns.md). |
 | `0x1071f`, `0x1570d`, `0x15740`, `0x157cc`, `0x2d1ff`, `0x2d308`, `0x2d416`, `0x2d540` | Other calls of `FUN_0002ddc0`. The third argument was not reduced. |
 
 ## Map and scenario files
@@ -89,7 +86,7 @@ A character and a spell are not yet complete tables.
 | `0x1a4a0` | Play a spell. It subtracts the spell row's byte `+5` through `FUN_00028590`. The sequence is in [Pictures](pictures.md); the body was not read past that cost and the call into `FUN_000288c0`. |
 | `0x288c0` | Formats `Emg%02d.saf` and, for id `0x21`, opens `Emg33-1.saf`. At `0x28942` it subtracts the spell row's byte `+5` from `+0x44`. The frames after the open were not walked. |
 
-`DAT_00060010` is also touched at `0x13d6d`, `0x15268`, `0x18411`, `0x184ad`, `0x2414e`, `0x24363`, and `0x245af`. The stores were not separated from the reads. `Explo.Saf` and `Miss.wav` are named by the players. They were not among the top-level archive members already walked. `BASEWAV.VFS` inside `MISC.VFS` was not opened.
+`DAT_00060010` is flipped by the settings corner in [Turns](turns.md) and restored by the save load in [Save](save.md). It is also touched at `0x13d6d`, `0x15268`, `0x24363`, and `0x245af`. Those four were not separated. `Explo.Saf` and `Miss.wav` are named by the players. They were not among the top-level archive members already walked. `BASEWAV.VFS` inside `MISC.VFS` was not opened.
 
 ## Pictures
 
@@ -99,12 +96,12 @@ A character and a spell are not yet complete tables.
 
 - `FACE.CEL` picture `n` is drawn by `FUN_000177c0` at 125×100. The call at `0x207d8` is inside `FUN_00020580` and passes that function's argument. The call at `0x20c1b` is the portrait finish in [Text](text.md). The call at `0x16790` was not read. `FUN_00042a68` is the call whose result, modulo 200, starts the mode-8 hop. Its body was not read.
 - What the blocks at `DAT_000653f0` and `DAT_000643f0` hold. The fight replaces them from `FMer1.tmp` and `FMer2.tmp`, and restores `Mer1.tmp` and `Mer2.tmp` afterward.
-- The blit of `FIGBAR.CEL`. What `BaseWav.vfs` and `BaseAni.vfs` play, and what `ADWin.cel` is drawn as, were not read. `NUMBER.CEL` digits step by 6 inside `FUN_00017520`; the origin at each of its callers was not reduced. `SELBAR.CEL` picture 0 on the item list is in [Pictures](pictures.md). The other selection-bar blits, at `0x2773a`, `0x326b7`, `0x32ea4`, `0x33680`, and `0x35279`, were not reduced. The call at `0x15b31` passes 2 to `0x3d0e0` just before the viewport copy. That callee was not read.
+- The blit of `FIGBAR.CEL`. What `BaseWav.vfs` and `BaseAni.vfs` play was not read. `ADWin.cel` is the panel in [Turns](turns.md). `NUMBER.CEL` digits step by 6 inside `FUN_00017520`; the origin at each of its callers was not reduced. `SELBAR.CEL` picture 0 on the item list is in [Pictures](pictures.md). The other selection-bar blits, at `0x2773a`, `0x326b7`, `0x32ea4`, and `0x35279`, were not reduced. The roster picker uses picture 2, in [Turns](turns.md). The call at `0x15b31` passes 2 to `0x3d0e0` just before the viewport copy. That callee was not read.
 
 ## Text
 
-- The destination, pitch, and palette indexes at the `FUN_0001ff30` calls other than icon opcode 3, the page pen, and the loss window. Those three are in [Text](text.md).
-- Stores of `DAT_00064030`, `DAT_00064034`, and `DAT_00064038` other than the ones already written. The chest stores are in [Turns](turns.md), the drop stores `DAT_00064030` in [Combat](combat.md), and `FUN_00034310` stores one of each in [Units](units.md). Further stores sit in `FUN_000338f0`, `FUN_00033d70`, `FUN_00033f80`, `FUN_00034190`, the rest of `FUN_00034310`, `FUN_0001d960` (`DAT_00064038`), `FUN_0001e340`, and `FUN_0001fa00`.
+- The destination, pitch, and palette indexes at the `FUN_0001ff30` calls other than the ones in [Text](text.md) and [Turns](turns.md).
+- Stores of `DAT_00064030`, `DAT_00064034`, and `DAT_00064038` other than the ones already written. The chest, the sale, the gift, and the empty-list insert are in [Turns](turns.md). The drop stores `DAT_00064030` in [Combat](combat.md), and `FUN_00034310` stores one of each in [Units](units.md). Further stores sit in `FUN_000338f0`, the rest of `FUN_00034310`, `FUN_0001d960` (`DAT_00064038`), `FUN_0001e340`, and `FUN_0001fa00`.
 - `FUN_00018340`, which supplies the three numbers on the loss window. `DAT_000643b8` is the eight-digit number drawn at `(87, 121)` there. The cursor search adds a short to it, and the save writes it at `0x30cd`. What `FUN_00018340` counts was not read.
 - `FUN_00017520` draws the amount added on a level, with id `0xa4`. The 6×8 digit blit is in [Pictures](pictures.md). How the amount is split into digits was not read.
 

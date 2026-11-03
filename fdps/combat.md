@@ -24,7 +24,7 @@ else:
     play the clips                         # FUN_00018d50
 ```
 
-`DAT_00060010` is also read from `0x13d6d`, `0x15268`, `0x18411`, `0x184ad`, `0x2414e`, `0x24363`, and `0x245af`. Which of those stores it was not separated from the reads.
+The settings corner flips `DAT_00060010`, and the save load restores it, both in [Turns](turns.md) and [Save](save.md). It is also touched at `0x13d6d`, `0x15268`, `0x24363`, and `0x245af`. Those four were not separated.
 
 The walk in `FUN_000119e0` flood-fills with the attacker's move budget. Each path byte is one tile: `0` +Y, `1` −X, `2` −Y, anything else +X. `FUN_0002d060` plays a tile as six redraws. `FUN_0002d0f0` (the +Y step; the other three facings are the same shape) sets facing, then writes sub-tile byte `+4` from 1 through 6 and adds 4 to the camera and the cursor on each redraw. Six steps of 4 pixels is one 24-pixel tile. A key byte of `0x02` or `0x03` skips the intermediate redraws. After the last step the tile coordinate increments and `+4` returns to 0.
 

@@ -283,7 +283,7 @@ The pass before the sprite paints `SHADOW.CEL` from `DAT_000643e0`. The picture 
 | `Number.cel` | `0x643dc` | Digits. |
 | `SelBar.cel` | `0x643a8` | Selection bar. |
 | `LevUp.cel` | `0x643a0` | Level-up picture. |
-| `ADWin.cel` | `0x643c0` | |
+| `ADWin.cel` | `0x643c0` | The terrain panel in [Turns](turns.md). |
 | `BaseWav.vfs` | `0x643ac` | |
 | `BaseAni.vfs` | `0x643bc` | |
 | `EasyBar.cel` | `0x643a4` | Decoded 43×6 picture. |

@@ -6,7 +6,7 @@ This is the status list. The behavior stays in the topic file. A row is where th
 
 Where is `object N + offset`, from that object's base in the executable, as in [Binary](binary.md). A row is decompiled unless this file says it was disassembled or not read. The session loop, the thirty openers, the thirty endings, the thirty after-action checks, and the step handlers were disassembled, because Ghidra had not created functions there.
 
-Decompiled: 258, plus the picture-mode bodies in the table under Pictures. Disassembled: the blocks below. Not read: the list at the end.
+Decompiled: 260, plus the picture-mode bodies in the table under Pictures. Disassembled: the blocks below. Not read: the list at the end.
 
 ## Disassembled
 
@@ -30,6 +30,9 @@ No Ghidra function existed, or the body was read from the bytes. The topic file 
 | `object 1 + 0x32a40` | Fills its count with the byte it is passed. | [Pictures](pictures.md) |
 | `object 1 + 0x20520` | Timer tick. No function was created. Increments `object 2 + 0x9d64` and calls rand. | [Session](session.md) |
 | `object 1 + 0x32a8a` | Stores its argument into the rand seed at `object 2 + 0x39c`. No direct call was found. | [Combat](combat.md) |
+| `object 1 + 0x37080` | Stores the sample playback rate at handle `+0x3c`. | [Pictures](pictures.md) |
+| `object 1 + 0x37150` | Stores the sample loop count at handle `+0x30`. | [Pictures](pictures.md) |
+| `object 1 + 0x37160` | Starts the sample. Calls `object 1 + 0x2da33` with `0x401` when the driver has not been started. | [Pictures](pictures.md) |
 | `object 1 + 0x2d0e0` | Jumps to `object 1 + 0x33a20`, which waits on DOS time function 0x2c. | [Session](session.md) |
 | `object 1 + 0x4677d` | Picture mode 0. Hand-written, no prologue. The stored byte is written unchanged. | [Pictures](pictures.md) |
 | `object 1 + 0x46927` | Picture mode 3. Hand-written. Writes (sample & 2) + 0x80. | [Pictures](pictures.md) |
@@ -329,6 +332,8 @@ The other picture functions:
 | `object 1 + 0x2eee2` | Forwards the slot. The log string names AIL_start_sample. |
 | `object 1 + 0x2f096` | Forwards the slot and the rate. The log string names AIL_set_sample_playback_rate. |
 | `object 1 + 0x2f1f8` | Forwards the slot and 1. The log string names AIL_set_sample_loop_count. |
+| `object 1 + 0x37010` | Stores the sample address at handle `+8` and the length at `+0x10`. |
+| `object 1 + 0x37040` | Stores the selector at handle `+0x34` and 2 at `+0x38`, and calls `object 1 + 0x35cc0` when either changes. |
 | `object 1 + 0x4664b` | Stores the width, height, and pitch, then calls one body for the mode byte: |
 
 ### [Text](text.md)
@@ -388,12 +393,12 @@ Seen, and the body is not in a topic file. The longer note is in [Gaps](gaps.md)
 | `object 1 + 0x200f0` | Copies the rising experience strip. |
 | `object 1 + 0x1b030` | The channel bytes of the scenario palette pulse. Not split per scenario. |
 | `object 1 + 0x261d0` | Opens Bonus-1.saf and Bonus.wav. The frames were not walked. |
-| `object 1 + 0x2b7f0` | Further stores of `object 2 + 0x158`. The index-29 ending at this address was disassembled. |
 | `object 1 + 0x2c458` | Called every 75 ticks before the track restarts. The body was not read. |
 | `object 1 + 0x2d0f3` | The heap walk `object 1 + 0x2d0e5` returns. A size of 0 returns 0. The rest was not read. |
 | `object 1 + 0x2ec6b` / `object 1 + 0x2f26e` | Called on the sample slot before the address is set. |
 | `object 1 + 0x34cb2` / `object 1 + 0x2d3e6` / `object 1 + 0x34ef3` | The log gate around the sample wrappers. |
-| `object 1 + 0x37010` / `object 1 + 0x37040` / `object 1 + 0x37080` / `object 1 + 0x37150` / `object 1 + 0x37160` | The bodies those wrappers forward to. |
+| `object 1 + 0x35cc0` | Called when the sample type changes. |
+| `object 1 + 0x2da33` | The driver call sample start issues with `0x401`. |
 | `object 1 + 0x34cbe` / `object 1 + 0x34e50` / `object 1 + 0x34d78` | The Miles bodies the timer wrappers forward to. |
 | `object 1 + 0x2f439` | Called when the register-timer wrapper logs. |
 | `object 1 + 0x68d0` | Runs the status blit for steps 5 down through 0. The rest of the body was not read. |
@@ -434,7 +439,7 @@ A table the topic file already lays out. This list keeps the base, the stride, a
 | `object 2 + 0x9cd8`, stride `0x50` | The battle unit array. Count is `object 2 + 0x150`. | [Units](units.md) |
 | `object 2 + 0x4108`, stride `0x50` | The roster. Count is `object 2 + 0x4114`. `object 1 + 0x13920` returns one record. | [Units](units.md) |
 | `object 2 + 0x13c + 0x83`, stride `0x1a` | The 26-byte placement records of one map. | [Scenario files](scenario.md) |
-| `map%02d.cod`, record at `+0x0b`, stride 6 | Tile coordinates. The short at `+4` was not read. | [Scenario files](scenario.md) |
+| `map%02d.cod`, records at `+9`, stride 6 | Id, x, and y. Placement reads x and y from two bytes later and does not read the id. | [File formats](formats.md) |
 | `Shop%02d.dat`, 36 bytes | Three groups of 12 item ids, at `object 2 + 0x9d80`. | [Scenario files](scenario.md) |
 | `dsc%02d.dat` | Section count, then 8 dwords a section. | [Scenario files](scenario.md) |
 | `attr` records | One 4-byte terrain record per tile picture, from file `+0x11`. | [Map](map.md) |

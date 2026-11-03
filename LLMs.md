@@ -34,4 +34,4 @@ When the study of a binary session is finished, close it.
 
 ## What the notes look like
 
-Follow [note-shape.md](note-shape.md). The index holds how to reopen the image and links to `<game>/gaps.md`. That file is the open list: what a reconstruction still cannot do, then everything still unread. Each topic file holds one subject this program actually has. Mark each claim observed, inferred, or unknown, as that file describes.
+Follow [note-shape.md](note-shape.md). The index holds how to reopen the image and links to `<game>/gaps.md`. That file is the open list. It opens with two verdicts: whether a reconstruction is possible, and whether a modernised remake can start. Each verdict's first sentence is the answer. When the answer is no, the next sentence is the gap that blocks it. Then everything still unread. Each topic file holds one subject this program actually has. Mark each claim observed, inferred, or unknown, as that file describes.

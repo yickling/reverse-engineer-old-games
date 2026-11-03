@@ -42,7 +42,7 @@ Frame `i` is the record at `file + dword[table + i*4]`. Inside it: `int16` sampl
 
 `MAP##.DAT`, in `FIELD.VFS`, is who stands on the map. Byte 0 is 0 in every file. Byte 1 is how many unit slots are allocated. Byte 2 is how many 26-byte actor records follow. Every file is `0x83 + byte 2 * 26` bytes. Bytes 3 through `0x32` are sixteen rows of three. Bytes `0x33` through `0x52` are sixteen pairs. Bytes `0x53` through `0x82` are sixteen triples. The actor records start at `+0x83`. What those rows do in play is in [Turns](turns.md) and [Units](units.md).
 
-`MAP##.COD` begins `COD`. The short at `+7` equals byte 1 plus byte 2 of the matching `MAP` file, and every file is `9 + that count * 6` bytes. A record is at `file + 0x0b + index * 6`. The short at `+0` is x and the short at `+2` is y. The short at `+4` is not read by placement. Header byte 4 is 1 or 16. What that byte selects was not read.
+`MAP##.COD` begins `COD`. Byte 3 is 0, byte 5 is 9, and byte 6 is 0, in all 63 files. Byte 4 is 1 in 31 files and 16 in 32. The uint16 at `+7` equals byte 1 plus byte 2 of the matching `MAP` file, and every file is `9 + that count * 6` bytes. Records start at `+9`. Each one is an `int16` id, an `int16` x, and an `int16` y. On every actor record the id equals byte `+1` of the matching 26-byte `MAP` record. On the remaining records, one per byte 1 of the `MAP` file, the id is 0. Neither placement reads the id or byte 4. Both address `file + 0x0b + index * 6`, which is the x of that record, and read x and y from there.
 
 `SHOP00.DAT` through `SHOP29.DAT` are 36 bytes. `object 1 + 0x21470` reads three groups of 12. A group ends at `0xff` or at 12 bytes, and each kept byte is an item id.
 
@@ -87,7 +87,7 @@ The offsets are nondecreasing and every span is even, so the strings tile the ta
 
 ## Sound
 
-Sampled effects are RIFF `WAVE` files. Each one checked has a `fmt ` chunk of audio format 1, one channel, 8 bits, and a `data` chunk of that many bytes. The bytes sit around `0x80`. `BaseWav.vfs` is a `VFS` member of `MISC.VFS` with nine members, all 11025 Hz: `Beep.wav`, `Chess.wav`, `Equip.wav`, `Incom.wav`, `Miss.wav`, `OpWin.wav`, `OpWin1.wav`, `Rest.wav`, and `Sure.wav`. Three further waves sit directly in `MISC.VFS`. `Bonus.wav` and `EarQu.wav` are 11025 Hz. `Levup.wav` is 22050 Hz. Some of these files also carry `fact`, `LIST`, and `cue ` chunks after `data`. The calls that start a named wave were not decompiled.
+Sampled effects are RIFF `WAVE` files. Each one checked has a `fmt ` chunk of audio format 1, one channel, 8 bits, and a `data` chunk of that many bytes. The bytes sit around `0x80`. `BaseWav.vfs` is a `VFS` member of `MISC.VFS` with nine members, all 11025 Hz: `Beep.wav`, `Chess.wav`, `Equip.wav`, `Incom.wav`, `Miss.wav`, `OpWin.wav`, `OpWin1.wav`, `Rest.wav`, and `Sure.wav`. Three further waves sit directly in `MISC.VFS`. `Bonus.wav` and `EarQu.wav` are 11025 Hz. `Levup.wav` is 22050 Hz. Some of these files also carry `fact`, `LIST`, and `cue ` chunks after `data`. `object 1 + 0x20790` starts one. The calls that were read pass the wave, 1, −1, and −1.
 
 A `SAF` sample is not a `WAVE` file. The record at `file + dword[sample_table + index * 4]` is two flag bytes, a `uint16` rate, a `uint32` length, and that many bytes at `+8`. On the one sample in `ACT000.SAF` the `uint16` is 11025 and the length is 4464. `01 08` selects 0, `01 10` selects 1, `02 08` selects 2, and any other pair selects 3. The call order and the Miles names are in [Pictures](pictures.md).
 

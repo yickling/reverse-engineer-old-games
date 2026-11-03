@@ -90,6 +90,8 @@ Maps 0, 4, 5, 11, 12, 14, 19, 20, 24, 26, 28, and 29 have no other row. The call
 
 Map 7's first pair, at file offset `0x33`, is handler 12 and second byte 0. No map row names handler 12. When a step stores that first byte into `object 2 + 0x9d90`, in [Turns](turns.md), the handler runs. If `object 2 + 0x40e8` is clear it stores 1, plays `Icon7-3.dat`, writes `0x15` and 4 into unit `0x13`'s `+0x35` and `+0x36`, writes nibble 4 on slots `0xf` through `0x12`, and writes nibble 0 on slot `0x13`.
 
+Handler 21 is `object 1 + 0x278e0`. No row or pair of the map files selects it. The body was disassembled. It calls `object 1 + 0x29b80` first, which stores 0 into `+0x40` of every side-0 unit and runs the death spin. When the turn counter `object 2 + 0x9ce8` is above `0x19`, or `object 1 + 0x9b0(4)` is nonzero, it stores 2 in the outcome `object 2 + 0x9da0` and returns. Otherwise it calls `object 1 + 0x13800` with the scenario index, group 2, and 0. String `0x12` is drawn at `0xa0000`, portrait 3 is `object 1 + 0x10580(3)`, and string `0x13` is drawn at `0xaa44a`. Both strings come from `object 2 + 0x124` with pitch `0x140`, ink `0xd0`, fill 0, and shadow `0x6d`. `object 1 + 0x7980` reads the confirm, and `object 1 + 0x107f0` then dismisses the box, in [Pictures](pictures.md). A return of 0 draws string `0x14` at `0xa0000`, stores 1 into byte `+5` of slots 0, 1, 2, 3, 5, 6, 7, and 8 and of slot `0x34`, and stores 1 into `object 2 + 0x40e8`. Any other return draws string `0x15` at `0xa0000` and stores outcome 2.
+
 Other pairs of maps 0 through 29 name a handler the same way. The second byte is what the step's third argument has to equal, in [Turns](turns.md).
 
 | Map | Pair | What it does |

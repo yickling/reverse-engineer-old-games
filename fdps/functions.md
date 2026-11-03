@@ -6,7 +6,7 @@ This is the status list. The behavior stays in the topic file. A row is where th
 
 Where is `object N + offset`, from that object's base in the executable, as in [Binary](binary.md). A row is decompiled unless this file says it was disassembled or not read. The session loop, the thirty openers, the thirty endings, the thirty after-action checks, and the step handlers were disassembled, because Ghidra had not created functions there.
 
-Decompiled: 239, plus the picture-mode bodies in the table under Pictures. Disassembled: the blocks below. Not read: the list at the end.
+Decompiled: 258, plus the picture-mode bodies in the table under Pictures. Disassembled: the blocks below. Not read: the list at the end.
 
 ## Disassembled
 
@@ -22,7 +22,14 @@ No Ghidra function existed, or the body was read from the bytes. The topic file 
 | `object 2 + 0x28c` | Thirty after-action checks, `object 1 + 0x2a120` through `object 1 + 0x2b7c0`. | [Turns](turns.md) |
 | `object 2 + 0x1c4` | Fifty step handlers. The ones a map row names are the table in Scenario files. | [Scenario files](scenario.md) |
 | `object 1 + 0x6120` | Draws the command diamond. | [Pictures](pictures.md) |
+| `object 1 + 0x278e0` | Handler 21. Kills side 0, then either stores outcome 2 or hides slots 0 through 8 except 4, and slot 0x34. | [Scenario files](scenario.md) |
+| `object 1 + 0x209c0` | Once a tick, and every 75 ticks restarts the track at `object 2 + 0x9d54`. | [Turns](turns.md) |
+| `object 1 + 0x2d0e5` | Returns a block of the size it is passed. The heap walk is `object 1 + 0x2d0f3`. | [Pictures](pictures.md) |
+| `object 1 + 0x2d284` | Copies its count from the second pointer onto the first. | [Pictures](pictures.md) |
+| `object 1 + 0x32a28` | Writes one byte to a port. | [Pictures](pictures.md) |
+| `object 1 + 0x32a40` | Fills its count with the byte it is passed. | [Pictures](pictures.md) |
 | `object 1 + 0x20520` | Timer tick. No function was created. Increments `object 2 + 0x9d64` and calls rand. | [Session](session.md) |
+| `object 1 + 0x32a8a` | Stores its argument into the rand seed at `object 2 + 0x39c`. No direct call was found. | [Combat](combat.md) |
 | `object 1 + 0x2d0e0` | Jumps to `object 1 + 0x33a20`, which waits on DOS time function 0x2c. | [Session](session.md) |
 | `object 1 + 0x4677d` | Picture mode 0. Hand-written, no prologue. The stored byte is written unchanged. | [Pictures](pictures.md) |
 | `object 1 + 0x46927` | Picture mode 3. Hand-written. Writes (sample & 2) + 0x80. | [Pictures](pictures.md) |
@@ -48,7 +55,10 @@ One line is the body the topic file records.
 | `object 1 + 0x1d8e0` | Clears bit 0x80 of byte +5 on every slot. |
 | `object 1 + 0x20270` | (0x19) starts the two sound devices (eight channels on the second) and passes 0x19 on to `object 1 + 0x20540`. |
 | `object 1 + 0x20330` | Calls the sound shutdown. |
-| `object 1 + 0x20540` | Registers the tick at `object 1 + 0x20520` and passes 0x19 to the timer. |
+| `object 1 + 0x20540` | Registers the tick at `object 1 + 0x20520`, requests frequency `0x19`, and starts the timer. |
+| `object 1 + 0x2df06` | Forwards the tick. The log string names AIL_register_timer. |
+| `object 1 + 0x2e15a` | Forwards the handle and `0x19`. The log string names AIL_set_timer_frequency. |
+| `object 1 + 0x2e323` | Forwards the handle. The log string names AIL_start_timer. |
 | `object 1 + 0x20960` | Stores n as the music track. |
 | `object 1 + 0x209c0` | On each new tick counts to 0x4b and, when the track is set and a status call is nonzero, starts that track again. |
 | `object 1 + 0x20cb0` | Shuts sound down, blanks the palette, and passes {prefix}\fd.exe, {prefix}\FD1.Vid, and {prefix}\FD1.Aud to CRT `object 1 + 0x3df59`. |
@@ -81,7 +91,10 @@ One line is the body the topic file records.
 | `object 1 + 0x4e90` | The system menu, and the writer of FDE.SAV. |
 | `object 1 + 0x5460` | Passes the unit's tile and 1 after `object 1 + 0x19b0` when a move is followed by a menu result other than −1, and when `object 2 + 0x4` is set on a cancelled menu. |
 | `object 1 + 0x5b80` | Draws the 25×22 item-type mark from COMMAND.CEL. |
+| `object 1 + 0x5bd0` | Writes palette indexes 8 through 15 from a 16-step cycle. |
 | `object 1 + 0x5cf0` | Keeps four disable flags. |
+| `object 1 + 0x61a0` | Closes the command diamond. Plays OpWin.wav and steps the circle back down. |
+| `object 1 + 0x61f0` | Reads the command diamond. Arrows move when that corner's flag is 0. Enter returns 1 and Escape returns −1. |
 | `object 1 + 0x7980` | Returning anything other than 0 shows string 0x20c and leaves the tile alone. |
 | `object 1 + 0x83c0` | Four toggles. Corner 2 of the command diamond. |
 | `object 1 + 0x84e0` | The search on the fourth command corner. |
@@ -240,6 +253,8 @@ One line is the body the topic file records.
 | `object 1 + 0x1d060` | Plays a tile as six redraws. |
 | `object 1 + 0x1d550` | (x, y) slides the cursor pixel, `object 2 + 0x9cd4` and `object 2 + 0x9ccc`, toward that point. |
 | `object 1 + 0x2d25c` | Rounds toward zero. Stores the control word, sets the high byte to 0x1f, runs FRNDINT, and restores the word. |
+| `object 1 + 0x32a62` | Returns the rand seed, the dword at `object 2 + 0x39c`. |
+| `object 1 + 0x32a68` | Stores `seed * 0x41c64e6d + 0x3039` and returns bits 16 through 30. |
 
 ### [Pictures](pictures.md)
 
@@ -271,6 +286,8 @@ The other picture functions:
 | `object 1 + 0x62f0` | Stamps the sheet onto that picture at pitch 0x140. |
 | `object 1 + 0x6830` | Opens Status.cel. |
 | `object 1 + 0x6a90` | The status window. |
+| `object 1 + 0x6e70` | One frame of the window open. Steps 0 through 8 on the status sheet. |
+| `object 1 + 0x7730` | Draws one status bar: the filled picture, then picture 0 for the remainder. |
 | `object 1 + 0x70b0` | Waits while text is up, and it is the call that passes expander mode 8. |
 | `object 1 + 0x7520` | (dest, pitch, value, width, signed) expands NUMBER.CEL. |
 | `object 1 + 0x77c0` | (dest, pitch, index) frees any picture it loaded before. |
@@ -294,7 +311,11 @@ The other picture functions:
 | `object 1 + 0x1cb30` | Picks the map sprite. The index is slot * 12 + facing * 3 + step. |
 | `object 1 + 0x1d830` | Picks the unit under the cursor. |
 | `object 1 + 0x1d930` | (cel, index, dest, pitch, x, y, remap, mode) is the blit that reads the size. |
+| `object 1 + 0x107f0` | Dismisses the message box in six steps, then copies the plain window back. |
+| `object 1 + 0x1e840` | Pulses a run of palette entries on the scenarios in the Pictures table. |
+| `object 1 + 0x1efd0` | Writes count palette entries, three bytes each, after vertical retrace. |
 | `object 1 + 0x1f080` | (src, srcPitch, dest, destPitch, width, height) copies height rows of width bytes. |
+| `object 1 + 0x1f120` | The same arguments. Writes a source byte only when it is not 0. |
 | `object 1 + 0x1fda0` | Blends the screen through the two remap tables. |
 | `object 1 + 0x20790` | Starts a named wave. |
 | `object 1 + 0x255d0` | Opens Item.cel. |
@@ -303,6 +324,11 @@ The other picture functions:
 | `object 1 + 0x25d40` | Opens Weapon.cel. |
 | `object 1 + 0x25f80` | Opens Secret.cel. |
 | `object 1 + 0x2d254` | Reads a port. Port 0x3da is the vertical retrace. |
+| `object 1 + 0x2edde` | Forwards the slot, the sample bytes, and the length. The log string names AIL_set_sample_address. |
+| `object 1 + 0x2ee60` | Forwards the slot, the selector, and 2. The log string names AIL_set_sample_type. |
+| `object 1 + 0x2eee2` | Forwards the slot. The log string names AIL_start_sample. |
+| `object 1 + 0x2f096` | Forwards the slot and the rate. The log string names AIL_set_sample_playback_rate. |
+| `object 1 + 0x2f1f8` | Forwards the slot and 1. The log string names AIL_set_sample_loop_count. |
 | `object 1 + 0x4664b` | Stores the width, height, and pitch, then calls one body for the mode byte: |
 
 ### [Text](text.md)
@@ -355,22 +381,22 @@ Seen, and the body is not in a topic file. The longer note is in [Gaps](gaps.md)
 
 | Address | What it is believed to be |
 | --- | --- |
-| `object 1 + 0x61f0` / `object 1 + 0x61a0` | Read and close the command menu. |
-| `object 1 + 0x5bd0` | Runs after the six roster cells. |
 | `object 1 + 0x6790` | A FACE.CEL call whose arguments were not read. |
-| `object 1 + 0x6e70` | Runs nine times on the status sheet. |
-| `object 1 + 0x7730` | Draws the two status fills. The width is already in Pictures. |
 | `object 1 + 0x14605` | A call inside the save loader. |
 | `object 1 + 0x1bfb0` / `object 1 + 0x1cfd0` | Called by the map compose around the range pictures. |
 | `object 1 + 0x1fbd0` / `object 1 + 0x1ffc0` | Reveal the spell rectangle. |
 | `object 1 + 0x200f0` | Copies the rising experience strip. |
+| `object 1 + 0x1b030` | The channel bytes of the scenario palette pulse. Not split per scenario. |
 | `object 1 + 0x261d0` | Opens Bonus-1.saf and Bonus.wav. The frames were not walked. |
-| `object 1 + 0x278e0` | Handler 21. Stores 1 into `object 2 + 0x40e8`. The rest of the body was not read. |
 | `object 1 + 0x2b7f0` | Further stores of `object 2 + 0x158`. The index-29 ending at this address was disassembled. |
-| `object 1 + 0x2df06` / `object 1 + 0x2e15a` / `object 1 + 0x2e323` | The timer calls around the tick. What 0x19 counts is `object 1 + 0x2e15a`. |
-| `object 1 + 0x2ee60` / `object 1 + 0x2f096` | Passed the sample selector and the rate. The bodies were not read. |
-| `object 1 + 0x2edde` / `object 1 + 0x2f1f8` / `object 1 + 0x2eee2` | Start a fight sample. |
-| `object 1 + 0x32a68` | The call the notes treat as rand. The body was not read. |
+| `object 1 + 0x2c458` | Called every 75 ticks before the track restarts. The body was not read. |
+| `object 1 + 0x2d0f3` | The heap walk `object 1 + 0x2d0e5` returns. A size of 0 returns 0. The rest was not read. |
+| `object 1 + 0x2ec6b` / `object 1 + 0x2f26e` | Called on the sample slot before the address is set. |
+| `object 1 + 0x34cb2` / `object 1 + 0x2d3e6` / `object 1 + 0x34ef3` | The log gate around the sample wrappers. |
+| `object 1 + 0x37010` / `object 1 + 0x37040` / `object 1 + 0x37080` / `object 1 + 0x37150` / `object 1 + 0x37160` | The bodies those wrappers forward to. |
+| `object 1 + 0x34cbe` / `object 1 + 0x34e50` / `object 1 + 0x34d78` | The Miles bodies the timer wrappers forward to. |
+| `object 1 + 0x2f439` | Called when the register-timer wrapper logs. |
+| `object 1 + 0x68d0` | Runs the status blit for steps 5 down through 0. The rest of the body was not read. |
 
 ## Data tables
 
@@ -416,4 +442,6 @@ A table the topic file already lays out. This list keeps the base, the stride, a
 | `object 2 + 0x53f0` (`0x4800`) and `object 2 + 0x43f0` (`0x1000`) | The two remap tables. Fight and map each have a file. | [Pictures](pictures.md) |
 | `object 3 + 0xf`, 10 bytes | The key ring. `object 3 + 0x19` is the read index and `object 3 + 0x1d` is the other index. | [Text](text.md) |
 | `object 2 + 0x9cb0`, `object 2 + 0x9c20`, `object 2 + 0x9c98` | One pointer triple per `object 2 + 0x9cdc` entry. `object 1 + 0x212b0` frees them. What they hold was not read. | [Gaps](gaps.md) |
+| `object 1 + 0x4778`, four runs of 9 dwords | The four rectangles of one window-open frame. | [Pictures](pictures.md) |
+| `object 2 + 0x39c` | The rand seed. The image dword is 1. | [Combat](combat.md) |
 

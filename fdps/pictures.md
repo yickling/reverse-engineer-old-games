@@ -116,11 +116,11 @@ Cropped frames of one clip do not share an origin, so stacking the PNGs at (0, 0
 
 | Offset | Field |
 | --- | --- |
-| 0, 1 | Two bytes. `01 08` selects 0, `01 10` selects 1, `02 08` selects 2, and anything else selects 3. That value is passed to `object 1 + 0x2ee60` with a 2. |
-| `+2` | `uint16` passed to `object 1 + 0x2f096`. On `ACT000.SAF` the only sample stores 11025 here. |
+| 0, 1 | Two bytes. `01 08` selects 0, `01 10` selects 1, `02 08` selects 2, and anything else selects 3. |
+| `+2` | `uint16`. On `ACT000.SAF` the only sample stores 11025 here. |
 | `+4` | `uint32` length of the bytes at `+8`. On that same sample the length is 4464 and the span fits in the file. |
 
-`object 1 + 0x2edde` receives the bytes at `+8` and that length. `object 1 + 0x2f1f8` is then called with 1, and `object 1 + 0x2eee2` starts the slot. Those four calls were not decompiled. Inferred: they are the Miles playback used everywhere else, because the slot table and the rate value have that shape. The five `ACT` files checked (`ACT000` through `ACT004`) use sample indexes −1, 0, and 1 only. `ACT000` has one sample and points frame 5 at it; its hit marker is on frame 6.
+The kept slot is one of the eight dwords at `object 2 + 0x9d30`. `object 1 + 0x2f26e` and `object 1 + 0x2ec6b` are called on that slot first. Those two bodies were not read. Then, in order: `object 1 + 0x2edde` is passed the slot, the bytes at `+8`, and the length, and the string it logs names `AIL_set_sample_address`. `object 1 + 0x2ee60` is passed the slot, the selector, and 2, and names `AIL_set_sample_type`. `object 1 + 0x2f1f8` is passed the slot and 1, and names `AIL_set_sample_loop_count`. `object 1 + 0x2f096` is passed the slot and the `uint16`, and names `AIL_set_sample_playback_rate`. `object 1 + 0x2eee2` is passed the slot and names `AIL_start_sample`. Each of the five increments `object 2 + 0x9e6c` and decrements it on the way out. When `object 2 + 0x9e80` is nonzero, and the count is 1 or `object 2 + 0x9e84` is nonzero, a zero from `object 1 + 0x34cb2` and a nonzero from `object 1 + 0x2d3e6` logs through `object 1 + 0x34ef3`. The same arguments are then forwarded: address to `object 1 + 0x37010`, type to `object 1 + 0x37040`, the loop count to `object 1 + 0x37150`, the rate to `object 1 + 0x37080`, and the start to `object 1 + 0x37160`. Those forwarded bodies, and the three log calls, were not read. The five `ACT` files checked (`ACT000` through `ACT004`) use sample indexes −1, 0, and 1 only. `ACT000` has one sample and points frame 5 at it; its hit marker is on frame 6.
 
 Hold counts actually stored: every `STAND` frame is 4. `ACT` frames are mostly 2 (1296) or 1 (743), with a few 3, 4, 6, 7. `MAGIC` is the same shape.
 
@@ -301,6 +301,29 @@ Byte 8 is 1, and the bitmap is 320×200, for `VILLAGE.CEL`, `STATUS.CEL`, `STBOA
 
 `object 1 + 0x1f080(src, srcPitch, dest, destPitch, width, height)` copies `height` rows of `width` bytes. A source pitch of 0 repeats the same source row. Any other source pitch advances both pointers by their pitches. After the command icons, and again on the message path, the call is `object 1 + 0x1f080(buffer + 0x21d8, 0x168, 0xa0504, 0x140, 0x138, 0xc0)`. `0x21d8` is column 24 of row 24 in the 360-wide compose buffer. `0xa0504` is column 4 of row 4 on the 320-wide surface at `0xa0000`. The copied rectangle is 312×192, so four pixels remain on each side of the 320×200 picture. A point at buffer `(x, y)` lands on that surface at `(x - 20, y - 20)`. The phase transition's 320×200 copy of the same origin is in [Map](map.md).
 
+`object 1 + 0x107f0` dismisses the message box after the confirm in handler 21, in [Scenario files](scenario.md). `object 1 + 0x2d0e5` returns a block of the size it is passed: the map block is `0x15180`, two screen blocks are 64000, and the box is `0x561e`. `object 1 + 0x1bcf0` composes the map block. `object 1 + 0x1f080` copies the 312×192 window from that block at `+0x21d8` into the first screen block at `+0x504`. `object 1 + 0x1d930` expands picture 0 of `Message.cel`, the pointer at `object 2 + 0x43b4`, into the `0x561e` block at pitch `0x12e`, so the picture is 302×73. `object 1 + 0x32a40` fills a block with the byte it is passed, and `object 1 + 0x2d284` copies its count from the second pointer onto the first. `object 1 + 0x2d1e8` releases each block. The six y values at `object 1 + 0xfd38` are 190, 170, 150, 135, 127, and 120, and the loop reads them from the last back to the first. The blended height is the smaller of `200 − y` and `0x49`. Each step calls `object 1 + 0x1ffc0` with the two remap tables, selector 15, 13, 11, 9, 7, then 5, at screen x 9. That blitter was not decompiled. Each step waits until bit 3 of port `0x3da` is set and then clear, and copies the screen to `0xa0000`. After the six steps the plain window is copied there.
+
+`object 1 + 0x5bd0` writes palette indexes 8 through 15. It waits until bit 3 of port `0x3da` is set. When `object 2 + 0x3fbc` differs from the tick `object 2 + 0x9d64`, it stores the tick and writes eight entries. The phase at `object 2 + 0x14` selects the first of those eight bytes, then decreases, and −1 wraps to 15. The three channels are 24 bytes each, at `object 1 + 0x4730`, `object 1 + 0x4748`, and `object 1 + 0x4760`. Byte 23 of each run is past the window. The bytes are:
+
+| Channel | 24 bytes |
+| --- | --- |
+| 0 | `0e 0b 08 05 03 02 00 00 00 00 03 05 08 0b 0e 0e 0b 08 05 03 02 00 00 00` |
+| 1 | `2a 25 21 1e 1a 15 12 0e 0e 12 15 1a 1e 21 25 2a 2a 25 21 1e 1a 15 12 0e` |
+| 2 | `1a 15 10 0c 08 04 02 00 00 02 04 08 0c 10 15 1a 1a 15 10 0c 08 04 02 00` |
+
+`object 1 + 0x32a28` writes one byte to a port. The index goes to port `0x3c8` and the three channel bytes go to port `0x3c9`.
+
+`object 1 + 0x1e840` is the other pulse on that poll. It returns when `object 2 + 0x9d20` already equals the tick, and otherwise stores the tick there. It also calls `object 1 + 0x209c0`, in [Turns](turns.md). The phase at `object 2 + 0x9d24` increments once per tick and wraps at the period below. The step is that phase divided by 4. `object 1 + 0x1efd0` waits until bit 3 of port `0x3da` is set, then writes that many entries from the first index, three bytes a step. Indexes other than the ones in this table store the tick and write nothing. The channel bytes are copied from `object 1 + 0x1b030` and were not split per scenario.
+
+| Scenario | Period | Entries | First index |
+| --- | --- | --- | --- |
+| 0, `0x1a` | `0x14` | 5 | `0xf0` |
+| 2, `0x14`, `0x16`, `0x1d` | `0x3c` | `0xf` | `0xf0` |
+| 8 | `0x24` | 9 | `0xf6` |
+| `0x15` | `0x1c` | 7 | `0xf8` |
+| `0x17` | `0x2c` | `0xb` | `0xf0` |
+| `0x1b`, `0x1c` | `0x28` | `0xa` | `0xf5` |
+
 `object 1 + 0x5850` draws the four command pictures around the cursor, into that buffer, then performs this copy. It calls `object 1 + 0x1bcf0` first, so the icons sit on a fresh map frame. The step argument is multiplied by the float `0.06544979` stored by the `mov` at `object 1 + 0x585a`. The call at `object 1 + 0x5887` reaches `fcos` at `object 1 + 0x329aa`, and the call at `object 1 + 0x58b1` reaches `fsin` at `object 1 + 0x329b4`. Each result is multiplied by the step again and rounded by `frndint` in the callee at `object 1 + 0x2d25c`. With `cos` and `sin` those rounded offsets, and with the cursor minus the camera (`object 2 + 0x9cd4` − `object 2 + 0x9ce4`, `object 2 + 0x9ccc` − `object 2 + 0x9ce0`), the four corners are:
 
 | Corner | Position |
@@ -312,7 +335,7 @@ Byte 8 is 1, and the bitmap is 320×200, for `VILLAGE.CEL`, `STATUS.CEL`, `STBOA
 
 A picture is drawn when its x is from −24 through 334 and its y is from −24 through 214. Both pictures come from `COMMAND.CEL` at `object 2 + 0x43c4`, 25×22, expander mode 0. The top-left in the compose buffer is the corner plus `(24, 24)`, which is the corner plus `(4, 4)` on the 320-wide surface. The frame index is `0x1a` when the highlight argument equals the corner, and `0x1b` otherwise, plus the corner's entry in the second table. The glyph index is the first table's entry plus the second table's entry times `0x24`.
 
-The body at `object 1 + 0x6120` was disassembled. It calls `object 1 + 0x5850` with steps 1, 5, 9, 13, 17, `0x18`, and `0x19`, and each call recomposes the map and copies the window. Step `0x18` rounds to a right angle, so the offsets are 0 and 24 and the four pictures sit up, left, right, and down from the cursor. The second table copied by each menu below is four zeros, so the frame is picture 26 or 27 and the glyph is the first table as listed, in corner order:
+The body at `object 1 + 0x6120` was disassembled. It calls `object 1 + 0x5850` with steps 1, 5, 9, 13, 17, `0x18`, and `0x19`, and each call recomposes the map and copies the window. The close, `object 1 + 0x61a0` in [Turns](turns.md), walks the same circle back through steps `0x17`, `0x13`, `0x0f`, `0x0b`, `0x07`, and `0x03`. Step `0x18` rounds to a right angle, so the offsets are 0 and 24 and the four pictures sit up, left, right, and down from the cursor. The second table copied by each menu below is four zeros, so the frame is picture 26 or 27 and the glyph is the first table as listed, in corner order:
 
 | Menu | Glyphs (up, left, right, down) | Where it is opened |
 | --- | --- | --- |
@@ -323,7 +346,7 @@ The body at `object 1 + 0x6120` was disassembled. It calls `object 1 + 0x5850` w
 
 When `object 1 + 0x1d830` does not return −1, that unit is redrawn with `object 1 + 0x1cb30` before the copy.
 
-`object 1 + 0x70b0` waits while text is up, and it is the call that passes expander mode 8. The key read is in [Text](text.md). While `object 1 + 0x78e0` returns a value above `0x7f`, and when `object 1 + 0x32a68() % 200` is 0, a counter runs up from 0 and the speaker's map sprite is drawn into a 64000-byte scratch at x `0xa1`. For counter values 0 through 14 the picture is mode 8 at y taken from the fifteen dwords at `object 1 + 0x4808`: 15, 30, 70, 105, 140, 170, 150, 130, 150, 170, 160, 165, 165, 160, 170. Values 15 through 24 stay on mode 8 at `(0xa1, 170)`. Later values use mode 0: the frame `0x24` bytes further into that icon's cache, then the frame `0x0c` bytes further, then the frame `0x18` bytes further while y starts at `0xaa` and falls by 4. The icon cache stride `param * 0x30` is the 12-frame set, so those three distances are facings 3, 1, and 2.
+`object 1 + 0x70b0` waits while text is up, and it is the call that passes expander mode 8. The key read is in [Text](text.md). While `object 1 + 0x78e0` returns a value above `0x7f`, and when `object 1 + 0x32a68() % 200` is 0, a counter runs up from 0 and the speaker's map sprite is drawn into a 64000-byte scratch at x `0xa1`. The generator is in [Combat](combat.md). For counter values 0 through 14 the picture is mode 8 at y taken from the fifteen dwords at `object 1 + 0x4808`: 15, 30, 70, 105, 140, 170, 150, 130, 150, 170, 160, 165, 165, 160, 170. Values 15 through 24 stay on mode 8 at `(0xa1, 170)`. Later values use mode 0: the frame `0x24` bytes further into that icon's cache, then the frame `0x0c` bytes further, then the frame `0x18` bytes further while y starts at `0xaa` and falls by 4. The icon cache stride `param * 0x30` is the 12-frame set, so those three distances are facings 3, 1, and 2.
 
 At `object 1 + 0x10002`, inside `object 1 + 0xff30`, `object 1 + 0x1d930` draws picture 0 of `MESSAGE.CEL` at buffer `(29, 140)`, pitch `0x168`, mode 0. That draw is the page word `0xfffd` in [Text](text.md). The file is 302×73, so on the 320-wide surface the box is `(9, 120)`. The same function then expands a 125×100 picture from `object 2 + 0x120` at buffer `+ 0x9ad0`, which is buffer `(32, 110)` and surface `(12, 90)`, mode 0, and copies the window with the call above.
 
@@ -376,9 +399,19 @@ The item-list drawer at `object 1 + 0x14e70` draws `SELBAR.CEL` picture 0 at `ob
 | Word `+0x48` | `(112, 173)` | 3. Row 1 while byte `+0x22` is nonzero |
 | Word `+0x4a` | `(112, 182)` | 3. Row 1 while byte `+0x23` is nonzero |
 
-`object 1 + 0x7730` draws the two fills. The width is `(current * 0x75 + maximum - 1) / maximum` when the maximum is at least 1, and 0 otherwise. `0x75` is 117, the width of `BAR.CEL`. The first pool uses picture 1 at `(22, 118)`. The second uses picture 2 at `(22, 137)`. The body of `object 1 + 0x7730` was not read.
+`object 1 + 0x7730(dest, pitch, picture, width)` draws one bar from `BAR.CEL`, the pointer at `object 2 + 0x43b0`. A picture is `0x3a8` bytes, 117 by 8. When `width` is above 0, `object 1 + 0x1f120` copies the left `width` columns of that picture, source pitch `0x75`. A negative width is stored as 0. When `width` is below `0x75`, the same call copies picture 0 from column `width`, for `0x75 − width` columns, onto `dest + width`. `object 1 + 0x1f120(src, srcPitch, dest, destPitch, width, height)` writes a source byte only when it is not 0. The width is `(current * 0x75 + maximum - 1) / maximum` when the maximum is at least 1, and 0 otherwise. The first pool uses picture 1 at `(22, 118)`. The second uses picture 2 at `(22, 137)`.
 
-A 151×149 rectangle at `(152, 47)` is kept aside, and `object 1 + 0x14e70` draws the eight item pairs there with the selection row set to −1, so no bar is drawn. `object 1 + 0x6e70` then runs nine times. That body was not read. `object 1 + 0x70b0` waits, which is the key read in [Text](text.md).
+A 151×149 rectangle at `(152, 47)` is kept aside, and `object 1 + 0x14e70` draws the eight item pairs there with the selection row set to −1, so no bar is drawn. `object 1 + 0x6e70` then runs for steps 0 through 8. The first argument is the saved VGA screen. The second is the picture `object 1 + 0x6830` returned. The third is the step. The body copies the first argument into a 64000-byte block, then copies four rectangles of the second argument onto it with `object 1 + 0x1f080`, calls `object 1 + 0x33a20(0xf)`, waits until bit 3 of port `0x3da` is set and then clear, copies the block to `0xa0000`, and frees it. Pitch is `0x140`.
+
+The left upper piece is `0x6c` rows. The nine dwords at `object 1 + 0x4778` are `−0x78`, `−0x64`, `−0x46`, `−0x28`, `−0xf`, `0xf`, `0xe`, `0xe`, `0xf`. A negative entry sets the width to `entry + 0x85` and the destination x to 0, and the source x is `0x94 − width`. Any other entry sets the width to `0x85`, the destination x to the entry, and the source x to `0xf`.
+
+The left lower piece uses the nine dwords at `object 1 + 0x479c`: `0xbe`, `0xaf`, `0xa0`, `0x8c`, `0x7d`, `0x6c`, `0x6d`, `0x6d`, `0x6c`. The source is `(15, 108)`. The destination is `(15, entry)`. The width is `0x85`. The height is `200 − entry`.
+
+The right body is `0x9c` rows. The nine dwords at `object 1 + 0x47c0` are `0x12c`, `0x10e`, `0xf0`, `0xd7`, `0xaf`, `0x94`, `0x95`, `0x95`, `0x94`. The source is `(148, 44)`. The destination x is the entry and the destination y is 44. The width is the smaller of `0x140 − entry` and `0x9e`.
+
+The right header is `0x9e` columns. The nine dwords at `object 1 + 0x47e4` are `−0x24`, `−0x20`, `−0x18`, `−0x10`, `−8`, `0`, `−1`, `−1`, `0`. The height is `entry + 0x2c`. The source is `(148, 0x2c − height)`. The destination is `(148, 0)`.
+
+`object 1 + 0x70b0` waits, which is the key read in [Text](text.md). On the way out, `object 1 + 0x68d0` is called with the status picture and the saved screen, and that call runs this blit for steps 5, 4, 3, 2, 1, and 0. The rest of `object 1 + 0x68d0` was not read.
 
 When the unit has spells, that rectangle is revealed on the VGA screen at the same `(152, 47)` through `object 1 + 0x1fbd0`, the margin stepping 2, 4, 6, 8, 10. `object 1 + 0x176c0` draws the list, and the same margins run back down. More than eight spells blends a second page through `object 1 + 0x1ffc0` with selectors 1, 3, …, 15 and the two remap tables. Both of those blitters were not decompiled.
 
@@ -427,4 +460,4 @@ What stays data:
 
 What the blend tables were doing, and what replaces them. Mode 9 mixes a source index with the pixel already there, and the selector from 0 through 16 picks the ramp. A new engine can use a straight alpha of `selector / 16` on the texture, and keep index 0 transparent. That matches the selector the map pulse, the fight chunk, and the rising number already pass. The 18 ramps and the 4096-byte mixer are the pixel-identical version of that mix. A remake does not need them. The strike flash, mode 3, is the written index `(sample & 2) + 0x80` for the frames after the first hit. A white flash of the same sprites is the same moment.
 
-The fight sample calls at `object 1 + 0x2edde`, `object 1 + 0x2f1f8`, and `object 1 + 0x2eee2` were not decompiled. The sample record's rate and length are in [SAF clips](#saf-clips). A player that starts that span when the frame says so is the sound the clip carries. Named waves such as `Miss.wav` and `Levup.wav` are separate cues, not frames.
+The sample wrappers are in [SAF clips](#saf-clips). A player that starts that span when the frame says so is the sound the clip carries. Named waves such as `Miss.wav` and `Levup.wav` are separate cues, not frames.

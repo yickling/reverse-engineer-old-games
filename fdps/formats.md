@@ -89,7 +89,7 @@ The offsets are nondecreasing and every span is even, so the strings tile the ta
 
 Sampled effects are RIFF `WAVE` files. Each one checked has a `fmt ` chunk of audio format 1, one channel, 8 bits, and a `data` chunk of that many bytes. The bytes sit around `0x80`. `BaseWav.vfs` is a `VFS` member of `MISC.VFS` with nine members, all 11025 Hz: `Beep.wav`, `Chess.wav`, `Equip.wav`, `Incom.wav`, `Miss.wav`, `OpWin.wav`, `OpWin1.wav`, `Rest.wav`, and `Sure.wav`. Three further waves sit directly in `MISC.VFS`. `Bonus.wav` and `EarQu.wav` are 11025 Hz. `Levup.wav` is 22050 Hz. Some of these files also carry `fact`, `LIST`, and `cue ` chunks after `data`. The calls that start a named wave were not decompiled.
 
-A `SAF` sample is not a `WAVE` file. The record at `file + dword[sample_table + index * 4]` is two flag bytes, a `uint16` passed to `object 1 + 0x2f096`, a `uint32` length, and that many bytes at `+8`. On the one sample in `ACT000.SAF` the `uint16` is 11025 and the length is 4464. `01 08` selects 0, `01 10` selects 1, `02 08` selects 2, and any other pair selects 3. That value is passed to `object 1 + 0x2ee60` with a 2. `object 1 + 0x2edde`, `object 1 + 0x2f1f8`, and `object 1 + 0x2eee2` then start the slot. Those three were not decompiled.
+A `SAF` sample is not a `WAVE` file. The record at `file + dword[sample_table + index * 4]` is two flag bytes, a `uint16` rate, a `uint32` length, and that many bytes at `+8`. On the one sample in `ACT000.SAF` the `uint16` is 11025 and the length is 4464. `01 08` selects 0, `01 10` selects 1, `02 08` selects 2, and any other pair selects 3. The call order and the Miles names are in [Pictures](pictures.md).
 
 `BaseAni.vfs` is the other nested archive in `MISC.VFS`. Its three members are `SAF` clips, not waves.
 

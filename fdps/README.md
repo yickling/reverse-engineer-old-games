@@ -6,15 +6,9 @@ The real entry was never turned into a Ghidra function, so the top-level loop in
 
 ## How to reopen the binary
 
-`FDPS.EXE` is a Watcom C/C++32 (1988–1994) Linear Executable inside an MZ stub. REA rejects that (`unsupported LE executable in MZ image`) before any provider runs. The analysis target is a relocated flat image, not the EXE. The object map and the CRT are in [Binary](binary.md).
+`FDPS.EXE` is a Watcom C/C++32 (1988–1994) Linear Executable inside an MZ stub. A tool that cannot load that container needs a flat image relocated at the object bases in the header. The object map and the CRT are in [Binary](binary.md).
 
-An address in these notes is an offset from an object's own base in the executable: `object 1 + 0x33008` is the entry, wherever a tool places object 1. The bases stored in the LE header, and how they line up with the flat image below, are in [Binary](binary.md). `0xa0000` is the VGA framebuffer, not one of those objects.
-
-- Image used for this study: `/tmp/fdps-flat.bin` (393269 bytes). SHA-256 `5f010ea722e0f449ce6d19dd1215ce01a7b39f45fdfdd8dd1b733ad6d66af291`. It is relocated at the header bases, so it is not required for reading the notes.
-- Open as raw-binary, architecture `x86`, entry `0x10000`, provider `ghidra`. File offset 0 is address `0x10000`. In this image, `object 1 + X` is file offset `X`, `object 2 + X` is file offset `0x50000 + X`, and `object 3 + X` is file offset `0x60000 + X`.
-- Ghidra 12.1.4 at `~/.local/opt/ghidra_12.1.4_PUBLIC`, JDK 21 at `~/.local/opt/jdk-21.0.13+9`. Language `x86:LE:32:default`, compiler spec `gcc`, loader `BinaryLoader`.
-- A bare `0x` selector that is not an existing function falls back to a file-offset mapping and decompiles the wrong body. Ask for `file-offset:0x…` of a byte that sits inside a function Ghidra already created.
-- The image was seeded at `0x10000`, the header base of object 1, not the real entry `object 1 + 0x33008`. Auto-analysis did not create a function at main (`object 1 + 0x191f0`) or at the scenario-dispatch handlers around `object 1 + 0x2a180`.
+An address in these notes is an offset from an object's own base in the executable: `object 1 + 0x33008` is the entry, wherever a tool places object 1. `0xa0000` is the VGA framebuffer, not one of those objects. A number that is not already inside a function can be taken as a file offset and open the wrong body. The real entry was not where analysis started, and no function was created at `object 1 + 0x191f0` or at the scenario-dispatch handlers around `object 1 + 0x2a180`.
 
 `DOS4GW.EXE` is the extender. `SETSOUND.EXE` and the `.DIG` files are Miles AIL 3.02. `PlayGame.exe` and the NSIS pieces are a later Windows launcher. Game logic is only in `FDPS.EXE`.
 

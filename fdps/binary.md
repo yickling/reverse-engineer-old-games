@@ -10,7 +10,7 @@ Part of the [FDPS notes](README.md). Decompiled functions are Ghidra output, not
 | 2 data/stack | `0x60000` | `0xc3c0` | `0x2043` | index 73, 4 initialized pages |
 | 3 tiny data | `0x70000` | `0x54` | `0x2043` | index 77, 1 page |
 
-These bases are what the LE header records. A loader may place an object at another address. The notes cite the offset from the object's own base, so `object 1 + 0x33008` is the same byte at any base. The flat image for this study uses the header bases. In that file, `object 1 + X` is file offset `X`, `object 2 + X` is file offset `0x50000 + X`, and `object 3 + X` is file offset `0x60000 + X`. `0xa0000` is the VGA framebuffer, not one of these objects.
+These bases are what the LE header records. A loader may place an object at another address. The notes cite the offset from the object's own base, so `object 1 + 0x33008` is the same byte at any base. A flat image built at these bases, with object 1 at the start of the file, has `object 1 + X` at file offset `X`, `object 2 + X` at file offset `0x50000 + X`, and `object 3 + X` at file offset `0x60000 + X`. `0xa0000` is the VGA framebuffer, not one of these objects.
 
 ESP is the top of object 2 (`0xc3c0`). The entry is object 1 + `0x33008`. Those bytes are a short jump over the Watcom copyright banner into the CRT at `object 1 + 0x33080`.
 

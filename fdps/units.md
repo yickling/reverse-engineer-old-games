@@ -18,7 +18,7 @@ Bytes filled by the spawners `FUN_00023280` and `FUN_00022bb0`, and read by the 
 | `+8` | Compared with `7` and `3` while a destination is being chosen. Not followed. |
 | `+9` | `FUN_00034310` adds this byte to `+0x44`. That function is called from the village action at `0x35810`. The rest of the body was not read. |
 | `+0x1a` | First byte of the learned-id bits. `FUN_00028280(unit, id)` sets bit `id % 8` of byte `+0x1a + id / 8`. The masks are `01 02 04 08 10 20 40 80` at `0x27630`. |
-| `+0x1f` | Byte 0 of the `Friaprda.dat` or `EnemyDat.dat` row, copied by spawn. What reads it was not followed. |
+| `+0x1f` | Byte 0 of the `Friaprda.dat` or `EnemyDat.dat` row, copied by spawn. `FUN_000162f0` draws interface string `value + 0x97`. |
 | `+0x20` | Class. Byte 1 of that same row. `FUN_00018b60` returns `DAT_00063fd0 + (class + 1) * 10`, a row of `ProMap.dat`. |
 | `+0x21` | Byte used as the divisor of the experience term in `FUN_0001c4f0`. `FUN_0001dd00` adds 1 when the byte at `+0x3c` crosses 100. |
 | `+0x22`, `+0x23` | Counts. While nonzero, the rebuild multiplies attack, or defense, by the double `1.15` at `0x61b1c` and `0x61b24`, then `FUN_0003d25c` rounds toward zero. `FUN_000162f0` writes 1 to `0x6000c` when the byte is nonzero. |
@@ -33,7 +33,7 @@ Bytes filled by the spawners `FUN_00023280` and `FUN_00022bb0`, and read by the 
 | `+0x3d` | Index script 5 reads, into `DAT_000640d8` and into the three-byte rows at `DAT_0006013c`. |
 | `+0x40` | Word reduced by the damage formula. At spawn it is copied from `+0x42`. Inferred to be current hit points: the bar and both attack paths treat it as the pool that reaches 0. |
 | `+0x42` | Maximum of that pool. |
-| `+0x44`, `+0x46` | Second current/max pair. Spawn copies `+0x46` into `+0x44` beside the copy of `+0x42` into `+0x40`, at `0x22d90`. The same pair of copies, with byte `+5` cleared, is at `0x3ae8f` and `0x3b3df`. The spell scorer skips a spell whose row byte `+5` is above `+0x44`. A cast subtracts that byte: `FUN_00028590` does it for the fight player `FUN_0001a4a0`, and `FUN_000288c0` does the same store at `0x28942`. The subtraction does not clamp. `FUN_00027570` adds to `+0x44` and caps it at `+0x46`. The rest at the start of `FUN_0001e3c0` adds to `+0x40`, not to this pair. Inferred to be a second pool. |
+| `+0x44`, `+0x46` | Second current/max pair. Spawn copies `+0x46` into `+0x44` beside the copy of `+0x42` into `+0x40`, at `0x22d90`. Endings 18 and 23 make the same pair of copies, and clear byte `+5`, when `0x640e9` is set and the character id is at most `0xb`. The addresses are `0x3ae8f` and `0x3b3df`, in [Session](session.md). The spell scorer skips a spell whose row byte `+5` is above `+0x44`. A cast subtracts that byte: `FUN_00028590` does it for the fight player `FUN_0001a4a0`, and `FUN_000288c0` does the same store at `0x28942`. The subtraction does not clamp. `FUN_00027570` adds to `+0x44` and caps it at `+0x46`. The rest at the start of `FUN_0001e3c0` adds to `+0x40`, not to this pair. Inferred to be a second pool. |
 | `+0x48` | Attack word, read by `FUN_0001c4f0` and `FUN_00019f60`. |
 | `+0x4a` | Defense word. |
 | `+0x4c` | Hit word. A roll of `rand % 100` lands when it is below this minus the defender's `+0x4e`. |
@@ -102,17 +102,75 @@ else:
     +0x37 = row[5] * scale
     +0x39 = row[6] * scale
     +0x3e = row[7] * scale
+    +0x3b = row[8]
     hp = short(row + 2) * scale
     mp = row[4] * scale
 +0x40 = +0x42 = hp
 +0x44 = +0x46 = mp
 ```
 
-`FUN_00023b90(characterId)` appends one roster record at `DAT_00064108 + DAT_00064114 * 0x50` and then adds 1 to the count. It is the only append. Side is 2, and `+7` and `+8` are the argument. The rows are the same `Friaprda.dat` and `FriLevUp.dat` rows as a spawn whose character id is below `0x3c`, and `+0x21` is byte `+2` of the `Friaprda` row, the scale those formulas multiply by. The first two item pairs are flagged `0x40` with the ids at `Friaprda` `+0xc` and `+0xd`. Each of the next four is flagged `0x80` when the byte at `+0xe` plus the index is `0xff`, and flagged 0 otherwise. It then calls `FUN_00023a90` with the index it just filled. That body was not read. Who calls the append is in [Session](session.md). How far the copy into a battle goes is in [Scenario files](scenario.md).
+`FUN_00023b90(characterId)` appends one roster record at `DAT_00064108 + DAT_00064114 * 0x50` and then adds 1 to the count. It is the only append. Side is 2, and `+7` and `+8` are the argument. The rows are the same `Friaprda.dat` and `FriLevUp.dat` rows as a spawn whose character id is below `0x3c`, and `+0x21` is byte `+2` of the `Friaprda` row, the scale those formulas multiply by. The first two item pairs are flagged `0x40` with the ids at `Friaprda` `+0xc` and `+0xd`. Each of the next four is flagged `0x80` when the byte at `+0xe` plus the index is `0xff`, and flagged 0 otherwise. Four bytes at `+8` are copied to `+0x1a`. It then calls `FUN_00023a90` with the index it just filled. That body was not read. Who calls the append is in [Session](session.md). How far the copy into a battle goes is in [Scenario files](scenario.md).
 
-`FriLevUp.dat` byte 10 selects the `GetMgTab.dat` row used when a level is gained, unless that byte is `0xff`. The five pairs at bytes 0, 2, 4, 6, and 8 are the level-up rolls in [Combat](combat.md). Spawn uses only the first byte of each pair. Bytes `+2` and `+8` through `+0x11` of `Friaprda.dat`, and bytes `+8` and `+9` of `EnemyDat.dat`, were not read.
+`FriLevUp.dat` byte 10 selects the `GetMgTab.dat` row used when a level is gained, unless that byte is `0xff`. The five pairs at bytes 0, 2, 4, 6, and 8 are the level-up rolls in [Combat](combat.md). Spawn uses only the first byte of each pair.
 
-`RankUp.dat` is 9 rows of 12 bytes, and each row is four triples of 3. `FUN_00034980` selects a triple with `argument * 3`. It stores byte 0 at unit `+7` and byte 1 at unit `+0x20`. `FUN_00034310` compares byte 0 of the row with byte 0 of the selected triple, stores byte 1 at `0x64034`, and stores byte 2 at `0x64038` before the text call at `0x346f6`. The same function stores `row[7] + 1` at `0x64030`. The read at `0x351e1` was not separated. The rest of the 80 bytes is still unmapped.
+The same spawn copies the rest of the 26-byte actor record. Byte `+5` is the first equipped id, and byte `+6` is the second, unless byte `+5` is `0xff`: then the first pair is byte `+6` and the second pair is empty. Bytes `+7` through `+0xc` are the other six ids, and `0xff` sets the empty flag. Four bytes at `+0x0d` are copied to unit `+0x1a`. Byte `+0x11` is the phase byte at `+0x34`, and `+0x12` and `+0x13` are its tile arguments. Byte `+0x14` is `+0x3d`. Byte `+0x16` and the short at `+0x17` are the three bytes at `+0x31`. Byte `+0x19` is copied to `+0x1e`. Bytes `+2` and `+3` are not in these copies.
+
+```
+struct Friaprda {            /* FUN_00018aa0, 60 rows of 0x18 */
+    uint8_t  kind;           /* +0  -> unit +0x1f. Inferred. The status window draws string value + 0x97 */
+    uint8_t  class_id;       /* +1  -> unit +0x20. ProMap row is class_id + 1 */
+    uint8_t  scale;          /* +2  -> unit +0x21 on a roster append */
+    uint16_t hp;             /* +3 */
+    uint16_t mp;             /* +5 */
+    uint8_t  move;           /* +7  -> unit +0x3b */
+    uint8_t  spells[4];      /* +8  -> unit +0x1a on a roster append */
+    uint8_t  items[6];       /* +0x0c. 0xff marks an empty pair */
+    uint16_t attack;         /* +0x12 */
+    uint16_t defense;        /* +0x14 */
+    uint16_t hit;            /* +0x16 */
+};
+
+struct EnemyDat {            /* FUN_00018b00, 91 rows of 0x0a */
+    uint8_t  kind;           /* +0  -> unit +0x1f */
+    uint8_t  class_id;       /* +1  -> unit +0x20 */
+    uint16_t hp;             /* +2  times the actor scale */
+    uint8_t  mp;             /* +4  times the actor scale */
+    uint8_t  attack;         /* +5  times the actor scale */
+    uint8_t  defense;        /* +6  times the actor scale */
+    uint8_t  hit;            /* +7  times the actor scale */
+    uint8_t  move;           /* +8  -> unit +0x3b, not scaled */
+    uint8_t  experience;     /* +9  the term in Combat */
+};
+
+struct ProMap {              /* FUN_00018b60(class_id + 1), 41 rows of 0x0a */
+    uint8_t move_cost[8];    /* +0  indexed by the terrain byte. 1, 2, or 255 */
+    uint8_t crit;            /* +8  the crit roll in Combat */
+    uint8_t spell_scale;     /* +9  percent. Positive spell power is multiplied by it */
+};
+
+struct MagicDat {            /* FUN_00018bc0, 40 rows of 7 */
+    int16_t power;           /* +0  signed. The amount is in Combat */
+    uint8_t chance;          /* +2 */
+    uint8_t budget;          /* +3 */
+    uint8_t shape;           /* +4 */
+    uint8_t cost;            /* +5  subtracted from unit +0x44 */
+    uint8_t side;            /* +6 */
+};
+
+struct RankChoice {          /* one triple of a RankUp.dat row */
+    uint8_t character_id;    /* FUN_00034980 stores this at unit +7 */
+    uint8_t class_id;        /* stored at unit +0x20 */
+    uint8_t third;           /* FUN_00034310 stores this at 0x64038. Not copied onto the unit */
+};
+
+struct RankUp {              /* FUN_00018c20, 9 rows. Index is the character id */
+    RankChoice choice[4];
+};
+```
+
+The flood fill indexes a `ProMap` row by the terrain byte, so byte 8 is also the cost of terrain 8 and byte 9 is also the cost of terrain 9. The attribute files use terrains 0, 1, 2, 5, and 6, in [Map](map.md).
+
+`RankUp.dat` is those 9 rows, so the index runs through character ids 0 through 8. `FUN_00035030`, called from the rank window at `0x344b5`, reads `RankUp` of unit byte `+8` at `0x351e1`. The triple index comes from the caller's array, and the window draws interface string `choice.class_id + 0xa1`. `FUN_00034980` selects its triple with `argument * 3`. `FUN_00034310` compares byte 0 of the row with byte 0 of the selected triple, stores byte 1 at `0x64034`, and stores byte 2 at `0x64038` before the text call at `0x346f6`. The same function stores `row[7] + 1` at `0x64030`.
 
 The six bytes at `+0x22` are counts. Spawn clears them: `push 6`, `push 0`, `push unit + 0x22`, then the call at `0x23715`. `FUN_00028f40(kind, id)` looks the unit up and, when `rand % 100` is below byte `+2` of a `MagicDat.dat` row and the chosen byte is still 0, stores `rand % 2 + 2`. Kind `0x11` chooses `+0x27`, kind `0x12` chooses `+0x25`, and kind `0x13` chooses `+0x26`. Any other kind chooses byte `kind + 0x22` and reads the chance from magic row `0x14`. Kinds `0x11`, `0x12`, and `0x13` also require `FUN_00029050` to return 0. The spell player `FUN_000288c0` calls this with kind `0x11`, with its own argument when that argument is `0x12` or `0x13`, and with 0, 1, and 2 when the argument is `0x14`. The phase tick that counts the bytes down is in [Turns](turns.md).
 

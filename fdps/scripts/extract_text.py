@@ -4,7 +4,7 @@
 Each string is a run of glyph indexes, as in text.md. The glyph map pairs
 an index with the character read from that cell of FDETXT.FON. Cells 0-9
 are the digits and cells 10-35 are A-Z. The other cells are the reading in
-docs/fdps/text/glyph-map.tsv. A cell that looks like two similar characters
+extract/text/glyph-map.tsv. A cell that looks like two similar characters
 can be off by one stroke.
 
 Scenario index N is the member FDETXT(N+1).TXT. FDETXT00.TXT is the
@@ -31,9 +31,9 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent.parent
-DEFAULT_MAP = ROOT / "docs" / "fdps" / "text" / "glyph-map.tsv"
-DEFAULT_OUT = ROOT / "docs" / "fdps" / "text"
+GAME = HERE.parent
+DEFAULT_MAP = GAME / "extract" / "text" / "glyph-map.tsv"
+DEFAULT_OUT = GAME / "extract" / "text"
 
 CONTROLS = {
     0xFFFE: "\n",

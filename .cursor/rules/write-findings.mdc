@@ -14,6 +14,6 @@ Before finishing any study of a game:
 3. Put any address, file, or field you saw and did not read into that game's `gaps.md`, under the same heading as the topic. Remove the row when the topic file records the finding. `gaps.md` also states what a reconstruction still cannot do.
 4. The chat may summarize what was written. Do not end with the result only in the chat.
 
-`__stash/` is the local copy of programs under study. Read it. Do not create or change files there, and do not name it in the notes. Notes go in the game folder. A repeatable extractor goes in `<game>/scripts/`, as in [note-shape.md](note-shape.md). Every other file goes in `docs/<game>/`. Do not paste scenario text or other copyrighted writing into the notes.
+`__stash/` is the local copy of programs under study. Read it. Do not create or change files there, and do not name it in the notes. Notes go in the game folder. A repeatable extractor goes in `<game>/scripts/`, as in [note-shape.md](note-shape.md). Every other file goes in `<game>/extract/`. Do not paste scenario text or other copyrighted writing into the notes.
 
 The root README is the index of analysed games. Add a row there when a study starts. Do not name the game in any other top-level file.

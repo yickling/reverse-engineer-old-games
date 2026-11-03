@@ -23,7 +23,7 @@ A shop file is three groups of 12 bytes. `FUN_00031470(group, dest)` copies byte
 
 The scenario index is the battle map. `FUN_00022720` passes `DAT_00069cf4` to `FUN_00022bb0`, and that function calls `FUN_000227b0` before it places anyone. Every name in the table above is formatted with that same index. The walkable grid is section 0: `m%02d0.mpl`. Its width and height are the shorts at `+7` and `+9`, `FUN_000227b0` copies those two shorts into the occupancy grid, and each cell is the picture short already described above. A later section is another plate on that visit, drawn as in [Map](map.md). Of indexes 0 through 29, scenarios 5 and 29 add a plate at order 8, and scenario 7 adds the plate at order 11. The other 27 have one section.
 
-The title stores index 0. Each ending in the table in [Session](session.md) stores the next index, 1 through 29, with `mov dword [DAT_00069cf4], imm`. The visit that follows therefore loads the next numbered grid. Files past index 29 use the same layout. None of those immediate stores names them.
+The title stores index 0. Winning a scenario stores the next index, and the visit that follows loads that grid. Indexes 0 through 25, 27, and 28 each store their own index plus one. Index 26 stores 27 only on the item check in [Session](session.md); the other path sets quit and leaves the index at 26. Index 29 stores nothing and sets quit. The other writes of `DAT_00069cf4` are opcode 17, at `0x21bf6`, and the save and load copies. Files past index 29 use the same layout. A load of one of those higher indexes is a scene inside a script. The battle that follows an opener is the index the script left behind, which for every `Icon00.dat` through `Icon29.dat` is that file's own number.
 
 Section 0 for indexes 0 through 29:
 
@@ -52,19 +52,20 @@ Bytes 3 through `0x32` are sixteen rows of three, read by `FUN_0002de50`. For ea
 
 | Opcode | Advance | What it does |
 | --- | --- | --- |
-| 1 | 4, plus 2 per unit | `FUN_00021f30`. Steps the named units one tile along a facing, redrawing between frames. |
-| 2 | 3, plus 2 per unit | `FUN_000220d0`. Stores a facing on each named unit, then redraws. |
+| 1 | 4, plus 2 per unit | `FUN_00021f30`. The unit count is the third byte. Steps the named units one tile along a facing, redrawing between frames. |
+| 2 | 3, plus 2 per unit | `FUN_000220d0`. The unit count is the second byte. The first byte is how many times the map is redrawn afterwards. Stores a facing on each named unit. |
 | 3 | 2 | Shows the text id in the next byte, from the scenario text block. The walk and the pen are in [Text](text.md). |
 | 4 | 3 | Spawns a group. The next byte is the group, or `0xff` to use the value opcode 99 stored. The byte after that is the third argument of `FUN_00023800`. |
 | 6 | 2 | Plays `Icon%04d.saf` from `IconAni.vfs`. The number is the next byte. Every frame is shown for its hold, in [Pictures](pictures.md). |
 | 7 | 2 | `FUN_00030960` on the next byte, or on `-1` when that byte is `0xff`. |
 | 8 | 2 | Plays `Icon%04d.wav`. |
+| 9 | 2, plus 1 per slot | The next byte is the slot count. Stores 0 into `DAT_00069cd0` and `DAT_00060159`. For steps 1 through 7, stores the low bit of the step into `+5` of each named slot and calls `FUN_0002bc40` three times. Then stores 1 into both bytes. |
 | 10 | 5 | Writes x, y, and facing onto the unit named by the next byte, when that index is below the slot count. |
 | 11 | 2 | Sets flag bit 0 on that unit. |
 | 12 | 2 | Clears flag bit 0 and the six count bytes at `+0x22`. |
 | 13 | 3 | Moves the camera and the cursor to the tile in the next two bytes, times 24. |
-| 16 | 3, plus 2 per step | `FUN_000224c0`. Adds signed byte pairs to the camera and redraws. |
-| 17 | 2 | Stores the next byte as the scenario index and calls `FUN_00022720`. |
+| 16 | 3, plus 2 per step | `FUN_000224c0`. The step count is the second byte. Adds signed byte pairs to the camera and redraws. |
+| 17 | 2 | Stores the next byte as the scenario index and calls `FUN_00022720`, which loads that index's map. The script then continues. |
 | 18 | 4 | Writes the third byte into the unit's count byte at `+0x25` plus the second byte. |
 | 19 | 3 | Stores the second byte into `DAT_000640d8` at the first byte, then calls `FUN_0002e6a0`. |
 | 20 | 5 | Writes the short at the third byte into the section-0 cell at the first two bytes. |
@@ -73,4 +74,22 @@ Bytes 3 through `0x32` are sixteen rows of three, read by `FUN_0002de50`. For ea
 | 98 | 3 | `FUN_00010010` with the next two bytes. |
 | 99 | 1 | `FUN_000225d0`. Two yes-or-no questions. Returns 1, 2, or 3, which a later opcode 4 can use as the group. |
 
-Opcode 0, and any other byte, ends the script. Opcodes 5, 9, 14, and 15 call `FUN_00021e00`, `FUN_000221b0`, `FUN_000223e0`, and `FUN_00022450`. Those four were not read. `0x36920` also calls `FUN_00023800`; its other arguments were not read. The archive directory is in [Archives](archives.md).
+Opcode 0, and any other byte, ends the script. Every `.dat` member of `IconAni.vfs` walks to a final 0 with the lengths above. Opcode 5 advances 3 and calls `FUN_00021e00`. Opcodes 14 and 15 advance 2 and call `FUN_000223e0` and `FUN_00022450`. Those three bodies were not read. `0x36920` also calls `FUN_00023800`; its other arguments were not read. The archive directory is in [Archives](archives.md).
+
+Opcode 17 is a scene change inside the script. The opener for index n passes `Icon%02d.dat`. These opener scripts reload another index and then store their own index again, so the battle stays on n:
+
+| Script | Indexes, in order |
+| --- | --- |
+| `Icon00.dat` | 32, 34, 35, 0 |
+| `Icon06.dat` | 47, 6 |
+| `Icon07.dat` | 48, 7 |
+| `Icon08.dat` | 54, 55, 8 |
+| `Icon09.dat` | 37, 38, 9 |
+| `Icon11.dat` | 52, 40, 11 |
+| `Icon19.dat` | 58, 19 |
+| `Icon24.dat` | 56, 24 |
+| `Icon29.dat` | 29 |
+
+The other `Icon00.dat` through `Icon29.dat` contain no opcode 17. `Icon7-1.dat`, `Icon7-2.dat`, and `Icon7-3.dat` also contain none. They are passed from `0x3708e`, `0x370ae`, and `0x37278`, in the after-action region. Those callers were not read.
+
+The ending plays its `Win` script before it stores the successor, so the last index in that script is not the next battle. The sequences are `Win00.dat` 36, 41, 42, 43; `Win03.dat` 39; `Win05.dat` 46; `Win08.dat` 57; `Win09.dat` 37; `Win11.dat` 53; `Win16.dat` 60; `Win17.dat` and `Win17-1.dat` 45 then 17; `Win18.dat` 44; `Win20.dat` 51 then 20; `Win22.dat` 50; `Win24.dat` 59, 3, 47, 51, 22, 59; `Win26.dat` 62 then 26; `WinGA26.dat` 61; `Win29.dat` 63 then 29. `GoodEnd.dat` stores 64. The other `Win` files contain no opcode 17. What the ending stores afterwards is in [Session](session.md).

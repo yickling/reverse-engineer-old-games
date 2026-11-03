@@ -25,7 +25,7 @@ New findings go in the topic file. A newly seen address that was not read goes i
 
 Write a script when a finding is a walk the next session would otherwise repeat: pulling frames out of a picture file, turning stored indexes into text, or dumping a table. A formula that fits in the topic file does not need one.
 
-Put the script in `<game>/scripts/`. It takes the data directory as an argument. It does not embed a machine path, and it does not write into the local copy of the program. What it produces goes in `docs/<game>/`.
+Put the script in `<game>/scripts/`. It takes the data directory as an argument. It does not embed a machine path, and it does not write into the local copy of the program. What it produces goes in `<game>/extract/`.
 
 The topic file names the script and what it writes, and it keeps the layout the script implements. The notes do not paste the scenario text, pictures, or other copyrighted output the script writes.
 
@@ -53,4 +53,4 @@ Create a file when that subject is long enough to continue on its own. Name the 
 - **Inferred.** A role guessed from how a field is written and read, such as calling a word "health" because attacks subtract from it. Say that it is an inference.
 - **Unknown.** A file or a function that was seen and not read. List it in `<game>/gaps.md`. Do not fill the gap.
 
-`__stash/` is the local copy of programs under study. Read it. Do not create or change files there. Notes go in the game folder. A repeatable extractor goes in `<game>/scripts/`. Every other produced file goes in `docs/<game>/`. Notes describe structure. They do not paste scenario text or other copyrighted writing.
+`__stash/` is the local copy of programs under study. Read it. Do not create or change files there. Notes go in the game folder. A repeatable extractor goes in `<game>/scripts/`. Every other produced file goes in `<game>/extract/`. Notes describe structure. They do not paste scenario text or other copyrighted writing.

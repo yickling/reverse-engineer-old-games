@@ -18,16 +18,16 @@ This table is the index of analysed games. A study adds a row here, a folder wit
 
 `__stash/` is the local copy of programs under study. Read it. Do not create or change files there. It is not committed.
 
-Notes go in the game folder. Every other file this repository produces goes in `docs/<game>/`.
+Notes go in the game folder. Extractor output goes in that game's `extract/`.
 
 ## Rights
 
 Every game named here remains the property of its original owner. Titles, characters, and trademarks belong to those owners. All rights in the games are reserved by them.
 
-The notes describe structure and design. They grant no right to copy, play, or redistribute a game. Extracted pictures kept for identification live under `docs/` and are not covered by the license below.
+The notes describe structure and design. They grant no right to copy, play, or redistribute a game. Extracted pictures kept for identification live in that game's `extract/` and are not covered by the license below.
 
 ## License
 
 The original notes in this repository are released under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). See [LICENSE](LICENSE).
 
-That license covers this writing only. It does not cover any game, anything in `__stash/`, or the extracted pictures under `docs/`.
+That license covers this writing only. It does not cover any game, anything in `__stash/`, or the extracted pictures in a game's `extract/`.

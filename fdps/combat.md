@@ -121,7 +121,7 @@ Each scorer writes 0, then raises its global only when it finds a candidate. All
 
 `FUN_00013420` is the spell. `FUN_00027810` fills the id list, the same call that enables menu slot 1, and byte `+0x27` must be 0. A spell is skipped unless byte `+5` of its `FUN_00018bc0` row is at or below the word at unit `+0x44`. The flood fill uses budget byte `+3` of that row and the class-0 move row. The reached tiles are copied, the grid is cleared, and each of them is then a center for the area mask in [The spell area](#the-spell-area). `FUN_00011e50` lists targets with `shape` = row byte `+4`, `inner` = 0, and a side taken from row byte `+6`. The grid is cleared again after that list. When the phase filter is 0, byte `+6` equal to 0 becomes list side `1`, and any other value becomes list side `0`. When the phase filter is not 0, byte `+6` is the list side as stored. `FUN_00013920` scores that list, and the kept candidate is the higher score, then the larger first short of the row. An equal score and an equal short keeps the earlier tile. The stand tile is `DAT_00063f9c` and `DAT_00063fa0`, and the spell id is `DAT_00063f90`.
 
-`FUN_00013920` sums a per-target band. Ids `0x0e`, `0x0f`, `0x10`, and `0x21` score the target's pool against its `+0x42`: 8 when the pool is below a third, 3 when it is below a half, otherwise 0, and bit 0 of `+0x34` doubles that. Id `0x11` adds 6 for each target that still has a spell list and whose `+0x27` is 0. Id `0x18` adds 6 for each target whose `+0x25`, `+0x26`, or `+0x27` is nonzero. Id `0x12` adds 10 for each target whose `+0x25` is 0. Id `0x13` does the same for `+0x26`. Id `0x14` calls that counter three times, for `+0x22`, `+0x23`, and `+0x24`, and keeps only the last return, so the score is 4 per target whose `+0x24` is 0. The counter is `FUN_00013c20`. Every other id adds 8, or `0x18` when the pool is below the row's first short. Ids `0x0a` and `0x0b` skip a target that `FUN_00012550` accepts. A target whose byte `+8` is 0 replaces that band with the value `FUN_0003d25c` leaves on the FPU stack. That helper rounds toward zero. The value loaded before the call was not separated.
+`FUN_00013920` sums a per-target band. Ids `0x0e`, `0x0f`, `0x10`, and `0x21` score the target's pool against its `+0x42`: 8 when the pool is below a third, 3 when it is below a half, otherwise 0, and bit 0 of `+0x34` doubles that. Id `0x11` adds 6 for each target that still has a spell list and whose `+0x27` is 0. Id `0x18` adds 6 for each target whose `+0x25`, `+0x26`, or `+0x27` is nonzero. Id `0x12` adds 10 for each target whose `+0x25` is 0. Id `0x13` does the same for `+0x26`. Id `0x14` calls that counter three times, for `+0x22`, `+0x23`, and `+0x24`, and keeps only the last return, so the score is 4 per target whose `+0x24` is 0. The counter is `FUN_00013c20`. Every other id adds 8, or `0x18` when the pool is below the row's first short. Ids `0x0a` and `0x0b` skip a target that `FUN_00012550` accepts. A target whose byte `+8` is 0 replaces that band with `trunc(band * 3 / 2)`. At `0x13bf0` the band, 8 or `0x18`, is loaded with `FILD` and multiplied by the double `1.5` at `0x61571`. `FUN_0003d25c` then rounds toward zero: it stores the control word, sets the high byte to `0x1f`, runs `FRNDINT`, and restores the word. `FISTP` writes the result back. 8 becomes 12. `0x18` becomes 36.
 
 `FUN_00013040` is the carried item. `FUN_00025210` is the count, the same call that enables menu slot 2. Index `i` reads the id at unit `+0x0b + i * 2` and the record from `FUN_00018b30`. Byte `+0x0d` of that record must be nonzero. The stand tiles come from one `FUN_00011e50` at the unit's own tile whose list is discarded: byte `+0x10` below `0x10` is the `shape` and `inner` is 0, and a byte at or above `0x10` is painted with `shape` 1 and `inner` 1. From each stand tile the target list uses record byte `+0x12` as `shape` and `inner` 0 when byte `+0x10` is below `0x10`. At or above `0x10` the list is the line in [The spell area](#the-spell-area), called as `(stand x, stand y, buffer, unit x, unit y, byte +0x10 - 0x10, side)`. The side is record byte `+0x11`, with the same fold the spell uses: a phase filter of 0 turns byte 0 into list side `1` and any other byte into list side `0`. `FUN_000132b0` scores that list, and a strictly higher score replaces `DAT_00063f8c`. The stand tile is `DAT_00063f98` and `DAT_00063f94`, and the slot index is `DAT_00063f7c`.
 
@@ -206,8 +206,7 @@ def spell_band(spell_id, targets):                     # FUN_00013920
                 continue
             term = 0x18 if target[+0x40] < row.first_short else 8
             if target[+8] == 0:
-                term = trunc(the value loaded before FUN_0003d25c)
-                # that load was not separated from the call
+                term = trunc(term * 1.5)            # double at 0x61571, FUN_0003d25c
             total = total + term
     return total
 
@@ -260,7 +259,6 @@ def score_item(unit, phase):                           # FUN_00013040
                 listed = targets(stand, record[+0x12], 0, side)
             else:
                 listed = line(stand, unit.tile, record[+0x10] - 0x10, side)
-                # that body was not decompiled
             if listed is empty:
                 continue
             score = item_band(record, listed)
@@ -301,11 +299,50 @@ def choose_action(unit, phase):                        # FUN_00012c10
 
 `FUN_00013c90` casts when the spell band is at least 6. It lists targets from the stored stand tile with range byte `+4` of the spell row, moves the cursor there, waits 200, and plays the clips. `DAT_00060010 == 1` calls `FUN_0001a4a0`, which subtracts the spell row's byte `+5` through `FUN_00028590`. Any other value calls `FUN_000288c0`, which subtracts that byte at `0x28942`. Both then call `FUN_000282f0` once per target, at `0x1ae3f` and `0x28e1f`. It then runs the death spin and the death-record walk with `DAT_00063f74`, clears the experience term, and returns 1.
 
-`FUN_000282f0(caster, target, spell)` reads the signed short at the start of the spell row. A positive short is multiplied by byte `+9` of the target's `ProMap` row and divided by 100. A negative short is negated, multiplied by the caster's attack word, divided by 100, and then the target's defense word is subtracted, and a negative result becomes 0. `rand % 100` has to land below byte `+2`. Spell ids `0x0a` and `0x0b` also require `FUN_00012550(target)` to be 0. `FUN_00028430` then takes `amount * 9 / 10` plus `(rand % 100) * amount / 1000` off the target's word at `+0x40`, and floors that word at 0. When the target's side is 0 it adds to the experience term: `EnemyDat` byte `+9` of `character id - 0x3c`, times the target's byte `+0x21`. A pool that is still above 0 after the hit multiplies that add by the amount taken and divides by the maximum at `+0x42`. The rest of `FUN_0001a4a0` was not read.
+`FUN_000282f0(caster, target, spell)` reads the signed short at the start of the spell row. A positive short is multiplied by byte `+9` of the target's `ProMap` row and divided by 100. A negative short is negated, multiplied by the caster's attack word, divided by 100, and then the target's defense word is subtracted, and a negative result becomes 0. `rand % 100` has to land below byte `+2`. Spell ids `0x0a` and `0x0b` also require `FUN_00012550(target)` to be 0. `FUN_00028430` then takes `amount * 9 / 10` plus `(rand % 100) * amount / 1000` off the target's word at `+0x40`, and floors that word at 0. When the target's side is 0 it adds to the experience term: `EnemyDat` byte `+9` of `character id - 0x3c`, times the target's byte `+0x21`. A pool that is still above 0 after the hit multiplies that add by the amount taken and divides by the maximum at `+0x42`.
+
+## The two spell players
+
+`DAT_00060010 == 1` calls `FUN_0001a4a0`. Any other value calls `FUN_000288c0`. The clip names are in [Pictures](pictures.md).
+
+`FUN_0001a4a0` sends ids `0x0a`, `0x0b`, `0x0e` through `0x16`, `0x18`, and `0x21` to `FUN_000288c0` and returns. Every other id plays the fight. After the begin clip, `FUN_00028590` subtracts the cost. A strike clip with no frame whose byte `+5` is set calls `FUN_00042b5b` on the error string and `FUN_00042b7f(1)`. For each target the player saves `+0x40`, calls `FUN_000282f0` at `0x1ae3f`, saves the word again, and writes the first value back. A return of 0 skips the later writes. Id `0x0d` with a nonzero return also calls `FUN_00028eb0`. Each hit frame then stores `start - (start - after) * n / hits` at `+0x40`. `n` counts hit frames as they are shown, and `hits` is how many the clip has. The last of them leaves the word where `FUN_000282f0` put it. The experience term that function added stays. The map blend tables are copied back when the end clip finishes.
+
+`FUN_00028eb0(target)` walks `+0x25`, `+0x26`, and `+0x27`. When `rand % 100` is below `0x14` and `FUN_00029050` returns 0, that byte becomes `rand % 2 + 2`.
+
+`FUN_000288c0` clears `DAT_00069cd0` and sets it back to 1 before returning. Id `0x0b` formats `Emg%02d.saf` as 10 and then calls `FUN_000285e0`. Any other id formats the id itself. Id `0x21` also opens `Emg33-1.saf`, plays it with `FUN_00022290`, and frees that clip. That player is the map clip player in [Pictures](pictures.md). Ids `0x0a` and `0x0b` open `EarQu.wav`, start it with `FUN_00030790(wav, 1, -1, -1)`, and redraw 25 times. Each redraw sets the camera to the saved point plus `rand % 4 - 2` on each axis, `FUN_0002bc40` runs, and the two camera words are restored. `FUN_00026dd0` then plays the formatted clip on the map. Each frame is drawn twice. A target is placed at `tile x * 24 - camera x - 24`, `tile y * 24 - camera y - 0x1e`. Only the first target on the first pass starts the sample. The blit is the map window: buffer `+0x21d8`, pitch `0x168`, to `0xa0504`, 312 by 192.
+
+`FUN_000285e0` opens `Mag11.saf`. It copies the screen, and for steps 31 down through 1 draws the current frame over that copy with mode 9 and selector `step / 2`. It then plays the clip through. The map palette is installed with bias `0x3f` on each channel, the 320 by 200 screen is cleared, and six redraws bring that bias down by 10 a step.
+
+After the clip, ids `0x0e`, `0x0f`, `0x10`, and `0x21` call `FUN_00027040` with the signed short at the start of the spell row, then `FUN_0001f4e0` with that amount and `0x27`. The other ids branch:
+
+```
+0x15: FUN_0002d550(DAT_0006437c * 24, DAT_00064380 * 24)
+      the first target's tile becomes those two globals
+      the clip plays again
+      # the globals are the confirmed aim, in Turns
+      # FUN_0002d550 slides the cursor to that pixel first
+0x16: clear bit 0x80 of +5 on each target
+0x18: if +0x25, +0x26, or +0x27 is nonzero, FUN_0001f7a0(target)
+      then store 0 in those three bytes
+0x11: FUN_0001f8e0(count, targets, 0x2b) twice
+      a 0 from FUN_00028f40(0x11) calls FUN_0001f660
+0x12, 0x13: the same test with that id, without FUN_0001f8e0
+0x14: for kind in 0, 1, 2:
+          if FUN_00028f40(kind) != 0:
+              FUN_0001fbd0(target, one of the three dwords at 0x27638)
+              FUN_00024d40(target)
+          FUN_0001f310()
+other: amount = FUN_000282f0(caster, target, id)    # 0x28e1f
+       0 calls FUN_0001f660
+       any other amount calls FUN_0001f4e0(amount, 0, target)
+       id 0x0d also calls FUN_00028eb0
+```
+
+`FUN_0002d550(x, y)` slides the cursor pixel, `DAT_00069cd4` and `DAT_00069ccc`, toward that point. A zero delta on both axes returns. The step count is the larger absolute delta divided by 24, and a count of 0 is not guarded. The step on the longer axis is that delta divided by the count, so a remainder shorter than the count is dropped. The shorter axis spreads its remainder across the steps. After each step the camera follows when the cursor is closer than 24 pixels to the window edge or farther than `0xd8` across or `0x90` down. The camera is clamped to the map: x at `width * 24 - 0x138`, y at `height * 24 - 0xc0`, and neither below 0. The width and height are the shorts at `DAT_00060144`. A camera move redraws, and so does a step while `DAT_00069cd0` is not 0. The item give calls the same slide to put the cursor back, in [Turns](turns.md).
 
 `FUN_000274b0` fills that list. It copies the three bytes at `+0x31` when flag bit 0 is clear, `+0x40` is below 1, and the first of those bytes is 2, 3, 4, or 5. `FUN_00026150`, used after a swing, copies a first byte other than `0xff` and does not require that range.
 
-`FUN_00027150` uses the stored item slot. Range byte `+0x10` below `0x10` lists targets from the stand tile with byte `+0x12`. At or above `0x10` it faces the first listed id, fades the palette from white back to the installed colors, and moves the cursor `range - 0x10` tiles from the camera tile toward the stand tile, clamped to the map. `FUN_00026270` then applies the item. The kind is byte `+0x0d` of the record, and the short at `+0x0e` is the amount passed to the helper. The experience term is cleared, and the death spin runs. `FUN_00027150` returns 0, so a script that called it continues.
+`FUN_00027150` uses the stored item slot. Range byte `+0x10` below `0x10` lists targets from the stand tile with byte `+0x12`. At or above `0x10` the list is the line, called at `0x27239`. It faces the first listed id, fades the palette from white back to the installed colors, and moves the cursor `range - 0x10` tiles from the camera tile toward the stand tile, clamped to the map. `FUN_00026270` then applies the item. The kind is byte `+0x0d` of the record, and the short at `+0x0e` is the amount passed to the helper. The experience term is cleared, and the death spin runs. `FUN_00027150` returns 0, so a script that called it continues.
 
 | Kind | What `FUN_00026270` does |
 | --- | --- |
@@ -335,7 +372,9 @@ The drawn number is `spread`. A cap or a floor can move the pool by less than th
 
 `FUN_00027040` writes `min(+0x42, +0x40 + spread)`. When the character id is below `0x3c` it adds to the experience term. The scale starts at `+0x21` and gains `0x1e` when the character id is above `0x0e` and below `0x22`. The added term is `scale * 0x19 * written / +0x42`, where `written` is the amount the pool actually rose.
 
-`FUN_0001f660` does not change a pool. The unit's tile x runs from the camera tile through 12 tiles to the right, and y from one tile above the camera through 8 below. Inside that window it appends four entries and adds 4 to `DAT_00064378`. The frame bytes are 1, 8, 13, and 19. The four bytes copied from `DAT_0001c2a2` were not read.
+`FUN_0001f660`, `FUN_0001f4e0`, `FUN_0001f7a0`, and `FUN_0001fbd0` do not change a pool. Each one runs only when the unit's tile x is the camera tile through 12 tiles to the right, and y is one tile above the camera through 8 below. Inside that window they append entries at `DAT_00064378`. The frame byte goes to `DAT_00064120`, the unit id to `DAT_000641e8`, and a picture byte to `DAT_000642b0`.
+
+`FUN_0001f660` appends four. The frames are 1, 8, 13, and 19. The picture bytes, at `0x1c2a2`, are `0x34`, `0x35`, `0x36`, and `0x36`. `FUN_0001f7a0` uses the same frames and the next four bytes, `0x37`, `0x38`, `0x39`, and `0x3a`, at `0x1c2a6`. `FUN_0001f4e0(amount, base, id)` formats the amount with `%d` at `0x617bc` into a buffer that starts as four spaces. It appends four entries whose frames are 2, 8, 14, and 20. The digits sit in the rightmost slots. A slot with no digit is stored as `0xff`, and a digit slot is stored as `base + digit`. The damage call passes base 0. The heal call passes `0x27`. `FUN_0001fbd0(id, bytes)` walks four bytes. A byte that is not 0 is stored at that byte's own index, with the same frames as `FUN_0001f660` and that byte as the picture. The count advances by how many of the four were not 0. Spell id `0x14` passes one of the three dwords at `0x27638`. Their bytes are `3b 3c 3c 00`, `3d 3e 3f 00`, and `3d 3e 40 00`. The last byte is 0, so three entries are written in a row and the count advances by 3.
 
 ## The number
 

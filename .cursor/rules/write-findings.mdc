@@ -16,6 +16,6 @@ Before finishing any study of a game:
 
 Notes cite offsets from a base the file records, or file offsets in the program as shipped. They do not cite a machine path, a tool install, a temporary image, or an address that exists only at the base a tool chose.
 
-`__stash/` is the local copy of programs under study. Read it. Do not create or change files there, and do not name it in the notes. Notes go in the game folder. A repeatable extractor goes in `<game>/scripts/`, as in [note-shape.md](note-shape.md). Every other file goes in `<game>/extract/`. Do not commit that directory. Do not paste scenario text or other copyrighted writing into the notes.
+`__stash/` is the local copy of programs under study. Read it. Do not create or change files there, and do not name it in the notes. Notes go in the game folder. A repeatable extractor goes in `<game>/scripts/`, as in [note-shape.md](note-shape.md). Every other file goes in `<game>/extract/`. Do not commit any game's `extract/` directory. Do not paste scenario text or other copyrighted writing into the notes.
 
 The root README is the index of analysed games. Add a row there when a study starts. Do not name the game in any other top-level file.

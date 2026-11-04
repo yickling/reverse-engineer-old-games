@@ -13,7 +13,7 @@ Write every finding into those notes before the session ends. A reply in the cha
 - One folder per game. The entry note is `<game>/README.md`.
 - The root [README.md](README.md) is the index of analysed games. Add a row when a game folder gains one. Do not name that game in any other top-level file.
 - `__stash/` is the local copy of programs under study. Read it. Do not create or change files there. Leave it out of commits and out of the license. Do not name that directory in a note.
-- Notes go in `<game>/`. A repeatable extractor goes in `<game>/scripts/`, as in [note-shape.md](note-shape.md). Every other file this repository produces goes in `<game>/extract/`. That directory stays on disk and is not committed.
+- Notes go in `<game>/`. A repeatable extractor goes in `<game>/scripts/`, as in [note-shape.md](note-shape.md). Every other file this repository produces goes in `<game>/extract/`. For every game, that directory stays on disk and is not committed.
 - Notes describe structure. They do not paste scenario text or other copyrighted writing. Picture sheets kept for identification go in `<game>/extract/`.
 - Original notes are [CC BY 4.0](LICENSE). That license does not cover any game.
 

@@ -1,5 +1,5 @@
 .DS_Store
 __stash/
 
-# Extracted pictures, sound, text, and video. Kept on disk. Do not commit.
-*/extract/
+# Extracted pictures, sound, text, and video for every game. Kept on disk. Do not commit.
+**/extract/

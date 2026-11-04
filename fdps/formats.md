@@ -115,7 +115,7 @@ struct ShopFile {                /* FIELD.VFS. 36 bytes, SHOP00 through SHOP29 *
 
 `Icon00.dat` through `Icon29.dat`, the `Win` scripts, and `GoodEnd.dat` are in `ICONANI.VFS`. A script is a byte stream. Opcode 0 ends it. There is no header. The opcodes and the lengths that walk every `.dat` member of that archive are in [Scenario files](scenario.md).
 
-The character, enemy, class, spell, rank, and item rows are members of `MISC.VFS`. The structs, the strides, and which function indexes each one are in [Units](units.md).
+The character, enemy, class, spell, rank, and item rows are members of `MISC.VFS`. The structs, the strides, and which function indexes each one are in [Units](units.md). `scripts/extract_scenario_records.py` writes scenario 0 to `extract/scenario/00/` and those nine tables to `extract/tables/`. A field marked unread is copied with no role added.
 
 ## Map data
 

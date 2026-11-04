@@ -32,8 +32,8 @@ A modernised remake is possible from the topic files. The battle rules, the camp
 
 ## Map and scenario files
 
-- The pointers at `object 2 + 0x9cb0`, `object 2 + 0x9c20`, and `object 2 + 0x9c98`, one triple per `object 2 + 0x9cdc` entry. `object 1 + 0x212b0` frees them. What they hold was not read.
 - Why `M630` has 288 `ATTR` records against 192 pictures, and why `ATTR151.DAT` has no section CEL. The counts are in [Map](map.md). `M31.DTL` is longer than `16 + width * height`. The bytes past the first `51 * 64` were not read, in [File formats](formats.md).
+- Byte `+3` of an `MPL`, `ATTR`, and `DTL` header, and the bytes between that header and the payload: `ATTR` `+7` through `+0x10`, and `DTL` `+0x0b` through `+0x0f`. The structs name them. No reader was found.
 - `object 1 + 0x1bfb0` and `object 1 + 0x1cfd0`, called by the map compose `object 1 + 0x1bcf0` around the range pictures. Bodies were not decompiled.
 
 ## Pictures
@@ -58,6 +58,10 @@ A modernised remake is possible from the topic files. The battle rules, the camp
 
 - The store that advances `object 3 + 0x1d`, the key ring's other index. The reader and the clear are in [Text](text.md).
 - Calls of `object 1 + 0xff30` whose destination is computed and was not reduced to a pixel: `object 1 + 0x14fb5`, `object 1 + 0x177af`, `object 1 + 0x230e2`, `object 1 + 0x237e0`, `object 1 + 0x23b89`, `object 1 + 0x23bfe`, `object 1 + 0x23c34`, `object 1 + 0x25378`, `object 1 + 0x253b5`, and `object 1 + 0x29ea6`. Ink, fill, and shadow match the constant calls in [Text](text.md).
+
+## Units
+
+- Byte `+0x0a` of an `Item.dat` row. No reader was found. The other fields are the struct in [Units](units.md).
 
 ## Save
 

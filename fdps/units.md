@@ -115,9 +115,29 @@ else:
 
 `FriLevUp.dat` byte 10 selects the `GetMgTab.dat` row used when a level is gained, unless that byte is `0xff`. The five pairs at bytes 0, 2, 4, 6, and 8 are the level-up rolls in [Combat](combat.md). Spawn uses only the first byte of each pair.
 
-The same spawn copies the rest of the 26-byte actor record. Byte `+5` is the first equipped id, and byte `+6` is the second, unless byte `+5` is `0xff`: then the first pair is byte `+6` and the second pair is empty. Bytes `+7` through `+0xc` are the other six ids, and `0xff` sets the empty flag. Four bytes at `+0x0d` are copied to unit `+0x1a`. Byte `+0x11` is the phase byte at `+0x34`, and `+0x12` and `+0x13` are its tile arguments. Byte `+0x14` is `+0x3d`. Byte `+0x16` and the short at `+0x17` are the three bytes at `+0x31`. Byte `+0x19` is copied to `+0x1e`. Bytes `+2` and `+3` are not loaded. Across the 63 map files, 1676 records, byte `+2` is 0 in every record. Byte `+3` is 0 except fourteen records of map 18, indexes 45 through 58, where it is 18. Those fourteen are side 0, character id 96, scale 17, group 6.
+The same spawn copies the rest of the 26-byte actor record. Byte `+5` is the first equipped id, and byte `+6` is the second, unless byte `+5` is `0xff`: then the first pair is byte `+6` and the second pair is empty. Bytes `+7` through `+0xc` are the other six ids, and `0xff` sets the empty flag. Four bytes at `+0x0d` are copied to unit `+0x1a`. Byte `+0x11` is the phase byte at `+0x34`, and `+0x12` and `+0x13` are its tile arguments. Byte `+0x14` is `+0x3d`. Byte `+0x16` and the short at `+0x17` are the three bytes at `+0x31`. Byte `+0x19` is copied to `+0x1e`. Bytes `+2` and `+3` are not loaded. Across the 63 map files, 1676 records, byte `+2` is 0 in every record. Byte `+3` is 0 except fourteen records of map 18, indexes 45 through 58, where it is 18. Those fourteen are side 0, character id 96, scale 17, group 6. That record is `MapActor` in [File formats](formats.md). The item row is the struct below.
 
 ```
+struct Item {                /* object 1 + 0x8b30, 251 rows of 0x17 */
+    uint8_t type;            /* +0  below 0x16 is one equip group, 0x16 through 0x27 is the other */
+    uint16_t attack;         /* +1  added when the pair is equipped. Drawn for types 1 through 0x15 */
+    uint16_t hit;            /* +3 */
+    uint16_t defense;        /* +5  drawn for the other types below 0x28 */
+    uint16_t avoid;          /* +7 */
+    uint8_t swing;           /* +9  1 and 4 write a count, 2 plays a second swing. Combat */
+    uint8_t at_0x0a;         /* not read */
+    uint8_t inner;           /* +0x0b the swing's inner radius */
+    uint8_t shape;           /* +0x0c the swing's target shape */
+    uint8_t kind;            /* +0x0d a use. 0 means the row is not used */
+    uint16_t amount;         /* +0x0e passed to the use. Also the number drawn for kinds 0x0b and 0x0c */
+    uint8_t range;           /* +0x10 below 0x10 is a radius, at or above is a line */
+    uint8_t cpu_side;        /* +0x11 the side object 1 + 0x3040 passes to the list */
+    uint8_t use_shape;       /* +0x12 the use's target shape. The aim leash is this plus 2 */
+    uint16_t price;          /* +0x13 what a shop adds or subtracts */
+    uint8_t menu_side;       /* +0x15 the side the player's item menu passes to the list */
+    uint8_t at_0x16;         /* +0x16  0 in all 251 rows */
+};
+
 struct Friaprda {            /* object 1 + 0x8aa0, 60 rows of 0x18 */
     uint8_t  kind;           /* +0  -> unit +0x1f. Inferred. The status window draws string value + 0x97 */
     uint8_t  class_id;       /* +1  -> unit +0x20. ProMap row is class_id + 1 */

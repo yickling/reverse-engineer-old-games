@@ -26,6 +26,15 @@ The rest is the findings for that subject. An observed claim names an offset fro
 
 New findings go in the topic file. A newly seen address that was not read goes in `<game>/gaps.md`, under that topic's heading, and the row is removed when the finding is written. Do that in the files. A chat reply does not count, because the next session does not read the chat.
 
+## Records
+
+When a subject is a record the program reads — a file, a row of a table, or the block kept for one actor, one stage, or one visit — write that record as a packed struct in the topic file that owns the layout. The struct is there so a person can see the record. Prose that leaves the reader to reassemble the fields is not that record.
+
+- The struct is packed. The comment on a field is its offset in the record, or its file offset when the record is the file. Say which function reads it, and what it is copied to, in that comment. A name guessed from how the field is used is marked as an inference.
+- Name a field only when a reader was shown to use it, or when every file stores the same constant there. A constant the code does not read is still a field, and the comment says so.
+- A byte the stride contains and no reader uses stays in the struct, with no role, and the same byte goes in `<game>/gaps.md` until a reader is found. Do not invent a role for it.
+- The struct is the layout. The topic file keeps what the program does with the record, and other files link to the struct. Do not copy the field list into a second file.
+
 ## Scripts
 
 Write a script when a finding is a walk the next session would otherwise repeat: pulling frames out of a picture file, turning stored indexes into text, or dumping a table. A formula that fits in the topic file does not need one.

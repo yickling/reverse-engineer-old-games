@@ -2,7 +2,7 @@
 
 Part of the [FDPS notes](README.md). Decompiled functions are Ghidra output, not original source. Nothing here was checked by running the game.
 
-`object 1 + 0x127b0` runs off the scenario index in `object 2 + 0x9cf4`. Who calls it, and the per-scenario openers around that load, are in [Session](session.md).
+`object 1 + 0x127b0` runs off the scenario index in `object 2 + 0x9cf4`. Who calls it, and the per-scenario openers around that load, are in [Session](session.md). The bytes of the files below are the structs in [File formats](formats.md).
 
 | Pattern | Archive | What the code does with it |
 | --- | --- | --- |
@@ -11,9 +11,9 @@ Part of the [FDPS notes](README.md). Decompiled functions are Ghidra output, not
 | `Shop%02d.dat` | `FIELD.VFS` | One file per scenario index, `SHOP00.DAT` through `SHOP29.DAT`, each 36 bytes. `object 1 + 0x212b0` loads `Shop%02d.dat` for `object 2 + 0x9cf4` into `object 2 + 0x9d80`. |
 | `M%02d.dtl` | `FIELD1.VFS` | Magic `DTL`. `M00.DTL` is 4112 bytes: a 16-byte header whose short at `+7` is `0x40`, then `64 * 64` bytes. `object 1 + 0x1b790` stores one of those bytes in `object 2 + 0x9d06`. Script 5, the search on the fourth command corner, and the call at the end of a script read it, in [Turns](turns.md). |
 | `dsc%02d.dat` | `FIELD2.VFS` | First dword is the section count. Each section is 8 dwords. The third and fourth are the parallax scale in [Map](map.md), and the low bytes of the seventh and eighth are the paint order and the range highlight. Of 66 sections, 62 are order 9 and highlight 1 (the ground, a fixed recolor), 3 are order 8 and highlight 0 (a slower plate that skips the range), and 1 is order 11 and highlight 2 (painted over the units, blended). `DSC00.DAT` is 36 bytes: count 1, then `0, 0, 8, 8, 0, 0, 9, 1`. |
-| `m%02d%d.mpl` | `FIELD1.VFS` | One per section. |
-| `m%02d%d.cel` | `FIELD1.VFS` | Tile graphics for that section. |
-| `attr%02d%d.dat` | `FIELD2.VFS` | Magic `ATR`. One 4-byte record per tile picture, starting at file offset `0x11`. See [terrain](map.md). |
+| `m%02d%d.mpl` | `FIELD1.VFS` | One per section. The pointer is `object 2 + 0x9cb0`, in [Map](map.md). |
+| `m%02d%d.cel` | `FIELD1.VFS` | Tile graphics for that section. The pointer is `object 2 + 0x9c20`. |
+| `attr%02d%d.dat` | `FIELD2.VFS` | Magic `ATR`. One 4-byte record per tile picture, starting at file offset `0x11`. The pointer is `object 2 + 0x9c98`. See [terrain](map.md). |
 
 `M000.MPL` starts with `MPL`, is 1451 bytes, and stores width 30 and height 24 as little-endian shorts at offsets 7 and 9. An 11-byte header plus `30 * 24 * 2` bytes of cells is 1451, so the cells are 2 bytes. After loading, the game allocates `width * height * 2 + 4`, writes the two dimensions in front, and `object 1 + 0xb20` sets each cell's second byte to `0xff` and masks the first byte with `0x3f`. That runs on a fresh allocation, so it does not copy the MPL. The MPL remains the terrain; this buffer is a separate occupancy layer. Tile pixels are 24×24: the camera coordinates saved to disk are divided by `0x18`, and both map and combat sprites are blitted at 24×24.
 

@@ -69,7 +69,7 @@ One line is the body the topic file records.
 | `object 1 + 0x10c30` | Draws Chapter.saf under Chapter.pal and fades the palette sixteen steps down and back up. |
 | `object 1 + 0x12720` | Loads the map. Clears the outcome, zeroes the camera and cursor, and sets the turn counter to 1. |
 | `object 1 + 0x13950` | Copies each battle record onto the matching roster record. Called by every ending except index 26. |
-| `object 1 + 0x19410` | Frees the interface, font, text, icon cache, unit array, and one triple of buffers per loaded section. |
+| `object 1 + 0x19410` | Frees the interface, font, text, icon cache, unit array, and each section's MPL, CEL, and ATTR. |
 | `object 1 + 0x19630` | Loads the shared interface from MISC.VFS and FIELD.VFS: both palettes, the cursor, command window, shadow, status, message box, digits, selection bar, level-up picture, window, bars… |
 | `object 1 + 0x1b870` | Keeps the map until the outcome dword is nonzero or the system menu returns nonzero, and only then does `object 1 + 0x191f0` look at that outcome. |
 | `object 1 + 0x1d8e0` | Clears bit 0x80 of byte +5 on every slot. |
@@ -179,7 +179,7 @@ One line is the body the topic file records.
 | `object 1 + 0xb20` | Sets each pair's second byte to 0xff and masks the first with 0x3f. |
 | `object 1 + 0xc30` | ORs 0x40 into the first byte of that unit's pair, and ORs 0x80 into the first byte of each of the four orthogonal neighbors that sit on the map. |
 | `object 1 + 0xde0` | Movement flood fill. Writes 0 on the origin and does not clear the other tiles. |
-| `object 1 + 0x127b0` | Stores the section's third dword as the horizontal scale (`object 2 + 0x9c80`) and the fourth as the vertical scale (`object 2 + 0x9c68`). |
+| `object 1 + 0x127b0` | Loads each section's MPL, CEL, and ATTR, and stores the parallax scale. |
 | `object 1 + 0x1b790` | The tile query. Reads the map cell at x, y. |
 | `object 1 + 0x1bcf0` | Paints every section whose order byte is below 10, then the cursor pictures, then the units, then every section whose order byte is above 10. |
 | `object 1 + 0x1c0c0` | Paints one section as 14 columns by 9 rows of 24×24 tiles, which is the 320×200 window with a partial tile at the right and bottom edges. |
@@ -462,7 +462,7 @@ A table the topic file already lays out. This list keeps the base, the stride, a
 | `object 1 + 0x20230`, 60 bytes | CD track numbers minus one. `object 1 + 0x20a30` reads `scenario * 2 + argument`. | [Turns](turns.md) |
 | `object 2 + 0x53f0` (`0x4800`) and `object 2 + 0x43f0` (`0x1000`) | The two remap tables. Fight and map each have a file. | [Pictures](pictures.md) |
 | `object 3 + 0xf`, 10 bytes | The key ring. `object 3 + 0x19` is the read index and `object 3 + 0x1d` is the other index. | [Text](text.md) |
-| `object 2 + 0x9cb0`, `object 2 + 0x9c20`, `object 2 + 0x9c98` | One pointer triple per `object 2 + 0x9cdc` entry. `object 1 + 0x212b0` frees them. What they hold was not read. | [Gaps](gaps.md) |
+| `object 2 + 0x9cb0`, `object 2 + 0x9c20`, `object 2 + 0x9c98` | One pointer per section, count `object 2 + 0x9cdc`. The MPL, the CEL, and the ATTR. | [Map](map.md) |
 | `object 1 + 0x4778`, four runs of 9 dwords | The four rectangles of one window-open frame. | [Pictures](pictures.md) |
 | `object 2 + 0x39c` | The rand seed. The image dword is 1. | [Combat](combat.md) |
 

@@ -40,36 +40,143 @@ Frame `i` is the record at `file + dword[table + i*4]`. Inside it: `int16` sampl
 
 `object 1 + 0x127b0` formats these names with `object 2 + 0x9cf4`. The grid each index loads is in [Scenario files](scenario.md).
 
-`MAP##.DAT`, in `FIELD.VFS`, is who stands on the map. Byte 0 is 0 in every file. Byte 1 is how many unit slots are allocated. Byte 2 is how many 26-byte actor records follow. Every file is `0x83 + byte 2 * 26` bytes. Bytes 3 through `0x32` are sixteen rows of three. Bytes `0x33` through `0x52` are sixteen pairs. Bytes `0x53` through `0x82` are sixteen triples. The actor records start at `+0x83`. What those rows do in play is in [Turns](turns.md) and [Units](units.md).
+One scenario index names these files. `map%02d.dat`, `map%02d.cod`, `Shop%02d.dat`, and `fdetxt%02d.txt` (the index plus 1) come from `FIELD.VFS`. `dsc%02d.dat` comes from `FIELD2.VFS`. `M%02d.dtl` comes from `FIELD1.VFS`. Each section of the `DSC` file then names `m%02d%d.mpl`, `m%02d%d.cel`, and `attr%02d%d.dat`. What a visit does with them is in [Scenario files](scenario.md).
 
-`MAP##.COD` begins `COD`. Byte 3 is 0, byte 5 is 9, and byte 6 is 0, in all 63 files. Byte 4 is 1 in 31 files and 16 in 32. The uint16 at `+7` equals byte 1 plus byte 2 of the matching `MAP` file, and every file is `9 + that count * 6` bytes. Records start at `+9`. Each one is an `int16` id, an `int16` x, and an `int16` y. On every actor record the id equals byte `+1` of the matching 26-byte `MAP` record. On the remaining records, one per byte 1 of the `MAP` file, the id is 0. Neither placement reads the id or byte 4. Both address `file + 0x0b + index * 6`, which is the x of that record, and read x and y from there.
+The records below are packed. The comment on a field is its file offset.
 
-`SHOP00.DAT` through `SHOP29.DAT` are 36 bytes. `object 1 + 0x21470` reads three groups of 12. A group ends at `0xff` or at 12 bytes, and each kept byte is an item id.
+```
+struct MapTurn {                 /* sixteen of these at MAP + 3 */
+    uint8_t turn;                /* matches object 2 + 0x9ce8 */
+    uint8_t handler;             /* index into object 2 + 0x1c4 */
+    uint8_t side;                /* matches the argument of object 1 + 0x1de50 */
+};
+
+struct MapStep {                 /* sixteen of these at MAP + 0x33 */
+    uint8_t handler;             /* stored when the second byte matches */
+    uint8_t match;               /* the step's third argument */
+};
+
+struct MapFind {                 /* sixteen of these at MAP + 0x53. One per DTL value */
+    uint8_t kind;                /* 0 gives the item, 1 adds the short, any other calls a handler */
+    int16_t value;               /* item id, or the amount added to object 2 + 0x43b8 */
+};
+
+struct MapActor {                /* 26 bytes. The array starts at MAP + 0x83 */
+    uint8_t side;                /* +0  -> unit +6 */
+    uint8_t character;           /* +1  -> unit +7 and +8. The COD id of this record */
+    uint8_t at_2;                /* +2  not loaded. 0 in all 1676 records */
+    uint8_t at_3;                /* +3  not loaded. 0 except fourteen records of map 18 */
+    uint8_t scale;               /* +4  the multiplier in Units */
+    uint8_t item0;               /* +5  first equipped id. 0xff makes the next byte the first pair */
+    uint8_t item1;               /* +6 */
+    uint8_t item[6];             /* +7  0xff sets the empty flag */
+    uint8_t spell[4];            /* +0x0d -> unit +0x1a */
+    uint8_t phase;               /* +0x11 -> unit +0x34 */
+    uint8_t arg0;                /* +0x12 -> unit +0x35 */
+    uint8_t arg1;                /* +0x13 -> unit +0x36 */
+    uint8_t script;              /* +0x14 -> unit +0x3d. Script 5 reads it */
+    uint8_t group;               /* +0x15 compared by object 1 + 0x13800. 0xff in 18 records */
+    uint8_t end[3];              /* +0x16 -> unit +0x31. Copied when the pool is below 1 */
+    uint8_t learned;             /* +0x19 -> unit +0x1e */
+};
+
+struct MapFile {                 /* FIELD.VFS. Length is 0x83 + actor_count * 26 */
+    uint8_t zero;                /* +0  0 in every file */
+    uint8_t slots;               /* +1  how many unit slots are allocated */
+    uint8_t actor_count;         /* +2 */
+    MapTurn turn[16];            /* +3 */
+    MapStep step[16];            /* +0x33. DTL value n selects the pair at file + 0x31 + n * 2 */
+    MapFind find[16];            /* +0x53 */
+    MapActor actor[];            /* +0x83 */
+};
+
+struct CodRecord {               /* at file + 9, then every 6 bytes */
+    int16_t id;                  /* equals the actor's character byte. 0 on a reinforcement record */
+    int16_t x;                   /* placement reads this, at file + 0x0b + index * 6 */
+    int16_t y;
+};
+
+struct CodFile {                 /* FIELD.VFS. Length is 9 + count * 6 */
+    char magic[3];               /* COD */
+    uint8_t zero;                /* +3  0 in all 63 files */
+    uint8_t flag;                /* +4  1 in 31 files, 16 in 32. Placement does not read it */
+    uint8_t at_5;                /* +5  9 in all 63 files */
+    uint8_t zero2;               /* +6  0 */
+    uint16_t count;              /* +7  equals MapFile.slots + MapFile.actor_count. Placement does not read it */
+    CodRecord record[];
+};
+
+struct ShopFile {                /* FIELD.VFS. 36 bytes, SHOP00 through SHOP29 */
+    uint8_t group[3][12];        /* an id, ended by 0xff or by the twelfth byte */
+};
+```
+
+`object 1 + 0x21470` reads one group of `ShopFile`. The price it charges is the item struct in [Units](units.md).
 
 `Icon00.dat` through `Icon29.dat`, the `Win` scripts, and `GoodEnd.dat` are in `ICONANI.VFS`. A script is a byte stream. Opcode 0 ends it. There is no header. The opcodes and the lengths that walk every `.dat` member of that archive are in [Scenario files](scenario.md).
 
-The character, enemy, class, spell, and rank rows are members of `MISC.VFS`. The structs, the strides, and which function indexes each one are in [Units](units.md).
+The character, enemy, class, spell, rank, and item rows are members of `MISC.VFS`. The structs, the strides, and which function indexes each one are in [Units](units.md).
 
 ## Map data
 
-One scenario index names a `DSC` file, and each section of that file names an `MPL`, a `CEL`, and an `ATTR` file. `M%02d.dtl` is a separate byte per tile.
+One scenario index names a `DSC` file, and each section of that file names an `MPL`, a `CEL`, and an `ATTR` file. `M%02d.dtl` is a separate byte per tile. These records are packed the same way.
 
-`DSC##.DAT`, in `FIELD2.VFS`. The first dword is the section count. Each section is eight dwords. `DSC00.DAT` is 36 bytes: count 1, then `0, 0, 8, 8, 0, 0, 9, 1`. The third and fourth dwords are the parallax scale. The low bytes of the seventh and eighth are the paint order and the range highlight. The 66 sections are counted in [Map](map.md).
+```
+struct Section {                 /* eight dwords. DSC00 is count 1, then 0, 0, 8, 8, 0, 0, 9, 1 */
+    int32_t offset_x;            /* +0  added into the camera. 0 in all 66 sections */
+    int32_t offset_y;            /* +4  0 in all 66 */
+    int32_t scale_x;             /* +8  8 on the ground and the foreground. 4 or 8 on the three order-8 plates */
+    int32_t scale_y;             /* +0x0c  8, or 2 or 4 on those three */
+    int32_t drift_x;             /* +0x10 added to the offset when the tick changes. 0 in all 66 */
+    int32_t drift_y;             /* +0x14  0 in all 66 */
+    int32_t order;               /* +0x18 the low byte is when the plate is painted */
+    int32_t highlight;           /* +0x1c the low byte selects the range tint */
+};
 
-`M%02d%d.MPL`, in `FIELD1.VFS`. All 68 files start `MPL`, store version byte 1 at `+4`, and store `uint16` 11 at `+5`. The width and height are the little-endian shorts at `+7` and `+9`. The cells start at `+0x0b` and are little-endian shorts, one tile-picture index per cell, row by row. Every file is `11 + width * height * 2` bytes. `object 1 + 0x1c0c0` reads `file + 0x0b + (y * width + x) * 2`.
+struct DscFile {                 /* FIELD2.VFS. 4 + count * 32 bytes */
+    uint32_t count;
+    Section section[];
+};
 
-`M%02d%d.CEL` is the tile sheet for that section. The container is the `CEL` layout above. The big-endian short at `+4` is `0x0f` on all 69 section files.
+struct MplFile {                 /* FIELD1.VFS. Length is 11 + width * height * 2 */
+    char magic[3];               /* MPL */
+    uint8_t at_3;                /* not read */
+    uint8_t version;             /* +4  1 in all 68 files */
+    uint16_t at_5;               /* +5  11 in all 68 files */
+    uint16_t width;              /* +7 */
+    uint16_t height;             /* +9 */
+    int16_t cell[];              /* +0x0b  file + 0x0b + (y * width + x) * 2 */
+};
 
-`ATTR###.DAT`, in `FIELD2.VFS`. All 69 files start `ATR`, store version byte 1 at `+4`, and store `uint16` 13 at `+5`. Records start at `+0x11` and are 4 bytes, so the count is `(length - 0x11) / 4`. `object 1 + 0x1b790` reads the record of the picture index:
+struct Attr {                    /* 4 bytes at ATTR + 0x11 + picture * 4 */
+    uint8_t anim;                /* low 3 bits are the kind. Bits 0x60 are the tile search. Bit 0x80 selects the tint */
+    uint8_t tint;                /* passed to the expander when anim bit 0x80 is set */
+    uint8_t terrain;             /* 0, 1, 2, 5, or 6 on disk */
+    uint8_t backdrop;            /* combat loads Back%02d.saf, after decrementing when this is nonzero */
+};
 
-| Byte | Use |
-| --- | --- |
-| 0 | Animation. Bits `0x60` are the tile-search test. |
-| 1 | Passed to the expander when bit `0x80` of byte 0 is set. |
-| 2 | Terrain kind. On disk the values are 0, 1, 2, 5, and 6. |
-| 3 | Backdrop index. Combat loads `Back%02d.saf` from it. |
+struct AttrFile {                /* FIELD2.VFS. Count is (length - 0x11) / 4 */
+    char magic[3];               /* ATR */
+    uint8_t at_3;                /* not read */
+    uint8_t version;             /* +4  1 in all 69 files */
+    uint16_t at_5;               /* +5  13 in all 69 files */
+    uint8_t pad[0x11 - 7];       /* +7  not read */
+    Attr record[];
+};
 
-`M%02d.DTL`, in `FIELD1.VFS`. All 64 files start `DTL`, store version byte 1 at `+4`, and store `uint16` 14 at `+5`. The little-endian shorts at `+7` and `+9` are a width and a height. The payload starts at `+0x10`, one byte per tile. `object 1 + 0x1b790` copies the byte of the queried tile. For 63 files the length is `16 + width * height`. `M31.DTL` is 51 by 64 and 6545 bytes, longer than that product. The bytes past the first `51 * 64` were not read.
+struct DtlFile {                 /* FIELD1.VFS. 63 files are 16 + width * height */
+    char magic[3];               /* DTL */
+    uint8_t at_3;                /* not read */
+    uint8_t version;             /* +4  1 in all 64 files */
+    uint16_t at_5;               /* +5  14 in all 64 files */
+    uint16_t width;              /* +7 */
+    uint16_t height;             /* +9 */
+    uint8_t pad[0x10 - 11];      /* +0x0b  not read */
+    uint8_t tile[];              /* +0x10  one byte per tile */
+};
+```
+
+`M%02d%d.CEL` is the tile sheet for that section. The container is the `CEL` layout above. The big-endian short at `+4` is `0x0f` on all 69 section files. `object 1 + 0x1c0c0` reads `MplFile.cell`. `object 1 + 0x1b790` reads one `Attr` and one `DtlFile` byte. The order and highlight bytes, and the two files whose record counts do not match, are in [Map](map.md). `M31.DTL` is 51 by 64 and 6545 bytes. The bytes past the first `51 * 64` were not read.
 
 ## Strings
 

@@ -10,7 +10,7 @@ A reconstruction of the battle, the campaign, a character, and the town is possi
 
 The original sample driver is the piece still outside that reconstruction. It becomes possible once `object 1 + 0x2da33` and `object 1 + 0x35cc0` are read. The first is the driver call that starts a sample with `0x401`. The second runs when the sample type changes. A new presentation can play the sample from the fields in [Pictures](pictures.md) without those two calls.
 
-The original music is the other piece still outside. The track numbers and the CD-ROM request are in [File formats](formats.md). The audio itself is not among the files that were walked, so that piece stays outside until the disc's tracks are present.
+The original music is the other piece still outside. The track numbers and the CD-ROM request are in [File formats](formats.md). The audio itself is not among the files that were walked, so that piece stays outside until the disc's tracks are present. The studio movie is the same kind of gap: `FD1.Vid`, `FD1.Aud`, `FD2.Vid`, and `FD2.Aud` are named in [Session](session.md) and were not among the files walked. The handoff is in [Opening](opening.md).
 
 ## Remake
 

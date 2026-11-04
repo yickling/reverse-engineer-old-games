@@ -125,7 +125,7 @@ A pan clears `object 2 + 0x9cd0`, calls `object 1 + 0x1d550` with the pair as it
 
 | Opcode | Advance | What it does |
 | --- | --- | --- |
-| 1 | 4, plus 2 per unit | `object 1 + 0x11f30`. The unit count is the third byte. Steps the named units one tile along a facing, redrawing between frames. |
+| 1 | 4, plus 2 per unit | `object 1 + 0x11f30`. Byte +1 is how many times each of six frames is redrawn. Byte +2 is how many of those passes run. Byte +3 is the unit count. On the sixth frame of each pass the named units move one tile along the facing in the pair. |
 | 2 | 3, plus 2 per unit | `object 1 + 0x120d0`. The unit count is the second byte. The first byte is how many times the map is redrawn afterwards. Stores a facing on each named unit. |
 | 3 | 2 | Shows the text id in the next byte, from the scenario text block. The walk and the pen are in [Text](text.md). |
 | 4 | 3 | Spawns a group. The next byte is the group, or `0xff` to use the value opcode 99 stored. The byte after that is the third argument of `object 1 + 0x13800`. |
@@ -137,7 +137,7 @@ A pan clears `object 2 + 0x9cd0`, calls `object 1 + 0x1d550` with the pair as it
 | 11 | 2 | Sets flag bit 0 on that unit. |
 | 12 | 2 | Clears flag bit 0 and the six count bytes at `+0x22`. |
 | 13 | 3 | Moves the camera and the cursor to the tile in the next two bytes, times 24. |
-| 16 | 3, plus 2 per step | `object 1 + 0x124c0`. The step count is the second byte. Adds signed byte pairs to the camera and redraws. |
+| 16 | 3, plus 2 per step | `object 1 + 0x124c0`. Byte +1 is how many times each step redraws. Byte +2 is the step count. Adds each signed pair to the camera, redraws, then writes the camera back to the values from entry. |
 | 17 | 2 | Stores the next byte as the scenario index and calls `object 1 + 0x12720`, which loads that index's map. The script then continues. |
 | 18 | 4 | Writes the third byte into the unit's count byte at `+0x25` plus the second byte. |
 | 19 | 3 | Stores the second byte into `object 2 + 0x40d8` at the first byte, then calls `object 1 + 0x1e6a0`. |
@@ -169,6 +169,6 @@ Opcode 17 is a scene change inside the script. The opener for index n passes `Ic
 | `Icon24.dat` | 56, 24 |
 | `Icon29.dat` | 29 |
 
-The other `Icon00.dat` through `Icon29.dat` contain no opcode 17. `Icon7-1.dat`, `Icon7-2.dat`, and `Icon7-3.dat` also contain none. Map 7's handler plays the first two, and handler 12 plays the third, in the table above.
+The instructions in `Icon00.dat` are in [Opening](opening.md). The other `Icon00.dat` through `Icon29.dat` contain no opcode 17. `Icon7-1.dat`, `Icon7-2.dat`, and `Icon7-3.dat` also contain none. Map 7's handler plays the first two, and handler 12 plays the third, in the table above.
 
 The ending plays its `Win` script before it stores the successor, so the last index in that script is not the next battle. The sequences are `Win00.dat` 36, 41, 42, 43; `Win03.dat` 39; `Win05.dat` 46; `Win08.dat` 57; `Win09.dat` 37; `Win11.dat` 53; `Win16.dat` 60; `Win17.dat` and `Win17-1.dat` 45 then 17; `Win18.dat` 44; `Win20.dat` 51 then 20; `Win22.dat` 50; `Win24.dat` 59, 3, 47, 51, 22, 59; `Win26.dat` 62 then 26; `WinGA26.dat` 61; `Win29.dat` 63 then 29. `GoodEnd.dat` stores 64. The other `Win` files contain no opcode 17. What the ending stores afterwards is in [Session](session.md).

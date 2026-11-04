@@ -20,6 +20,7 @@ Read the file for the question in front of you. Add a finding to that file. When
 | --- | --- |
 | [Binary](binary.md) | LE objects, the real entry, and the CRT. |
 | [Session](session.md) | Startup, the title, the session loop, the village, and the scenario openers. |
+| [Opening](opening.md) | The reconstruction of the studio logo, the external movie, and the sequence before the first battle. |
 | [Turns](turns.md) | Cursor, move, the phase change, and the after-action tables. |
 | [Scenario files](scenario.md) | What a scenario index loads, the battle grid that index selects, and how units are placed on it. |
 | [Map](map.md) | Camera, tiles, terrain bytes, movement cost, and what a section's order and highlight bytes do to a range. |
@@ -33,7 +34,7 @@ Read the file for the question in front of you. Add a finding to that file. When
 | [Functions](functions.md) | Which bodies were decompiled, which were disassembled, and which were only seen, and the data tables. |
 | [Gaps](gaps.md) | What is still missing for a full account of the design and the implementation. |
 
-The extractors are in [scripts](scripts/). They write into [extract](extract/). `scripts/extract_fight_sprites.py` writes the fight frames, `scripts/extract_cel_pictures.py` writes the map and interface pictures, `scripts/extract_text.py` writes the scenario strings, and `scripts/extract_sounds.py` writes the named waves and the `SAF` samples. What each one writes is in [Pictures](pictures.md), [Text](text.md), and [File formats](formats.md).
+The extractors are in [scripts](scripts/). They write into [extract](extract/). `scripts/extract_fight_sprites.py` writes the fight frames, `scripts/extract_cel_pictures.py` writes the map and interface pictures, `scripts/extract_text.py` writes the scenario strings, and `scripts/extract_sounds.py` writes the named waves and the `SAF` samples, and `scripts/extract_videos.py` writes the cinematic `SAF` clips. What each one writes is in [Pictures](pictures.md), [Text](text.md), and [File formats](formats.md).
 
 ## Still open
 

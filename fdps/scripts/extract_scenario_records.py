@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""Write the scenario-0 records and the stat tables as JSON.
+"""Write one content pack per scenario index, and every icon script.
 
-The field names are the packed structs in formats.md, scenario.md, and
-units.md. A field those structs mark unread is written under that name
-and nothing else is added for it. SHOP00.DAT, pictures, text, samples,
-and music are not written.
+The field names are the packed structs in formats.md. A field those
+structs mark unread is written under that name and nothing else is added
+for it. Icon opcodes use the lengths in scenario.md. Opcode 0 ends a
+script. Pictures, text, samples, music, and the stat tables are not written.
 
-Scenario 0 lands in extract/scenario/00/. The nine MISC.VFS tables land
-in extract/tables/, one JSON array per file.
+Index NN lands in extract/scenario/NN/. Section S of that index is
+M + NN + S + .MPL and ATTR + NN + S + .DAT, under sections/S/. The detail
+file is MNN.DTL. SHOPNN.DAT is shop.json for indexes 0 through 29. Index
+30 is skipped. A member that is not in its archive is listed in
+missing.json and the run continues. Every .dat member of ICONANI.VFS
+lands in extract/icon/.
 """
 
 from __future__ import annotations
@@ -20,8 +24,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 GAME = HERE.parent
-SCENARIO = GAME / "extract" / "scenario" / "00"
-TABLES = GAME / "extract" / "tables"
+SCENARIO = GAME / "extract" / "scenario"
+ICON = GAME / "extract" / "icon"
 
 # Opcode advances from scenario.md. A byte that is not in this set ends the script.
 FIXED = {
@@ -100,30 +104,19 @@ def magic(blob: bytes) -> str:
     return blob[:3].decode("latin1")
 
 
-def rows(blob: bytes, count: int, stride: int, label: str) -> list[bytes]:
-    out = []
-    for index in range(count):
-        start = index * stride
-        end = start + stride
-        need(blob, end, f"{label} row {index}")
-        out.append(blob[start:end])
-    return out
-
-
 def write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n")
 
 
-def map_file(blob: bytes) -> dict:
-    need(blob, 0x83, "MAP00.DAT header")
+def map_file(blob: bytes, label: str) -> dict:
+    need(blob, 0x83, f"{label} header")
     actor_count = u8(blob, 2)
-    end = 0x83 + actor_count * 26
-    need(blob, end, "MAP00.DAT")
-    if end != len(blob):
-        raise ExtractError(f"MAP00.DAT is {len(blob)} bytes, header count {actor_count} covers {end}")
+    if 0x83 + actor_count * 26 > len(blob):
+        raise ExtractError(f"{label} count {actor_count} runs past {len(blob)}")
+    record_count = (len(blob) - 0x83) // 26
     actors = []
-    for index in range(actor_count):
+    for index in range(record_count):
         at = 0x83 + index * 26
         actors.append(
             {
@@ -163,13 +156,13 @@ def map_file(blob: bytes) -> dict:
     }
 
 
-def cod_file(blob: bytes) -> dict:
-    need(blob, 9, "MAP00.COD header")
+def cod_file(blob: bytes, label: str) -> dict:
+    need(blob, 9, f"{label} header")
     if magic(blob) != "COD":
-        raise ExtractError("MAP00.COD does not start with COD")
+        raise ExtractError(f"{label} does not start with COD")
     count = u16(blob, 7)
     end = 9 + count * 6
-    need(blob, end, "MAP00.COD")
+    need(blob, end, label)
     records = []
     for index in range(count):
         at = 9 + index * 6
@@ -185,14 +178,14 @@ def cod_file(blob: bytes) -> dict:
     }
 
 
-def grid_file(blob: bytes) -> dict:
-    need(blob, 11, "M000.MPL header")
+def grid_file(blob: bytes, label: str) -> dict:
+    need(blob, 11, f"{label} header")
     if magic(blob) != "MPL":
-        raise ExtractError("M000.MPL does not start with MPL")
+        raise ExtractError(f"{label} does not start with MPL")
     width = u16(blob, 7)
     height = u16(blob, 9)
     end = 11 + width * height * 2
-    need(blob, end, "M000.MPL")
+    need(blob, end, label)
     cells = [i16(blob, 11 + index * 2) for index in range(width * height)]
     return {
         "magic": "MPL",
@@ -205,13 +198,13 @@ def grid_file(blob: bytes) -> dict:
     }
 
 
-def attr_file(blob: bytes) -> dict:
-    need(blob, 0x11, "ATTR000.DAT header")
+def attr_file(blob: bytes, label: str) -> dict:
+    need(blob, 0x11, f"{label} header")
     if magic(blob) != "ATR":
-        raise ExtractError("ATTR000.DAT does not start with ATR")
+        raise ExtractError(f"{label} does not start with ATR")
     count = (len(blob) - 0x11) // 4
     end = 0x11 + count * 4
-    need(blob, end, "ATTR000.DAT")
+    need(blob, end, label)
     records = []
     for index in range(count):
         at = 0x11 + index * 4
@@ -233,14 +226,14 @@ def attr_file(blob: bytes) -> dict:
     }
 
 
-def dtl_file(blob: bytes) -> dict:
-    need(blob, 0x10, "M00.DTL header")
+def dtl_file(blob: bytes, label: str) -> dict:
+    need(blob, 0x10, f"{label} header")
     if magic(blob) != "DTL":
-        raise ExtractError("M00.DTL does not start with DTL")
+        raise ExtractError(f"{label} does not start with DTL")
     width = u16(blob, 7)
     height = u16(blob, 9)
     end = 0x10 + width * height
-    need(blob, end, "M00.DTL")
+    need(blob, end, label)
     return {
         "magic": "DTL",
         "at_3": u8(blob, 3),
@@ -253,11 +246,11 @@ def dtl_file(blob: bytes) -> dict:
     }
 
 
-def dsc_file(blob: bytes) -> dict:
-    need(blob, 4, "DSC00.DAT header")
+def dsc_file(blob: bytes, label: str) -> dict:
+    need(blob, 4, f"{label} header")
     count = u32(blob, 0)
     end = 4 + count * 32
-    need(blob, end, "DSC00.DAT")
+    need(blob, end, label)
     sections = []
     for index in range(count):
         at = 4 + index * 32
@@ -276,155 +269,153 @@ def dsc_file(blob: bytes) -> dict:
     return {"count": count, "section": sections}
 
 
-def instruction_length(blob: bytes, index: int) -> int:
+def instruction_length(blob: bytes, index: int, label: str) -> int:
     op = blob[index]
     if op == 1:
-        need(blob, index + 4, "ICON00.DAT opcode 1")
+        need(blob, index + 4, f"{label} opcode 1")
         return 4 + 2 * blob[index + 3]
     if op == 2:
-        need(blob, index + 3, "ICON00.DAT opcode 2")
+        need(blob, index + 3, f"{label} opcode 2")
         return 3 + 2 * blob[index + 2]
     if op == 9:
-        need(blob, index + 2, "ICON00.DAT opcode 9")
+        need(blob, index + 2, f"{label} opcode 9")
         return 2 + blob[index + 1]
     if op == 16:
-        need(blob, index + 3, "ICON00.DAT opcode 16")
+        need(blob, index + 3, f"{label} opcode 16")
         return 3 + 2 * blob[index + 2]
     if op in FIXED:
         return FIXED[op]
     return 1
 
 
-def icon_file(blob: bytes) -> list[dict]:
+def icon_file(blob: bytes, label: str) -> list[dict]:
     instructions = []
     index = 0
     while index < len(blob):
         op = blob[index]
-        length = instruction_length(blob, index)
-        need(blob, index + length, f"ICON00.DAT opcode {op}")
+        length = instruction_length(blob, index, label)
+        need(blob, index + length, f"{label} opcode {op}")
         instructions.append({"opcode": op, "operands": list(blob[index + 1 : index + length])})
         index += length
         if op == 0 or op not in FIXED and op not in (1, 2, 9, 16):
             break
     if index != len(blob):
-        raise ExtractError(f"ICON00.DAT walk ended at {index} of {len(blob)}")
+        raise ExtractError(f"{label} walk ended at {index} of {len(blob)}")
     if not instructions or instructions[-1]["opcode"] != 0:
-        raise ExtractError("ICON00.DAT does not end on opcode 0")
+        raise ExtractError(f"{label} does not end on opcode 0")
     return instructions
 
 
-def item_row(row: bytes) -> dict:
-    return {
-        "type": row[0],
-        "attack": struct.unpack_from("<H", row, 1)[0],
-        "hit": struct.unpack_from("<H", row, 3)[0],
-        "defense": struct.unpack_from("<H", row, 5)[0],
-        "avoid": struct.unpack_from("<H", row, 7)[0],
-        "swing": row[9],
-        "at_0x0a": row[0x0A],
-        "inner": row[0x0B],
-        "shape": row[0x0C],
-        "kind": row[0x0D],
-        "amount": struct.unpack_from("<H", row, 0x0E)[0],
-        "range": row[0x10],
-        "cpu_side": row[0x11],
-        "use_shape": row[0x12],
-        "price": struct.unpack_from("<H", row, 0x13)[0],
-        "menu_side": row[0x15],
-        "at_0x16": row[0x16],
-    }
+def shop_file(blob: bytes, label: str) -> dict:
+    need(blob, 36, label)
+    return {"group": [list(blob[index * 12 : (index + 1) * 12]) for index in range(3)]}
 
 
-def friaprda_row(row: bytes) -> dict:
-    return {
-        "kind": row[0],
-        "class_id": row[1],
-        "scale": row[2],
-        "hp": struct.unpack_from("<H", row, 3)[0],
-        "mp": struct.unpack_from("<H", row, 5)[0],
-        "move": row[7],
-        "spells": list(row[8:12]),
-        "items": list(row[0x0C:0x12]),
-        "attack": struct.unpack_from("<H", row, 0x12)[0],
-        "defense": struct.unpack_from("<H", row, 0x14)[0],
-        "hit": struct.unpack_from("<H", row, 0x16)[0],
-    }
+def take(archive: dict[str, bytes], name: str, missing: list[str]) -> bytes | None:
+    blob = archive.get(name.upper())
+    if blob is None:
+        missing.append(name.upper())
+        return None
+    return blob
 
 
-def frilevup_row(row: bytes) -> dict:
-    # Five pairs. Spawn reads the first byte of each. Byte 10 selects the GetMgTab row.
-    names = ("attack", "defense", "hit", "hp", "mp")
-    record = {name: [row[index * 2], row[index * 2 + 1]] for index, name in enumerate(names)}
-    record["spell_row"] = row[10]
-    return record
+def write_section(
+    folder: Path,
+    section: int,
+    nn: str,
+    field1: dict[str, bytes],
+    field2: dict[str, bytes],
+    missing: list[str],
+    root_copies: dict[str, object],
+) -> None:
+    grid_name = f"M{nn}{section}.MPL"
+    attr_name = f"ATTR{nn}{section}.DAT"
+    grid_blob = take(field1, grid_name, missing)
+    attr_blob = take(field2, attr_name, missing)
+    if grid_blob is None and attr_blob is None:
+        return
+    section_dir = folder / "sections" / str(section)
+    if grid_blob is not None:
+        payload = grid_file(grid_blob, grid_name)
+        write_json(section_dir / "grid.json", payload)
+        if section == 0:
+            root_copies["grid.json"] = payload
+    if attr_blob is not None:
+        payload = attr_file(attr_blob, attr_name)
+        write_json(section_dir / "attr.json", payload)
+        if section == 0:
+            root_copies["attr.json"] = payload
 
 
-def enemydat_row(row: bytes) -> dict:
-    return {
-        "kind": row[0],
-        "class_id": row[1],
-        "hp": struct.unpack_from("<H", row, 2)[0],
-        "mp": row[4],
-        "attack": row[5],
-        "defense": row[6],
-        "hit": row[7],
-        "move": row[8],
-        "experience": row[9],
-    }
+def write_scenario(
+    index: int,
+    field: dict[str, bytes],
+    field1: dict[str, bytes],
+    field2: dict[str, bytes],
+    icons: dict[str, bytes],
+) -> None:
+    nn = f"{index:02d}"
+    if index == 30:
+        print("scenario/30 skipped")
+        return
+    folder = SCENARIO / nn
+    missing: list[str] = []
+    written: list[str] = []
+    root_copies: dict[str, object] = {}
+
+    def put(name: str, payload: object) -> None:
+        write_json(folder / name, payload)
+        written.append(name)
+
+    pairs = (
+        (field, f"MAP{nn}.DAT", "map.json", map_file),
+        (field, f"MAP{nn}.COD", "cod.json", cod_file),
+        (field1, f"M{nn}.DTL", "dtl.json", dtl_file),
+    )
+    for archive, member_name, filename, parse in pairs:
+        blob = take(archive, member_name, missing)
+        if blob is not None:
+            put(filename, parse(blob, member_name))
+
+    dsc_name = f"DSC{nn}.DAT"
+    dsc_blob = take(field2, dsc_name, missing)
+    if dsc_blob is not None:
+        dsc = dsc_file(dsc_blob, dsc_name)
+        put("dsc.json", dsc)
+        section_numbers = range(dsc["count"])
+    else:
+        section_numbers = range(1)
+    for section in section_numbers:
+        write_section(folder, section, nn, field1, field2, missing, root_copies)
+
+    if index <= 29:
+        shop_name = f"SHOP{nn}.DAT"
+        shop_blob = take(field, shop_name, missing)
+        if shop_blob is not None:
+            put("shop.json", shop_file(shop_blob, shop_name))
+        icon_name = f"ICON{nn}.DAT"
+        icon_blob = take(icons, icon_name, missing)
+        if icon_blob is not None:
+            put("icon.json", icon_file(icon_blob, icon_name))
+
+    if index == 0:
+        for name, payload in root_copies.items():
+            put(name, payload)
+    if missing:
+        put("missing.json", missing)
+    print(f"scenario/{nn}  {', '.join(written)}" + (f"  missing {', '.join(missing)}" if missing else ""))
 
 
-def promap_row(row: bytes) -> dict:
-    return {"move_cost": list(row[:8]), "crit": row[8], "spell_scale": row[9]}
-
-
-def proequ_row(row: bytes) -> dict:
-    return {"type": list(row)}
-
-
-def magicdat_row(row: bytes) -> dict:
-    return {
-        "power": struct.unpack_from("<h", row, 0)[0],
-        "chance": row[2],
-        "budget": row[3],
-        "shape": row[4],
-        "cost": row[5],
-        "side": row[6],
-    }
-
-
-def getmgtab_row(row: bytes) -> dict:
-    return {
-        "pair": [{"level": row[index], "learned": row[index + 1]} for index in range(0, 12, 2)]
-    }
-
-
-def rankup_row(row: bytes) -> dict:
-    return {
-        "choice": [
-            {"character_id": row[index], "class_id": row[index + 1], "third": row[index + 2]}
-            for index in range(0, 12, 3)
-        ]
-    }
-
-
-TABLE_SPECS = (
-    ("FRIAPRDA.DAT", "friaprda.json", 60, 0x18, friaprda_row),
-    ("FRILEVUP.DAT", "frilevup.json", 60, 0x0B, frilevup_row),
-    ("ENEMYDAT.DAT", "enemydat.json", 91, 0x0A, enemydat_row),
-    ("ITEM.DAT", "item.json", 251, 0x17, item_row),
-    ("PROMAP.DAT", "promap.json", 41, 0x0A, promap_row),
-    ("PROEQU.DAT", "proequ.json", 36, 6, proequ_row),
-    ("MAGICDAT.DAT", "magicdat.json", 40, 7, magicdat_row),
-    ("GETMGTAB.DAT", "getmgtab.json", 60, 0x0C, getmgtab_row),
-    ("RANKUP.DAT", "rankup.json", 9, 0x0C, rankup_row),
-)
-
-
-def member(archive: dict[str, bytes], name: str, label: str) -> bytes:
-    try:
-        return archive[name.upper()]
-    except KeyError as error:
-        raise ExtractError(f"{label} has no {name}") from error
+def write_icons(icons: dict[str, bytes]) -> int:
+    count = 0
+    for name in sorted(icons):
+        if not name.endswith(".DAT"):
+            continue
+        payload = icon_file(icons[name], name)
+        write_json(ICON / f"{name[:-4].lower()}.json", payload)
+        count += 1
+        print(f"icon/{name[:-4].lower()}.json  {len(payload)} opcodes")
+    return count
 
 
 def main() -> int:
@@ -432,10 +423,10 @@ def main() -> int:
     parser.add_argument(
         "data_dir",
         type=Path,
-        help="directory that contains FIELD.VFS, FIELD1.VFS, FIELD2.VFS, MISC.VFS, and ICONANI.VFS",
+        help="directory that contains FIELD.VFS, FIELD1.VFS, FIELD2.VFS, and ICONANI.VFS",
     )
     args = parser.parse_args()
-    needed = ("FIELD.VFS", "FIELD1.VFS", "FIELD2.VFS", "MISC.VFS", "ICONANI.VFS")
+    needed = ("FIELD.VFS", "FIELD1.VFS", "FIELD2.VFS", "ICONANI.VFS")
     for filename in needed:
         if not (args.data_dir / filename).is_file():
             print(f"missing {filename} in {args.data_dir}", file=sys.stderr)
@@ -444,33 +435,12 @@ def main() -> int:
     field = vfs_members((args.data_dir / "FIELD.VFS").read_bytes(), "FIELD.VFS")
     field1 = vfs_members((args.data_dir / "FIELD1.VFS").read_bytes(), "FIELD1.VFS")
     field2 = vfs_members((args.data_dir / "FIELD2.VFS").read_bytes(), "FIELD2.VFS")
-    misc = vfs_members((args.data_dir / "MISC.VFS").read_bytes(), "MISC.VFS")
     icons = vfs_members((args.data_dir / "ICONANI.VFS").read_bytes(), "ICONANI.VFS")
 
-    scenario = {
-        "map.json": map_file(member(field, "MAP00.DAT", "FIELD.VFS")),
-        "cod.json": cod_file(member(field, "MAP00.COD", "FIELD.VFS")),
-        "grid.json": grid_file(member(field1, "M000.MPL", "FIELD1.VFS")),
-        "attr.json": attr_file(member(field2, "ATTR000.DAT", "FIELD2.VFS")),
-        "dtl.json": dtl_file(member(field1, "M00.DTL", "FIELD1.VFS")),
-        "dsc.json": dsc_file(member(field2, "DSC00.DAT", "FIELD2.VFS")),
-        "icon.json": icon_file(member(icons, "ICON00.DAT", "ICONANI.VFS")),
-    }
-    for name, payload in scenario.items():
-        write_json(SCENARIO / name, payload)
-
-    for member_name, filename, count, stride, parse in TABLE_SPECS:
-        blob = member(misc, member_name, "MISC.VFS")
-        parsed = [parse(row) for row in rows(blob, count, stride, member_name)]
-        write_json(TABLES / filename, parsed)
-        print(f"tables/{filename}  {count} rows of {stride}")
-
-    grid = scenario["grid.json"]
-    actors = scenario["map.json"]["actor"]
-    print(
-        f"scenario/00  grid {grid['width']}x{grid['height']}  "
-        f"actors {len(actors)}  icon {len(scenario['icon.json'])}"
-    )
+    for index in range(65):
+        write_scenario(index, field, field1, field2, icons)
+    written = write_icons(icons)
+    print(f"wrote {written} icon scripts")
     return 0
 
 

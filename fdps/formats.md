@@ -40,7 +40,50 @@ Frame `i` is the record at `file + dword[table + i*4]`. Inside it: `int16` sampl
 
 `object 1 + 0x127b0` formats these names with `object 2 + 0x9cf4`. The grid each index loads is in [Scenario files](scenario.md).
 
-One scenario index names these files. `map%02d.dat`, `map%02d.cod`, `Shop%02d.dat`, and `fdetxt%02d.txt` (the index plus 1) come from `FIELD.VFS`. `dsc%02d.dat` comes from `FIELD2.VFS`. `M%02d.dtl` comes from `FIELD1.VFS`. Each section of the `DSC` file then names `m%02d%d.mpl`, `m%02d%d.cel`, and `attr%02d%d.dat`. What a visit does with them is in [Scenario files](scenario.md).
+One scenario index names these files. `map%02d.dat`, `map%02d.cod`, `Shop%02d.dat`, and `fdetxt%02d.txt` (the index plus 1) come from `FIELD.VFS`. `dsc%02d.dat` comes from `FIELD2.VFS`. `M%02d.dtl` comes from `FIELD1.VFS`. Each section of the `DSC` file then names `m%02d%d.mpl`, `m%02d%d.cel`, and `attr%02d%d.dat`. What a visit does with them is in [Scenario files](scenario.md). The archives are in [Archives](archives.md).
+
+A content pack is `extract/scenario/NN/` for indexes 0 through 64, except 30. `NN` is the index as two digits. `S` is the section, taken from the `DSC` count, or 0 when that file is absent. `SHOPNN.DAT` and `ICONNN.DAT` exist for indexes 0 through 29. Every `.dat` member of `ICONANI.VFS` is also written under `extract/icon/`. `scripts/extract_scenario_records.py` is that walk. The JSON keys are the structs below.
+
+```mermaid
+flowchart LR
+  subgraph field ["FIELD.VFS"]
+    MAP["map%02d.dat"]
+    COD["map%02d.cod"]
+    SHOP["Shop%02d.dat"]
+  end
+  subgraph field1 ["FIELD1.VFS"]
+    DTL["M%02d.dtl"]
+    MPL["m%02d%d.mpl"]
+  end
+  subgraph field2 ["FIELD2.VFS"]
+    DSC["dsc%02d.dat"]
+    ATTR["attr%02d%d.dat"]
+  end
+  subgraph icons ["ICONANI.VFS"]
+    ICON["Icon%02d.dat"]
+    ALL["every .dat"]
+  end
+  subgraph pack ["extract/scenario/NN"]
+    mapjson["map.json"]
+    codjson["cod.json"]
+    shopjson["shop.json"]
+    dtljson["dtl.json"]
+    grid["sections/S/grid.json"]
+    dscjson["dsc.json"]
+    attrjson["sections/S/attr.json"]
+    iconjson["icon.json"]
+  end
+  ICONDIR["extract/icon"]
+  MAP --> mapjson
+  COD --> codjson
+  SHOP --> shopjson
+  DTL --> dtljson
+  MPL --> grid
+  DSC --> dscjson
+  ATTR --> attrjson
+  ICON --> iconjson
+  ALL --> ICONDIR
+```
 
 The records below are packed. The comment on a field is its file offset.
 
@@ -80,7 +123,7 @@ struct MapActor {                /* 26 bytes. The array starts at MAP + 0x83 */
     uint8_t learned;             /* +0x19 -> unit +0x1e */
 };
 
-struct MapFile {                 /* FIELD.VFS. Length is 0x83 + actor_count * 26 */
+struct MapFile {                 /* FIELD.VFS. Length is 0x83 + actor_count * 26, except MAP31.DAT */
     uint8_t zero;                /* +0  0 in every file */
     uint8_t slots;               /* +1  how many unit slots are allocated */
     uint8_t actor_count;         /* +2 */
@@ -115,7 +158,7 @@ struct ShopFile {                /* FIELD.VFS. 36 bytes, SHOP00 through SHOP29 *
 
 `Icon00.dat` through `Icon29.dat`, the `Win` scripts, and `GoodEnd.dat` are in `ICONANI.VFS`. A script is a byte stream. Opcode 0 ends it. There is no header. The opcodes and the lengths that walk every `.dat` member of that archive are in [Scenario files](scenario.md).
 
-The character, enemy, class, spell, rank, and item rows are members of `MISC.VFS`. The structs, the strides, and which function indexes each one are in [Units](units.md). `scripts/extract_scenario_records.py` writes scenario 0 to `extract/scenario/00/` and those nine tables to `extract/tables/`. A field marked unread is copied with no role added.
+The character, enemy, class, spell, rank, and item rows are members of `MISC.VFS`. The structs, the strides, and which function indexes each one are in [Units](units.md). A field marked unread is copied with no role added. The stat tables are not written again.
 
 ## Map data
 

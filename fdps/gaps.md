@@ -32,7 +32,7 @@ A modernised remake is possible from the topic files. The battle rules, the camp
 
 ## Map and scenario files
 
-- Why `M630` has 288 `ATTR` records against 192 pictures, and why `ATTR151.DAT` has no section CEL. The counts are in [Map](map.md). `M31.DTL` is longer than `16 + width * height`. The bytes past the first `51 * 64` were not read, in [File formats](formats.md).
+- Why `M630` has 288 `ATTR` records against 192 pictures, and why `ATTR151.DAT` has no section CEL. The counts are in [Map](map.md). `M31.DTL` is longer than `16 + width * height`. The bytes past the first `51 * 64` were not read, in [File formats](formats.md). `MAP31.DAT` holds thirteen 26-byte records and byte 2 is 2. No reader of the records past that byte was shown.
 - Byte `+3` of an `MPL`, `ATTR`, and `DTL` header, and the bytes between that header and the payload: `ATTR` `+7` through `+0x10`, and `DTL` `+0x0b` through `+0x0f`. The structs name them. No reader was found.
 - `object 1 + 0x1bfb0` and `object 1 + 0x1cfd0`, called by the map compose `object 1 + 0x1bcf0` around the range pictures. Bodies were not decompiled.
 

@@ -40,7 +40,7 @@ Section 0 for indexes 0 through 29:
 | 8 | 26×24 | 18 | 33×25 | 28 | 26×25 |
 | 9 | 20×24 | 19 | 33×25 | 29 | 21×18 |
 
-`MAP##.DAT` says who is on that grid. Byte 0 is 0 in every file. Byte 1 is stored in `object 2 + 0x4118` and is how many unit slots are allocated. Byte 2 is stored in `object 2 + 0x410c` and is how many 26-byte records sit at `+0x83`. Every file is `0x83 + byte 2 * 26` bytes. The saved copy of `0x8a3` bytes is that length at 80 records.
+`MAP##.DAT` says who is on that grid. Byte 0 is 0 in every file. Byte 1 is stored in `object 2 + 0x4118` and is how many unit slots are allocated. Byte 2 is stored in `object 2 + 0x410c` and is how many 26-byte records sit at `+0x83`. Every file except `MAP31.DAT` is `0x83 + byte 2 * 26` bytes. `MAP31.DAT` is 469 bytes. Byte 2 is 2, and thirteen records of that same stride fill the file. The saved copy of `0x8a3` bytes is that length at 80 records.
 
 Bytes 3 through `0x32` are sixteen rows of three, read by `object 1 + 0x1de50`. For each row, when byte 0 equals the turn counter `object 2 + 0x9ce8` and byte 2 equals the side argument, it calls the pointer at `object 2 + 0x1c4 + byte 1 * 4` with argument 0. The dwords from `object 2 + 0x1c4` up to the after-action table at `object 2 + 0x28c` are 50 pointers. A row of `255, 255, 0` does not match a turn. The other rows of maps 0 through 29 are turn, handler, side:
 

@@ -18,7 +18,7 @@ This table is the index of analysed games. A study adds a row here, a folder wit
 
 `__stash/` is the local copy of programs under study. Read it. Do not create or change files there. It is not committed.
 
-Notes go in the game folder. Extractor output goes in that game's `extract/`.
+Notes go in the game folder. Extractor output goes in that game's `extract/`. That directory stays on disk and is not committed.
 
 ## Rights
 

@@ -22,7 +22,7 @@ A modernised remake is possible from the topic files. The battle rules, the camp
 | --- | --- |
 | `object 1 + 0x34cbe`, `object 1 + 0x34e50`, `object 1 + 0x34d78` | The Miles bodies `object 1 + 0x2df06`, `object 1 + 0x2e15a`, and `object 1 + 0x2e323` forward to. The wrappers and the frequency `0x19` are in [Session](session.md). |
 | `object 1 + 0x2f439` | Called when the register-timer wrapper logs. The body was not read. |
-| `object 1 + 0x261d0` | Opens `Bonus-1.saf` and `Bonus.wav` from the bar menu. The frames were not walked. |
+| `object 1 + 0x261d0` | Opens `Bonus-1.saf` and `Bonus.wav` from the bar menu. The clip's frames are in [Pictures](pictures.md). The playback body was not read. |
 
 ## Turns
 

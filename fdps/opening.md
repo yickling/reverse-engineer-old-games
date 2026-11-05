@@ -12,7 +12,7 @@ On the title, before the menu, play `LOGO.SAF` from `MISC.VFS` under `DYNASTY.PA
 
 `object 1 + 0x20cb0` then shuts sound down, blanks the palette, and passes three paths to `object 1 + 0x3df59`: `{prefix}\fd.exe`, `{prefix}\FD1.Vid`, and `{prefix}\FD1.Aud`. The prefix is the third string read from `Disk.no`, in [Session](session.md). When the menu counts out `0x5dc` ticks without a choice, the title returns to the logo and the number is 2, so the next movie is `FD2.Vid` and `FD2.Aud`.
 
-`FD1.Vid`, `FD1.Aud`, `FD2.Vid`, and `FD2.Aud` were not among the data files. A reconstruction keeps this handoff. The frames and the audio stay outside until those files are present.
+`FD1.Vid`, `FD1.Aud`, `FD2.Vid`, and `FD2.Aud` were not among the data files. They are named in `extract/videos/movie/missing.json`. A reconstruction keeps this handoff. The frames and the audio stay outside until those files are present.
 
 Sound then starts again with `0x19`, and the title asks the drive for CD track 2, in [File formats](formats.md). The menu is `StBoard.cel` and `StSel.cel`.
 

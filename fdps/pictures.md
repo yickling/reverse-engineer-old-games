@@ -72,7 +72,7 @@ mixed = (table_a[sample] + table_b[dest]) >> 4 & 0x0f0f0f
 out = byte_table[(mixed & 0xffff) | (mixed >> 12)]
 ```
 
-The four opcodes are unchanged. A skip does not read either table. The fight's two tables are the `0x4800`-byte and `0x1000`-byte files loaded at `object 2 + 0x53f0` and `object 2 + 0x43f0`, under [Combat animation](#combat-animation). Mode 9 cannot be replayed from the cell alone. Mode 10 was disassembled, not decompiled. It builds the same pair of tables, indexes the first once from the dword at struct+`0x0c`, and indexes the second from each source sample.
+The four opcodes are unchanged. A skip does not read either table. The fight's two tables are the `0x4800`-byte and `0x1000`-byte files loaded at `object 2 + 0x53f0` and `object 2 + 0x43f0`. The record and which file is installed are under [Combat animation](#combat-animation). Mode 9 cannot be replayed from the cell alone. Mode 10 was disassembled, not decompiled. It builds the same pair of tables, indexes the first once from the dword at struct+`0x0c`, and indexes the second from each source sample.
 
 For a designer, the modes the map and the fight select are these. Mode 0 leaves the stored indexes. Mode 1 remaps each stored index through a 256-byte table. Mode 3, from the first landed hit, rewrites the defender and the attack clip as `(sample & 2) + 0x80`. Inferred: that is the strike flash. Mode 9 mixes the picture with the pixel already on screen. A fight chunk picks the ramp with `0x10` minus the short at chunk `+7`. A map plate picks it with an attribute byte, or with the pulse in [Map](map.md). Inferred: the pulse is a shimmer, and the mix is what lets a plate painted over units still show them. Mode 10 recolors the picture from itself. Inferred: a ground range highlight looks the same whatever was drawn underneath. Mode 11 recolors the picture from itself the same way, and a `0x40` run still leaves every other pixel unwritten. The map sprite takes that path when flag `0x80` of byte `+5` is set, with selector 8, and the frame is the next one in the facing. Mode 2 is mode 1 with a real skip on opcode `0xc0`. Mode 4 scales to an output width and height. Mode 5 applies two 4.12 steps, and the row step swaps the axes. Inferred: that pair is a rotation. Mode 6 runs mode 4's size test and then mode 5's step on each kept pixel. Mode 7 mirrors a row left to right. Mode 8 mirrors the picture top to bottom; the map wait below is the call that passes 8. Mode 12 blends only the indexes inside the two extra words and copies the rest. No direct call of `object 1 + 0x4664b` pushes 2, 5, 6, 7, or 12. `object 1 + 0x10a40` passes 4 through `object 1 + 0x1d930` while a portrait opens, in [Text](text.md). The direct calls that were separated push 0, 8, 9, or 11.
 
@@ -80,9 +80,9 @@ To pull the pictures out: walk the VFS directory as described in [Archives](arch
 
 `Fight.pal` and the other four `.pal` members of `MISC.VFS` (`Chapter.pal`, `Dynasty.pal`, `Fde.pal`, `Stboard.pal`) are 768 bytes with components 0 through 63. Shift each component left by 2 for an 8-bit channel. The string `Fight.pal` is at `object 2 + 0x1cd4`. `object 1 + 0x19630` opens it into `object 2 + 0x43e4`, and the fight players install that buffer through `object 1 + 0x12f10`, under [CEL pictures](#cel-pictures). Every cell in the fight clips below expanded with mode 0: each row's width counter landed on 0, and the cell size is 24×24 throughout. Colored from `Fight.pal`, frames of `BACK00`, `STAND000`, `ACT000`, `MAGIC000`, and `ML00` are readable pictures. `STAND000` frame 0's written pixels sit at compose `(181, 47)`. Chunk byte 1 still expands with mode 0. There are 44 such chunks in `FIGHT.VFS` (10 in `Stand`, 34 in `Magic`), 177 in `FIGACT.VFS`, none in `BACKGRND.VFS`, and 345 in the effect members of `MISC.VFS`. The fight paints those chunks with mode 9, so this recovers the stored indexes and not that blend. Chunk rectangles in `FIGHT.VFS` stay inside x 0..343 and y 0..223. `FIGACT.VFS` reaches x −1 and y 255. `BACKGRND.VFS` stays in y 28..150.
 
-`scripts/extract_fight_sprites.py` is that walk. It writes one PNG per frame that has chunks, `sheet.png` for the clip, and a JSON record of hold, hit, sample, and the cropped origin. How the sheet is registered is under [SAF clips](#saf-clips). The folders are `backdrops/` (`Back##`), `stands/` (`Stand###`, the body drawn for the defender and for the attacker until the swing), `attacks/` (`Act###`), and `effects/`. A walk of the local archives wrote 63 backdrop frames, 388 standing frames, 2117 attack frames, and 3538 effect frames. `scripts/extract_videos.py` writes the clips that play as a movie: `Logo`, `Chapter`, `Gameover`, `Bonus-1`, `Enyphase`, and `Plyphase` from `MISC.VFS`, and the 67 `ICON####.SAF` members of `ICONANI.VFS`. One canvas per clip, one PNG per frame, 2193 frames. `Logo` is 186 frames of 336×216 colored from `Dynasty.pal`. `Chapter` is 30 frames of 336×216 colored from `Chapter.pal`. The other four, and the icon clips, are colored from `Fde.pal`. A chunk whose mode byte is 1 is expanded with mode 0. No `AVI`, Smacker, `FLI`, or `MPEG` member is in the archives. `FD1.Vid` and `FD2.Vid` are named in [Session](session.md) and were not among the files.
+`scripts/extract_fight_sprites.py` is that walk. It writes one PNG per frame that has chunks, `sheet.png` for the clip, and a JSON record of hold, hit, sample, and the cropped origin. How the sheet is registered is under [SAF clips](#saf-clips). The folders are `backdrops/` (`Back##`), `stands/` (`Stand###`, the body drawn for the defender and for the attacker until the swing), `attacks/` (`Act###`), and `effects/`. A walk of the local archives wrote 63 backdrop frames, 388 standing frames, 2117 attack frames, and 3574 effect frames. The effect count includes `EasyAni`, `Explo`, and `Turn` from `BaseAni.vfs`. `scripts/extract_videos.py` writes the clips that play as a movie: `Logo`, `Chapter`, `Gameover`, `Bonus-1`, `Enyphase`, and `Plyphase` from `MISC.VFS`, and the 67 `ICON####.SAF` members of `ICONANI.VFS`. One canvas per clip, one PNG per frame, 2193 frames. `Logo` is 186 frames of 336×216 colored from `Dynasty.pal`. `Chapter` is 30 frames of 336×216 colored from `Chapter.pal`. The other four, and the icon clips, are colored from `Fde.pal`. A chunk whose mode byte is 1 is expanded with mode 0. No `AVI`, Smacker, `FLI`, or `MPEG` member is in the archives. `FD1.Vid` and `FD2.Vid` are named in [Session](session.md) and were not among the files.
 
-25 attack frames and 63 effect frames store a chunk count of 0. They are kept in the JSON and get no PNG, so the frame index still matches the file. The attack frames are in `ACT005` (3), `ACT020` (3), `ACT024` (2), `ACT060` (1), `ACT061` (1), `ACT062` (2), `ACT067` (2), `ACT070` (1), `ACT093` (3), `ACT094` (3), `ACT095` (3), and `ACT107` (1). Among the effect frames, `EE05`, `EE06`, `EE07`, `EE23`, `ME03`, `ME04`, `ME05`, `ME06`, `ME07`, `ME26`, `ME27`, `ME28`, `ME30`, `ME31`, `ME34`, and `ME35` are a whole file of one empty frame. The same `SAF` path covers the 67 `ICON####.SAF` members of `ICONANI.VFS`. Icon opcode 6 names `Icon%04d.saf` from the next script byte and plays the whole file, under [Map sprites](#map-sprites).
+25 attack frames and 63 effect frames store a chunk count of 0. They are kept in the JSON and get no PNG, so the frame index still matches the file. The attack frames are in `ACT005` (3), `ACT020` (3), `ACT024` (2), `ACT060` (1), `ACT061` (1), `ACT062` (2), `ACT067` (2), `ACT070` (1), `ACT093` (3), `ACT094` (3), `ACT095` (3), and `ACT107` (1). Among the effect frames, `EE05`, `EE06`, `EE07`, `EE23`, `ME03`, `ME04`, `ME05`, `ME06`, `ME07`, `ME26`, `ME27`, `ME28`, `ME30`, `ME31`, `ME34`, `ME35`, and `ME39` are a whole file of one empty frame. The same `SAF` path covers the 67 `ICON####.SAF` members of `ICONANI.VFS`. Icon opcode 6 names `Icon%04d.saf` from the next script byte and plays the whole file, under [Map sprites](#map-sprites).
 
 ## SAF clips
 
@@ -130,13 +130,71 @@ Hold counts actually stored: every `STAND` frame is 4. `ACT` frames are mostly 2
 
 Compose buffer for combat is `0x16480` bytes, pitch `0x170` (368), origin size stored as `0xf8`. The visible copy to the VGA is 320×200 from buffer+`0x2298`. Map composition uses `0x15180` bytes, pitch `0x168` (360). Sprites are drawn at 24×24.
 
+## Blend tables
+
+`Mer1.tmp` is not a temporary file and not a picture. The map stores every pixel as a palette index. When one picture is drawn over another and the two should mix, mode 9 looks the two indexes up in `Mer1.tmp`, adds the two results, and asks `Mer2.tmp` which palette index to store. That is the shadow under a unit, a tinted unit, a foreground plate that still shows the units under it, and a range highlight that shimmers. The caller passes a strength from 0 through 16. Strength 0 leaves the pixel underneath. A higher strength takes more from the picture being drawn.
+
+`FMer1.tmp` and `FMer2.tmp` are the same pair, built for the fight palette. A fight installs them before the first frame and puts `Mer1.tmp` and `Mer2.tmp` back when the fight ends. A fight chunk that is marked to blend picks its strength from that chunk. The extracted fight PNGs are the sprite before this mix, which is why a chunk expanded with mode 0 does not show the blend.
+
+A new engine can draw that sprite with alpha `strength / 16` and leave palette index 0 clear. The `.tmp` files are the original mix. A remake does not need to ship them. Index 0 contributes nothing in the mixer, which is what keeps an unwritten pixel transparent. Inferred: the other zero entries in a ramp are palette indexes that do not take the tint, and the 16 steps are the blend weights.
+
+```mermaid
+flowchart LR
+  sprite["index in the picture"] --> ramp["Mer1.tmp or FMer1.tmp"]
+  under["index already on screen"] --> ramp
+  strength["strength 0 through 16"] --> ramp
+  ramp --> mixer["Mer2.tmp or FMer2.tmp"]
+  mixer --> stored["palette index stored"]
+```
+
+The same idea, an index in and a looked-up result out, is how the other raw tables work. None of them is the picture a player sees.
+
+| File | What a developer expects | What it is |
+| --- | --- | --- |
+| `Mer1.tmp`, `FMer1.tmp` | A leftover temp file | Eighteen blend strengths. One slot is 256 dwords, one per palette index. |
+| `Mer2.tmp`, `FMer2.tmp` | The second half of that temp | 4096 bytes. The mix of the two indexes becomes the stored index. |
+| `Fde.pal`, `Fight.pal`, `Chapter.pal`, `Dynasty.pal`, `StBoard.pal` | A color swatch | 256 colors. Each channel is 0 through 63, not 0 through 255. Pictures store indexes into this. |
+| `FDETXT.FON` | A font with characters | 1792 bitmaps, 16×16. A string stores the cell number, not a character code, in [Text](text.md). |
+| `NUMBER.CEL` | A picture of a window | Five rows of thirteen digit glyphs. The row is the style: ordinary, a stat that is changing, or a pool that is not full. |
+| `*.saf` | A movie | One animation. Frames are palette indexes, plus a hold, a hit mark, and an optional sample. |
+| `BaseWav.vfs` | A sound bank | Nine short UI waves, nested inside `MISC.VFS`. |
+| `BaseAni.vfs` | Another sound bank | Three map clips, `EasyAni`, `Explo`, and `Turn`, nested in the same archive. |
+
+```
+struct BlendSlot {               /* 0x400 bytes */
+    uint32_t entry[256];         /* little-endian. Entry 0 is 0 in every slot */
+};
+
+struct BlendRamps {              /* Mer1.tmp and FMer1.tmp, at object 2 + 0x53f0 */
+    BlendSlot bank[2][9];        /* bank 1 starts at +0x2400 */
+};
+
+struct BlendMixer {              /* Mer2.tmp and FMer2.tmp, at object 2 + 0x43f0 */
+    uint8_t byte[0x1000];        /* the third dword of the mode 9 pointer */
+};
+```
+
+`Mer1.tmp` and `FMer1.tmp` are each `0x4800` bytes. `Mer2.tmp` and `FMer2.tmp` are each `0x1000` bytes. The copies are `extract/blend/`. A selector of 0 through 8 uses that slot of the first bank and the slot `0x2400` bytes higher. A selector above 8 becomes `0x10` minus itself, and those two slots swap. Dword 0 of every slot is 0. The low byte of the other dwords takes 16 distinct values in a slot. `Mer1.tmp` and `FMer1.tmp` differ in 10914 bytes. On the fight file, 43 entries of each slot are 0, and the other low bytes are multiples of that slot's step. On the map file, the low byte at index 1 is that step: 1 through 8 in the first bank, then 16 down to 8. The two mixers differ in 4094 bytes.
+
+```mermaid
+flowchart LR
+  Mer["Mer1.tmp and Mer2.tmp"] -->|"map, and again after a fight"| Globals["object 2 + 0x53f0 and object 2 + 0x43f0"]
+  FMer["FMer1.tmp and FMer2.tmp"] -->|"before the fight frames"| Globals
+```
+
+```mermaid
+flowchart LR
+  sample["source sample"] --> add["add, shift right 4, mask 0x0f0f0f"]
+  dest["pixel already there"] --> add
+  add --> mixer["BlendMixer byte"]
+  mixer --> out["index written"]
+```
+
 ## Combat animation
 
 `object 1 + 0x8d50` builds the screen. `object 1 + 0x96b0` steps it. The pool math those hit frames apply is in [Combat](combat.md).
 
-Before any frame, the two remap tables are replaced. `FMer1.tmp` is read into `object 2 + 0x53f0` (`0x4800` bytes) and `FMer2.tmp` into `object 2 + 0x43f0` (`0x1000` bytes). Both files on disk are exactly those sizes. `object 1 + 0x12f10` then writes VGA colors 0 through 255 from the block at `object 2 + 0x43e4`. After the fight the screen at `0xa0000` is cleared for 64000 bytes, the `Mer1.tmp` / `Mer2.tmp` pair is read back over the same two tables, and `object 1 + 0x12f10` writes the block at `object 2 + 0x43cc`.
-
-Each `*1` file is 18 slots of 256 little-endian dwords, two banks of nine. That is the pair mode 9 swaps when the selector is above 8. Dword 0 of every slot is 0. The low byte of the other dwords takes 16 distinct values in a slot. Many dwords are not the same byte repeated three times. `Mer1.tmp` and `FMer1.tmp` differ in 10914 bytes. On the fight file, 43 entries of each slot are 0, and the other low bytes are multiples of that slot's step. On the map file, the low byte at index 1 is that step: 1 through 8 in the first bank, then 16 down to 8. Each `*2` file is the 4096-byte mixer the formula indexes. The two mixers differ in 4094 bytes. Index 0 contributing nothing is what leaves a stored 0 unmixed. Inferred: the other zero entries are palette indexes that do not take the tint, and the 16 steps are the blend weights.
+Before any frame, the two remap tables are replaced. `FMer1.tmp` is read into `object 2 + 0x53f0` and `FMer2.tmp` into `object 2 + 0x43f0`. `object 1 + 0x12f10` then writes VGA colors 0 through 255 from the block at `object 2 + 0x43e4`. After the fight the screen at `0xa0000` is cleared for 64000 bytes, the `Mer1.tmp` / `Mer2.tmp` pair is read back over the same two tables, and `object 1 + 0x12f10` writes the block at `object 2 + 0x43cc`. The tables are the section above.
 
 Files, by character byte `+7` and by the defender's terrain byte 3 (decremented when it is nonzero):
 

@@ -2,7 +2,7 @@
 
 Part of the [FDPS notes](README.md). This is the remaining work to play a battle from [extract](extract/). It is not a finding about the program. A finished item is checked here. Findings stay in the topic files.
 
-Pictures, text, named waves, `SAF` samples, the stat tables, and the scenario-0 records are already in [extract](extract/). Music is a later extract. `extract/` stays on disk and is not committed. The local copy of the program is only read. Do not create or change files there, and do not name that directory in a note.
+Map pictures, fight frames, text, named waves, `SAF` samples, the stat tables, and the scenario packs are already in [extract](extract/). `ui/FIGBAR` is already colored from `Fight.pal`. `extract/` stays on disk and is not committed. The local copy of the program is only read. Do not create or change files there, and do not name that directory in a note.
 
 The files for a battle share one shape. Indexes 0 through 64, except 30, are packed as JSON, and the rules that differ per scenario are still the programs in [Turns](turns.md), [Scenario files](scenario.md), and [Session](session.md).
 
@@ -10,13 +10,17 @@ The files for a battle share one shape. Indexes 0 through 64, except 30, are pac
 
 ### A playable scenario-0 battle
 
-One visit, in JavaScript, from the moment the cursor moves until outcome 1 or 2. The picture is the 320×200 screen in [Pictures](pictures.md), scaled nearest-neighbor. Combat uses the map path in [Combat](combat.md). The battle reads [extract](extract/) and the notes, and does not open the data files.
+One visit, in JavaScript, from the moment the cursor moves until outcome 1 or 2. The picture is the 320×200 screen in [Pictures](pictures.md), scaled nearest-neighbor. The battle reads [extract](extract/) and the notes, and does not open the data files.
 
 The map is one 30×24 section. The player is side 2, the roster prefix of one, character 0 from `tables/friaprda.json`. The ally is side 1 and moves itself. The other 21 units are side 0. Losing the player or the ally loses the visit. Every side-0 unit gone wins it. Phase nibbles on this map are 0, 1, and 3. Nobody has a learned spell. Weapons reach the next tile.
 
-Start at the icon instruction that stores index 0. Apply the spawns and the one tile placement. Skip the walks, the faces, the clips, and the music. The enemy phase is the swing path of those three nibbles, including the flood fill and the tile where a unit stops, in [Turns](turns.md). The player gets move, attack, and wait. The loss line is scenario string 15, with portrait 12. The cues are `BEEP`, `MISS`, `REST`, and the `EXPLO` sample.
+Start at the icon instruction that stores index 0. Apply the spawns and the one tile placement. Skip the walks, the faces, the icon clips, and the music. The enemy phase is the swing path of those three nibbles, including the flood fill and the tile where a unit stops, in [Turns](turns.md). The player gets move, attack, and wait. The loss line is scenario string 15, with portrait 12. The cues are `BEEP`, `MISS`, `REST`, and the `EXPLO` sample.
 
-Leave the item corner, the fight clips, and the opener's camera for later. This map does not use them to reach an outcome.
+A player attack always plays the fight. The menu does not read the animation byte. The backdrop is `backdrops/`, chosen from the defender's terrain. The standing body is `stands/` and the swing is `attacks/`, both by character id. The bars are `ui/FIGBAR`, and the fill widths are the ones in [Pictures](pictures.md). A frame whose hit mark is set is when the fill changes. The pool math is the same either way, in [Combat](combat.md). Draw the decoded frames as they are. A chunk the fight blends is already expanded as a solid pixel. The blend tables are in `extract/blend/`, and a remake can use alpha `strength / 16` instead, in [Pictures](pictures.md). The seventeen empty effect clips are not on this map.
+
+The enemy swing does read the animation byte. Clear, it applies the pools on the map. Set, it plays the same fight. The settings corner flips the byte. No startup store for it was recorded, so the visit begins clear, and the corner is present so the fight can be turned on. A death returns to the map and plays `effects/EXPLO` on that tile.
+
+Leave the item corner and the opener's camera for later. This map does not use them to reach an outcome.
 
 Done when a player can win the visit and can lose it, and both outcomes follow the index-0 checks.
 
@@ -41,6 +45,44 @@ Turn those programs into a table the engine runs:
 Done when loading a packed index runs that index's win rule and its handlers, and a phase nibble the unit stores resolves with the row in [Turns](turns.md).
 
 ## Done
+
+- [x] Blend tables, and the files the archives do not hold
+
+Copy four files, unchanged, into `extract/blend/`. They are the mode 9 tables in [Pictures](pictures.md). Do not interpret them and do not give them a new role.
+
+| File | Bytes |
+| --- | --- |
+| `Mer1.tmp` | 18432 |
+| `Mer2.tmp` | 4096 |
+| `FMer1.tmp` | 18432 |
+| `FMer2.tmp` | 4096 |
+
+`FD1.Vid`, `FD1.Aud`, `FD2.Vid`, and `FD2.Aud` are paths the title passes on, in [Opening](opening.md). They are not members of an archive. When one of those files is present, copy it unchanged into `extract/videos/movie/`. When it is absent, name it in `extract/videos/movie/missing.json`. Do not download a copy and do not invent a decoder.
+
+Tracks 2 through 19 are CD audio, in [File formats](formats.md). The recording is not a file in the data directory. Write `extract/music/missing.json` naming those tracks. Do not synthesize audio and do not read a drive.
+
+The opener, the unread blitters, the animation byte, and the roll sequence are not files. Leave them.
+
+Done when the four blend files match the source bytes, the movie list names only files that are absent, and the music list names tracks 2 through 19. Then check this item.
+
+- [x] Fight frames, effect clips, and the index-31 tail
+
+`scripts/extract_fight_sprites.py` already decodes a `SAF` frame. Run it with the data directory as its argument and `--out` as [extract](extract/). It writes four folders there, colored from `Fight.pal`:
+
+| Folder | Members |
+| --- | --- |
+| `backdrops/` | Every `Back##.saf` in `BACKGRND.VFS`. One frame each. |
+| `stands/` | Every `Stand###.saf` in `FIGHT.VFS`. |
+| `attacks/` | Every `Act###.saf` in `FIGACT.VFS`. |
+| `effects/` | Every `Magic###.saf` in `FIGHT.VFS`, and the effect `.saf` members of `MISC.VFS` the script already selects. |
+
+The same decoder then opens `BaseAni.vfs`, the archive stored inside `MISC.VFS`, and writes `EasyAni.saf`, `Explo.saf`, and `Turn.saf` into `effects/`. Those three are the map explosion and the two clips beside it. Title clips are already in `extract/videos/`. Samples are already in `extract/sounds/`. Do not write either again. Leave the music out.
+
+`M310.CEL` does not expand with mode 0. Do not write a new decoder for it. The skip already recorded for that section stays.
+
+`M31.DTL` is 6545 bytes. The 51×64 tiles are already in `extract/scenario/31/dtl.json`. The 3265 bytes after those tiles have no reader. Write them, unchanged, to `extract/scenario/31/dtl-tail.bin`. Do not give them a role.
+
+Done when the four folders are on disk, `effects/` contains `EasyAni`, `Explo`, and `Turn`, and the tail file is 3265 bytes. Then check this item.
 
 - [x] Content packs for every index
 

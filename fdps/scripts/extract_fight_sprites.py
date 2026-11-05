@@ -14,9 +14,10 @@ Folders:
                           attacker while they are not swinging
   attacks/     Act###     the swing. A counter uses the defender's Act file
   effects/     Magic###, the spell-phase clips (MB/ML/ME/MS, EB/EL/EE/ES,
-                          EMG), and the other effect clips in MISC.VFS
+                          EMG), the other effect clips in MISC.VFS
                           (Cure, Curemp, Mag11, Magic0bb, Magic0gg, Poseff,
-                          Posion)
+                          Posion), and EasyAni, Explo, and Turn from
+                          BaseAni.vfs
 
 Chunk byte 1 is expanded with mode 0. The fight repaints those chunks with
 expander mode 9, which this script does not apply. Written pixels use
@@ -85,6 +86,25 @@ def vfs_members(path: Path) -> list[tuple[str, bytes]]:
 
 def member_map(path: Path) -> dict[str, bytes]:
     return {name.upper(): blob for name, blob in vfs_members(path)}
+
+
+def vfs_bytes(data: bytes, label: str) -> dict[str, bytes]:
+    if data[:3] != b"VFS":
+        raise ExtractError(f"{label} does not start with VFS")
+    count = struct.unpack_from("<I", data, 7)[0]
+    directory = struct.unpack_from("<H", data, 5)[0]
+    members: dict[str, bytes] = {}
+    for index in range(count):
+        entry = directory + index * 26
+        if entry + 26 > len(data):
+            raise ExtractError(f"{label} directory runs past the archive")
+        name = data[entry : entry + 13].split(b"\x00", 1)[0].decode("latin1")
+        size = struct.unpack_from("<I", data, entry + 13)[0]
+        offset = struct.unpack_from("<I", data, entry + 22)[0]
+        if offset + size > len(data):
+            raise ExtractError(f"{label}:{name} runs past the archive")
+        members[name.upper()] = data[offset : offset + size]
+    return members
 
 
 def load_palette(misc: dict[str, bytes], name: str = "FIGHT.PAL") -> bytes:
@@ -366,6 +386,15 @@ def clips_to_extract(data_dir: Path) -> list[tuple[str, str, bytes]]:
     for name, blob in misc.items():
         if name.endswith(".SAF") and is_effect(name):
             chosen.append(("effects", name, blob))
+    nested = misc.get("BASEANI.VFS")
+    if nested is None:
+        raise ExtractError("MISC.VFS has no BASEANI.VFS")
+    base = vfs_bytes(nested, "BASEANI.VFS")
+    for name in ("EASYANI.SAF", "EXPLO.SAF", "TURN.SAF"):
+        blob = base.get(name)
+        if blob is None:
+            raise ExtractError(f"BASEANI.VFS has no {name}")
+        chosen.append(("effects", name, blob))
     chosen.sort(key=lambda item: (item[0], item[1]))
     return chosen
 

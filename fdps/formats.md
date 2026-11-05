@@ -6,7 +6,7 @@ This is how the bytes are laid out. How a frame is drawn is in [Pictures](pictur
 
 ## Sprites
 
-Two picture containers. Both store palette indexes, not RGB. A palette file is 768 bytes, 256 triples, each component 0 through 63. `Fde.pal` colors the map and the interface. `Fight.pal` colors the fight. `object 1 + 0x12f10` writes those bytes to the DAC.
+Two picture containers. Both store palette indexes, not RGB. A palette file is 768 bytes, 256 triples, each component 0 through 63. `Fde.pal` colors the map and the interface. `Fight.pal` colors the fight. `object 1 + 0x12f10` writes those bytes to the DAC. `Mer1.tmp` and `FMer1.tmp` are not temporary files. They are the blend tables mode 9 uses to mix two of those indexes, in [Pictures](pictures.md).
 
 ### CEL
 
@@ -219,7 +219,7 @@ struct DtlFile {                 /* FIELD1.VFS. 63 files are 16 + width * height
 };
 ```
 
-`M%02d%d.CEL` is the tile sheet for that section. The container is the `CEL` layout above. The big-endian short at `+4` is `0x0f` on all 69 section files. `object 1 + 0x1c0c0` reads `MplFile.cell`. `object 1 + 0x1b790` reads one `Attr` and one `DtlFile` byte. The order and highlight bytes, and the two files whose record counts do not match, are in [Map](map.md). `M31.DTL` is 51 by 64 and 6545 bytes. The bytes past the first `51 * 64` were not read.
+`M%02d%d.CEL` is the tile sheet for that section. The container is the `CEL` layout above. The big-endian short at `+4` is `0x0f` on all 69 section files. `object 1 + 0x1c0c0` reads `MplFile.cell`. `object 1 + 0x1b790` reads one `Attr` and one `DtlFile` byte. The order and highlight bytes, and the two files whose record counts do not match, are in [Map](map.md). `M31.DTL` is 51 by 64 and 6545 bytes. The 3265 bytes after those tiles have no reader. They are copied unchanged to `extract/scenario/31/dtl-tail.bin`.
 
 ## Strings
 
@@ -245,7 +245,7 @@ A `SAF` sample is not a `WAVE` file. The record at `file + dword[sample_table + 
 
 `BaseAni.vfs` is the other nested archive in `MISC.VFS`. Its three members are `SAF` clips, not waves.
 
-Music is a CD audio track. The recording is not in the executable or the archives. No `FORM`/`XMID` sequence and no `MThd` header is in those files. The sixty bytes in [Turns](turns.md) are track numbers. `object 1 + 0x20a30` calls `object 1 + 0x2c5cb` with the byte plus 1, and that plus 1 is the track the drive is asked for. The title's request of 1 asks for track 2. The table's bytes run from 1 to 18, so the drive is asked for tracks 2 through 19.
+Music is a CD audio track. The recording is not in the executable or the archives. No `FORM`/`XMID` sequence and no `MThd` header is in those files. The sixty bytes in [Turns](turns.md) are track numbers. `object 1 + 0x20a30` calls `object 1 + 0x2c5cb` with the byte plus 1, and that plus 1 is the track the drive is asked for. The title's request of 1 asks for track 2. The table's bytes run from 1 to 18, so the drive is asked for tracks 2 through 19. Those tracks are named in `extract/music/missing.json`.
 
 `object 1 + 0x2c3a6` was disassembled. It calls `object 1 + 0x32fd8` with interrupt `0x2f`. The register block at `object 2 + 0x9dc8` has `AX` = `0x1500` and `EBX` = 0. The returned `BX` is stored at `object 2 + 0x9dfc` and the returned `CL` at `object 2 + 0x9dfe`. A `BX` of 0 returns 0. Otherwise, when `object 2 + 0x9e54` is 0, `object 1 + 0x2b84e` allocates two real-mode blocks of `0x20` paragraphs through interrupt `0x31` with `AX` = `0x0100`. The first segment, shifted left by 4, is the request block at `object 2 + 0x9de8`. The second is the data block at `object 2 + 0x9da4`, and its segment in the high word is the transfer address at `object 2 + 0x9da8`. It then reads the disc. The status word at request offset 3 is compared with `0x810c`. That value returns 2. Any other value returns 1. The startup compare against 1 does not branch, in [Session](session.md).
 

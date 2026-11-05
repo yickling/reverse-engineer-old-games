@@ -28,7 +28,11 @@ No Ghidra function existed, or the body was read from the bytes. The topic file 
 | `object 1 + 0x2d284` | Copies its count from the second pointer onto the first. | [Pictures](pictures.md) |
 | `object 1 + 0x32a28` | Writes one byte to a port. | [Pictures](pictures.md) |
 | `object 1 + 0x32a40` | Fills its count with the byte it is passed. | [Pictures](pictures.md) |
-| `object 1 + 0x20520` | Timer tick. No function was created. Increments `object 2 + 0x9d64` and calls rand. | [Session](session.md) |
+| `object 1 + 0x20520` | Timer tick. No function was created. Increments `object 2 + 0x9d64` and calls rand once. | [Session](session.md) |
+| `object 1 + 0x1bfb0` | Sorts the section indexes by the order byte, lowest first. | [Map](map.md) |
+| `object 1 + 0x1cfd0` | Draws every unit twice: the shadow, then the sprite. | [Map](map.md) |
+| `object 1 + 0x1ffc0` | Mixes two rectangles through the blend tables. A zero byte is written. | [Pictures](pictures.md) |
+| `object 1 + 0x200f0` | The same mix. A zero byte in the first source is left unwritten. | [Pictures](pictures.md) |
 | `object 1 + 0x32a8a` | Stores its argument into the rand seed at `object 2 + 0x39c`. No direct call was found. | [Combat](combat.md) |
 | `object 1 + 0x37080` | Stores the sample playback rate at handle `+0x3c`. | [Pictures](pictures.md) |
 | `object 1 + 0x37150` | Stores the sample loop count at handle `+0x30`. | [Pictures](pictures.md) |
@@ -405,10 +409,7 @@ Seen, and the body is not in a topic file. The longer note is in [Gaps](gaps.md)
 | --- | --- |
 | `object 1 + 0x6790` | A FACE.CEL call whose arguments were not read. |
 | `object 1 + 0x14605` | A call inside the save loader. |
-| `object 1 + 0x1bfb0` / `object 1 + 0x1cfd0` | Called by the map compose around the range pictures. |
-| `object 1 + 0x1fbd0` / `object 1 + 0x1ffc0` | Reveal the spell rectangle. |
-| `object 1 + 0x200f0` | Copies the rising experience strip. |
-| `object 1 + 0x1b030` | The channel bytes of the scenario palette pulse. Not split per scenario. |
+| `object 1 + 0x1fbd0` | Reveals the spell rectangle. The margins are in [Pictures](pictures.md). |
 | `object 1 + 0x261d0` | Opens Bonus-1.saf and Bonus.wav. The frames were not walked. |
 | `object 1 + 0x2d0f3` | The heap walk `object 1 + 0x2d0e5` returns. A size of 0 returns 0. The rest was not read. |
 | `object 1 + 0x2ec6b` / `object 1 + 0x2f26e` | Called on the sample slot before the address is set. |

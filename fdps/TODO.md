@@ -16,17 +16,21 @@ The map is one 30×24 section. The player is side 2, the roster prefix of one, c
 
 Start at the icon instruction that stores index 0. Apply the spawns and the one tile placement. Skip the walks, the faces, the icon clips, and the music. The enemy phase is the swing path of those three nibbles, including the flood fill and the tile where a unit stops, in [Turns](turns.md). The player gets move, attack, and wait. The loss line is scenario string 15, with portrait 12. The cues are `BEEP`, `MISS`, `REST`, and the `EXPLO` sample.
 
-A player attack always plays the fight. The menu does not read the animation byte. The backdrop is `backdrops/`, chosen from the defender's terrain. The standing body is `stands/` and the swing is `attacks/`, both by character id. The bars are `ui/FIGBAR`, and the fill widths are the ones in [Pictures](pictures.md). A frame whose hit mark is set is when the fill changes. The pool math is the same either way, in [Combat](combat.md). Draw the decoded frames as they are. A chunk the fight blends is already expanded as a solid pixel. The blend tables are in `extract/blend/`, and a remake can use alpha `strength / 16` instead, in [Pictures](pictures.md). The seventeen empty effect clips are not on this map.
+A player attack always plays the fight. The menu does not read the animation byte. The backdrop is `backdrops/`, chosen from the defender's terrain. The standing body is `stands/` and the swing is `attacks/`, both by character id. The bars are `ui/FIGBAR`, and the fill widths are the ones in [Pictures](pictures.md). The motion is the slide, the strike, and the shake in that file. A frame whose hit mark is set is when the fill changes. The pool math is the same either way, in [Combat](combat.md). Draw the decoded frames as they are. A chunk the fight blends is already expanded as a solid pixel. The blend tables are in `extract/blend/`, and a remake can use alpha `strength / 16` instead, in [Pictures](pictures.md). The seventeen empty effect clips are not on this map.
 
-The enemy swing does read the animation byte. Clear, it applies the pools on the map. Set, it plays the same fight. The settings corner flips the byte. No startup store for it was recorded, so the visit begins clear, and the corner is present so the fight can be turned on. A death returns to the map and plays `effects/EXPLO` on that tile.
+The enemy swing does read the animation byte. Clear, it applies the pools on the map. Set, it plays the same fight. The settings corner flips the byte. The byte in the image is 1, and a new game has not stored it, so the visit begins with the fight, in [Combat](combat.md). The corner is present so the map path can be turned on. A death returns to the map and plays `effects/EXPLO` on that tile.
 
-Leave the item corner and the opener's camera for later. This map does not use them to reach an outcome.
+Leave the item corner and the opener's camera for later. This map does not use them to reach an outcome. Music stays the absent tracks. The seed at the first command depends on how many ticks have fired, so the rolls will not repeat one DOS session.
+
+One person, with these notes, about 14 days. The range is 12 to 16. Drawing the map and placing the units is 3. The player's move, attack, and wait is 2. The fight, including the slide and the bars, is 4. The enemy walk for nibbles 0, 1, and 3 is 3. Win, loss, the death clip, the settings corner, and playing both outcomes is 2.
 
 Done when a player can win the visit and can lose it, and both outcomes follow the index-0 checks.
 
 ### A roster for the index being played
 
 The battle copies a prefix of the campaign roster. The prefix length is byte 1 of the map. Who stands in it is the append list in [Session](session.md): scenario 0 adds character 0, and later openers add the others. The map file does not store that list.
+
+One person, after the scenario-0 visit exists, about 1 day.
 
 Done when starting at an index later than 0 places the roster those earlier openers would have built.
 
@@ -42,9 +46,15 @@ Turn those programs into a table the engine runs:
 - Spells and item use, on the player menu and on the enemy scorer. Scenario 0 has neither learned spell.
 - Openers and endings. An opener is the same four calls, plus an append or a pool write on some indexes. An ending plays its script and stores the next index. Index 26 can quit. Index 29 ends the game.
 
+One person, after the scenario-0 visit exists, about 18 days. The range is 15 to 20. The win and loss table is 2. The eighteen handlers are 5. The other phase nibbles, spells, and item use are 6. The opener and ending walker is 3. Playing a few indexes past 0 is 2. Scenario 0's own opener, the one the first visit skips, is this walker.
+
 Done when loading a packed index runs that index's win rule and its handlers, and a phase nibble the unit stores resolves with the row in [Turns](turns.md).
 
 ## Done
+
+- [x] What an identical scenario 0 still has to read
+
+The message blend, the section sort, the unit pass, the rising strip, the palette channels, the animation byte, the timer's one call of `rand`, index 0's two track bytes, and the glyph cells are in the topic files named in the item. `object 1 + 0x1fbd0` stays unread.
 
 - [x] Blend tables, and the files the archives do not hold
 

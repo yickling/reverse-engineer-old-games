@@ -34,6 +34,8 @@ Cell `n` is the 32 bytes at `font + n * 0x20`. Indexes 0 through 1791 all occur.
 
 Cells 0 through 9 are the digits, and cells 10 through 35 are `A` through `Z`. The other cells were read from the bitmaps. That reading is `extract/text/glyph-map.tsv`. `scripts/extract_text.py` applies it: scenario index N is `FDETXT(N+1).TXT`, written to `extract/text/scenario-NN.txt`, and `FDETXT00.TXT` is `extract/text/interface.txt`. Two blank cells are spaces. A cell that looks like two similar characters can be off by one stroke. The notes do not carry the strings.
 
+The cells in scenario 0's strings 2, 3, and 9 through 15, and in interface string 1 and strings `0x20a` through `0x210`, were compared with those bitmaps. Three cells were the other character, and the table was corrected. Cell 137 is 家: the roof drops both side walls. It had been read as 冢. Cell 468 is 給: the silk radical sits beside 合. It had been read as 綹. Cell 599 is 哈: the mouth radical sits beside 合. It had been read as 唅. The extractor was run again after those three changes. Three cells still look like a second character, and the stroke that decides them is in the bitmap. Cell 495 stays 掌. 拿 would put 合 over the hand, and the top is the wide component of 掌. Cell 624 stays 怍. 作 would put 亻 on the left, and the left side is the three short strokes of 忄. Cell 642 stays 各. 名 would shorten the top, and the bar runs the full width of that component.
+
 ## How a string is drawn
 
 `object 1 + 0xff30(block, index, dest, pitch, ink, fill, shadow)` walks one string. The pen starts at `dest`. The cursor starts at `block + u16[index]`. The arithmetic is that function:

@@ -34,7 +34,6 @@ A modernised remake is possible from the topic files. The battle rules, the camp
 
 - Why `M630` has 288 `ATTR` records against 192 pictures, and why `ATTR151.DAT` has no section CEL. The counts are in [Map](map.md). `M31.DTL` is longer than `16 + width * height`. The 3265 bytes after the tiles have no reader, in [File formats](formats.md). `MAP31.DAT` holds thirteen 26-byte records and byte 2 is 2. No reader of the records past that byte was shown.
 - Byte `+3` of an `MPL`, `ATTR`, and `DTL` header, and the bytes between that header and the payload: `ATTR` `+7` through `+0x10`, and `DTL` `+0x0b` through `+0x0f`. The structs name them. No reader was found.
-- `object 1 + 0x1bfb0` and `object 1 + 0x1cfd0`, called by the map compose `object 1 + 0x1bcf0` around the range pictures. Bodies were not decompiled.
 
 ## Pictures
 
@@ -46,9 +45,8 @@ A modernised remake is possible from the topic files. The battle rules, the camp
 | `object 1 + 0x34cb2` / `object 1 + 0x2d3e6` / `object 1 + 0x34ef3` | The log gate around those wrappers. Bodies not read. |
 
 - The `FACE.CEL` call at `object 1 + 0x6790`. The other portrait calls are in [Pictures](pictures.md) and [Text](text.md).
-- `object 1 + 0x1fbd0` and `object 1 + 0x1ffc0` reveal the spell rectangle and were not decompiled. The message dismiss also calls `object 1 + 0x1ffc0`, with selectors 15, 13, 11, 9, 7, and 5, in [Pictures](pictures.md). `object 1 + 0x200f0` copies the rising experience strip and was not decompiled.
+- `object 1 + 0x1fbd0` reveals the spell rectangle and was not decompiled. The second spell page and the message box use `object 1 + 0x1ffc0`, in [Pictures](pictures.md).
 - `object 1 + 0x68d0` runs the status blit for steps 5 down through 0. The rest of that body was not read. Calls of `object 1 + 0x6e70` at `object 1 + 0x15a7a`, `object 1 + 0x15e77`, and `object 1 + 0x17ce0`, and calls of `object 1 + 0x68d0` at `object 1 + 0x15aab`, `object 1 + 0x15f6f`, and `object 1 + 0x17d11`, pass two screens that were not read. The status-sheet call is in [Pictures](pictures.md).
-- The channel bytes of the scenario palette pulse, copied from `object 1 + 0x1b030`. The periods and the first indexes are in [Pictures](pictures.md). The bytes were not split per scenario.
 - `object 1 + 0x2d0f3` is the heap walk `object 1 + 0x2d0e5` returns. A size of 0 returns 0. The rest of the body was not read.
 - Rows 2 and 4 of `NUMBER.CEL`, and the stores of `object 2 + 0xc` other than the status sheet and the terrain panel. The row select is in [Pictures](pictures.md).
 - The selection-bar blits at `object 1 + 0x1773a`, `object 1 + 0x226b7`, `object 1 + 0x22ea4`, and `object 1 + 0x25279`. Picture 0 and the roster's picture 2 are in [Pictures](pictures.md) and [Turns](turns.md).

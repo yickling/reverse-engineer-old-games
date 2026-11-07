@@ -28,6 +28,7 @@ A modernised remake is possible from the topic files. The battle rules, the camp
 
 | Address | What it is |
 | --- | --- |
+| `object 1 + 0xe810` | Called before `PlyPhase.saf` plays. The body was not read. A chapter-1 recording shows a gold turn card with the turn number between the phase clips, and that card is not a frame of `EnyPhase.saf` or `PlyPhase.saf`. |
 | `object 1 + 0x2bf87`, `object 1 + 0x2c16a`, `object 1 + 0x2c26f`, `object 1 + 0x2c316`, `object 1 + 0x2c51a` | Other device requests beside the CD play path in [File formats](formats.md). No direct call was found. The bodies were not read. |
 
 ## Map and scenario files
@@ -60,6 +61,8 @@ A modernised remake is possible from the topic files. The battle rules, the camp
 ## Units
 
 - Byte `+0x0a` of an `Item.dat` row. No reader was found. The other fields are the struct in [Units](units.md).
+- Item kinds `0x05`, `0x06`, `0x0d`, and `0x1b`. The rows are in [Combat](combat.md). `object 1 + 0x16270` has no branch for them.
+- The `arg` the damage formula compares with `rand % 100` before a weapon writes `+0x25` or `+0x26`. The test is in [Combat](combat.md). It was not tied to a field.
 
 ## Save
 

@@ -24,7 +24,7 @@ Read the file for the question in front of you. Add a finding to that file. When
 | [Turns](turns.md) | Cursor, move, the phase change, and the after-action tables. |
 | [Scenario files](scenario.md) | What a scenario index loads, the battle grid that index selects, and how units are placed on it. |
 | [Map](map.md) | Camera, tiles, terrain bytes, movement cost, and what a section's order and highlight bytes do to a range. |
-| [Units](units.md) | The 80-byte unit record. |
+| [Units](units.md) | The 80-byte unit record, including the six status counts. |
 | [Combat](combat.md) | The map-to-fight handoff, the damage formula, and what a destroyed unit does. |
 | [Pictures](pictures.md) | The picture decoder, `SAF` clips, battle playback, map sprites, the frame extractor, and the screen a new engine keeps. |
 | [Text](text.md) | Glyph-index strings, the font cell, where a string is drawn, and the extracted reading. |

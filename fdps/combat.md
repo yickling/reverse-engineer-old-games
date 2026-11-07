@@ -362,6 +362,150 @@ other: amount = object 1 + 0x182f0(caster, target, id)    # object 1 + 0x18e1f
 | `0x22` | Character 9 gains 100 on `+0x42` and the pair is removed. Any other character shows text `0x21d`. |
 | `0x23` | When byte `+8` is 8 and `object 1 + 0x24290` finds id `0xa3`, that pair and the used index are removed and id `0xbe` is given. Otherwise text `0x220` or `0x21d` is shown. |
 
+## Effect ids
+
+The names in the two tables below are estimates, inferred from the effect. They are a list to correct. The game's own label for an item is interface string `id + 0xc9`, and for a spell it is interface string `id + 0x1be`, in [Text](text.md). Those strings are not copied here.
+
+A spell's effect is the id. `MagicDat.dat` supplies the power, the chance, the step budget, the area, the cost taken from `+0x44`, and the side. A positive power is magic damage, scaled by the target's spell percent. A negative power is damage from the caster's attack. Ids `0x0e`, `0x0f`, `0x10`, and `0x21` add the power to hit points instead. The branches are the spell player above.
+
+| Id | Estimated name | Effect |
+| --- | --- | --- |
+| 0 | Fire | Damage 70. Cost 7. |
+| 1 | Raging fire | Damage 150. Cost 15. |
+| 2 | Hellfire | Damage 310. Cost 35. |
+| 3 | Light arrow | Damage 300. Cost 20. |
+| 4 | Holy pillar | Damage 600. Cost 40. |
+| 5 | Thunder | Damage 50. Cost 8. |
+| 6 | Thunderbolt | Damage 110. Cost 15. |
+| 7 | Thunder strike | Damage 250. Cost 32. |
+| 8 | Ice burst | Damage 60. Cost 10. |
+| 9 | Deep ice | Damage 130. Cost 20. |
+| 10 | Fissure | Damage 150, and the screen shakes. Skips the classes in `object 1 + 0x2550`. Cost 45. |
+| 11 | Cataclysm | Damage 350, and the screen shakes. Same skip. Cost 95. |
+| 12 | Gravity bolt | Damage 350. Cost 35. |
+| 13 | Necro array | Damage 500. A hit also rolls the poison, freeze, and silence counts. Cost 100. |
+| 14 | Restore | Heals 70. Cost 4. Side byte 1. |
+| 15 | Healing wind | Heals 200. Cost 10. Side byte 1. |
+| 16 | Healing spring | Heals 500. Cost 25. Side byte 1. |
+| 17 | Silence | May set `+0x27` for 2 or 3 phases, when that byte is still 0. Cost 25. |
+| 18 | Poison | May set `+0x25` for 2 or 3 phases, when that byte is still 0. Cost 10. |
+| 19 | Paralyze | May set `+0x26` for 2 or 3 phases, when that byte is still 0. Cost 20. |
+| 20 | Blessing | May set `+0x22`, `+0x23`, and `+0x24`, each for 2 or 3 phases. Those three writes read magic row 20, which is this row, so the chance is 100. Cost 50. Side byte 1. |
+| 21 | Teleport | Moves the first target onto the confirmed aim. Cost 50. Side byte 1. |
+| 22 | Refresh | Clears the acted flag, bit `0x80` of byte `+5`, so the target can be ordered again. Cost 40. Side byte 3. |
+| 23 | Death curse | Damage 9999, chance 60. Cost 100. |
+| 24 | Cure ailments | Clears `+0x25`, `+0x26`, and `+0x27`. Cost 30. Side byte 1. |
+| 25 | Dragon blaze | Attack-scaled damage, power 160. The caster can step 23. Cost 65. |
+| 26 | Power impact | Attack-scaled damage, power 160. The caster can step 23. Cost 50. |
+| 27 | Diamond cut | Attack-scaled damage, power 200. Step budget 1. Cost 30. |
+| 28 | Fire break | Attack-scaled damage, power 160. Cost 65. |
+| 29 | God cannon | Attack-scaled damage, power 120. Area byte 3. Cost 75. |
+| 30 | Meteor arrow | Attack-scaled damage, power 120. Cost 40. |
+| 31 | Spirit shot | Attack-scaled damage, power 140. The caster can step 20. Cost 35. |
+| 32 | Judgment bolt | Damage 520. Cost 70. |
+| 33 | Requiem | Heals 800. Cost 55. Side byte 1. |
+| 34 | Gravity well | Damage 1000. Cost 80. |
+| 35 | Holy dragon slash | Attack-scaled damage, power 250. The caster can step 31. Cost 100. |
+| 36 | Flame dragon | Damage 700. Cost 60. |
+| 37 | Ice missile | Damage 270. Cost 35. |
+| 38 | Absolute zero | Damage 700. Cost 65. |
+| 39 | Advent | Damage 1400. Cost 130. |
+
+An item's use is `Item.kind`, byte `+0x0d`. The amount is the short at `+0x0e`. Kinds `0x01` through `0x04`, and kind `0x0b`, are consumed. Kinds `0x07` through `0x0a` play the same four clips and stay in the inventory, and kind `0x20` is the heal that stays. `Item.swing`, byte `+9`, is a separate effect on the attack: 1 may freeze, 2 plays a second swing, 3 adds to the crit roll, and 4 may poison. A row whose kind is 0 and whose swing is 0 only changes the equipped stats, and it is left out.
+
+`object 1 + 0x16270` has no branch for kind `0x05`, `0x06`, `0x0d`, or `0x1b`. Those four rows are listed with the effect left open.
+
+| Id | Estimated name | Effect |
+| --- | --- | --- |
+| 9 | Thunder sword | Lightning damage 130. Kept. |
+| 10 | Ice sword | Ice damage 150. Kept. |
+| 11 | Holy-fire sword | Fire damage 200. Kept. |
+| 12 | Earth sword | Quake damage 400. Kept. |
+| 14 | Spirit sword | Kind `0x0d`, amount 300. No branch. |
+| 18 | Poison claw | A hit may poison. |
+| 28 | Goddess staff | Heals 400. Kept. |
+| 34 | Silver spear | Ice damage 140. Kept. |
+| 35 | Thunder spear | Lightning damage 100. Kept. |
+| 36 | Holy-light spear | Heals 200, and a hit adds to the crit roll. Kept. |
+| 38 | Gem lance | A hit plays a second swing. |
+| 40 | Aurora spear | Heals 200, and a hit adds to the crit roll. Kept. |
+| 42 | Holy spear | A hit adds to the crit roll. |
+| 47 | Magic staff | Fire damage 30. Kept. |
+| 49 | Dark staff | A hit may poison. |
+| 50 | Sun staff | Fire damage 80. Kept. |
+| 51 | Light staff | Heals 80. Kept. |
+| 52 | Angel staff | Heals 120. Kept. |
+| 53 | Merlin's staff | Fire damage 150. Kept. |
+| 54 | Dragon staff | Fire damage 200. Kept. |
+| 55 | Diamond staff | Ice damage 200. Kept. |
+| 60 | Poison ring | A hit may poison. |
+| 62 | Curse ring | A hit may freeze. |
+| 67 | Seal glove | Kind `0x1b`, amount 80. No branch. |
+| 68 | Elusive glove | A hit adds to the crit roll. |
+| 71 | Snipe bow | A hit adds to the crit roll. |
+| 74 | Wind bow | Heals 200, and a hit adds to the crit roll. Kept. |
+| 75 | Demon blade | A hit may freeze. |
+| 78 | Iron shot | A hit adds to the crit roll. |
+| 79 | Ballista | A hit plays a second swing. |
+| 80 | Vulcan | A hit plays a second swing. |
+| 88 | Named fire sword | Fire damage 100. Kept. |
+| 90 | Named lightning sword | Lightning damage 100, and a hit adds to the crit roll. Kept. |
+| 95 | Spirit strike | A hit may freeze. |
+| 98 | Flame-dragon sword | Fire damage 300. Kept. |
+| 99 | Light cannon | Damage 9999. The pair stays. Range byte 30. |
+| 160 | Scorching sword | Fire damage 200. Kept. |
+| 161 | Firelight sword | Fire damage 300, and a hit adds to the crit roll. Kept. |
+| 162 | True flame-dragon sword | Fire damage 500, and a hit adds to the crit roll. Kept. |
+| 164 | Fortify kit | On character 9: attack base and defense base gain 30, move gains 1, and spell 29 is learned. Consumed. Any other character shows text and is unchanged. |
+| 165 | Demon blade, lesser | A hit may freeze. |
+| 166 | Demon blade, middle | A hit may freeze. |
+| 167 | Demon blade, greater | A hit may freeze. |
+| 168 | Royal bow | Heals 120, and a hit plays a second swing. Kept. |
+| 170 | Venom claw | A hit may poison. |
+| 171 | Familiar | A hit may freeze. |
+| 172 | Ancient cannon | A hit adds to the crit roll. |
+| 173 | Vitality kit | On character 9: maximum hit points gain 100. Consumed. Any other character shows text and is unchanged. |
+| 177 | Keepsake ring | A hit adds to the crit roll. |
+| 178 | Hell bow | A hit may poison. |
+| 180 | Herb | Heals 50. Consumed. |
+| 181 | Tonic | Heals 100. Consumed. |
+| 182 | Regen draught | Heals 250. Consumed. |
+| 183 | Magic herb | Restores 40 of the second pool. Consumed. |
+| 184 | Magic water | Restores 100 of the second pool. Consumed. |
+| 185 | Crystal grain | Restores 250 of the second pool. Consumed. |
+| 187 | High-energy device | When byte `+8` is 8 and the unit also carries item 163, both are removed and item 190 is given. Otherwise text, and nothing is removed. |
+| 190 | High-energy cannon | Fire damage 400, and a hit adds to the crit roll. Kept. Range byte 22. |
+| 191 | Iron-cutting sword, lesser | A hit adds to the crit roll. |
+| 192 | Iron-cutting sword, middle | A hit adds to the crit roll. |
+| 193 | Iron-cutting sword, greater | A hit adds to the crit roll. |
+| 194 | Holy water | Heals 1000. Consumed. |
+| 195 | Fire bead | Fire damage 100. Consumed. |
+| 196 | Thunder bead | Lightning damage 100. Consumed. |
+| 197 | Ice bead | Ice damage 100. Consumed. |
+| 198 | Earth bead | Quake damage 100. Consumed. |
+| 199 | Flame | Damage 300. The pair stays. Range byte 30. |
+| 200 | Fire gem | Fire damage 150. Consumed. |
+| 201 | Thunder gem | Lightning damage 150. Consumed. |
+| 202 | Ice gem | Ice damage 150. Consumed. |
+| 203 | Earth gem | Quake damage 150. Consumed. |
+| 204 | Blank | Kind `0x05`, amount 150. The interface string is empty. No branch. |
+| 205 | Fire crystal | Fire damage 200. Consumed. |
+| 206 | Thunder crystal | Lightning damage 200. Consumed. |
+| 207 | Ice crystal | Ice damage 200. Consumed. |
+| 208 | Light crystal | Kind `0x06`, amount 200. No branch. |
+| 210 | Fire stone | Fire damage 400. Consumed. |
+| 211 | Thunder stone | Lightning damage 400. Consumed. |
+| 212 | Ice stone | Ice damage 400. Consumed. |
+| 213 | Sky gem | Kind `0x06`, amount 250. No branch. |
+| 214 | Life fruit | Maximum hit points gain 15. Consumed. |
+| 215 | Magic crystal | Maximum of the second pool gains 15. Consumed. |
+| 216 | Strength draught | Attack base gains 7, then the combat words are rebuilt. Consumed. |
+| 217 | Endurance draught | Defense base gains 7, then the combat words are rebuilt. Consumed. |
+| 218 | Hit draught | Hit base gains 7, then the combat words are rebuilt. Consumed. |
+| 221 | Wind feather | Move gains 1. Consumed. |
+| 222 | Antidote | Clears `+0x25`. Consumed. |
+| 223 | Freeze cure | Clears `+0x26`. Consumed. |
+
 `object 1 + 0x16200` walks the targets and subtracts. `object 1 + 0x16fa0` plays `Posion.saf` and adds. Both draw the number that the helper returns, then call `object 1 + 0xf310`. The arithmetic is the same shape in `object 1 + 0x18430` (subtract from `+0x40`), `object 1 + 0x17040` (add to `+0x40`, capped at `+0x42`), and `object 1 + 0x17570` (add to `+0x44`, capped at `+0x46`). `rand` is `object 1 + 0x32a68`. It calls `object 1 + 0x32a62`, which returns the dword at `object 2 + 0x39c`. The call stores `seed * 0x41c64e6d + 0x3039` back into that dword and returns bits 16 through 30, so the value is 0 through `0x7fff`. A null pointer returns 0. The dword in the image is 1. `object 1 + 0x32a8a` stores its argument into the same dword. No function was created there, and no direct call of it was found. The timer tick is `object 1 + 0x20520`, in [Session](session.md). Disassembly of that body: it increments `object 2 + 0x9d64` and calls `rand` once, and the return value is discarded. That is the only call on the tick. The timer is started in startup, before the title, so the seed at the first command is the image seed advanced once for each tick that has fired. How many ticks that is depends on the title and the opener, and that count is not in the program. A roll is not fixed by the battle. The same command after a longer title, or a longer chapter card, draws a later value. A remake that seeds again at the first command will not match these rolls. Integer division is toward zero.
 
 ```
@@ -380,7 +524,7 @@ The drawn number is `spread`. A cap or a floor can move the pool by less than th
 
 `rand` is `object 1 + 0x32a68`. The arithmetic below is `object 1 + 0x9f60` on the clip path and `object 1 + 0xc4f0` on the immediate path. The two bodies match. `object 1 + 0x9f60` does not write the pool. It returns six dwords. Dword 0 is 1, and a landed roll stores 0. Dword 1 is 1 when defense was halved. Dword 5 is the damage. The clip player spreads dword 5 across the hit frames. A miss leaves dword 5 at 0, so the pool write subtracts nothing.
 
-`object 1 + 0x2550` returns 1 when the class byte is `0x16`, `0x17`, `0x18`, `0x1f`, or `0x25`. That fighter skips the terrain percent. The status write for weapon kinds 1 and 4 asks `object 1 + 0x19050`. It returns 1, and the status is skipped, when the class is `0x19`, `0x21`, `0x22`, `0x24`, `0x25`, or `0x26`, or the character id is from `0x3c` through `0x44`. A spell applies the same kind of count through `object 1 + 0x18f40`, in [Units](units.md).
+`object 1 + 0x2550` returns 1 when the class byte is `0x16`, `0x17`, `0x18`, `0x1f`, or `0x25`. That fighter skips the terrain percent. The status write for weapon kinds 1 and 4 asks `object 1 + 0x19050`. It returns 1, and the status is skipped, when the class is `0x19`, `0x21`, `0x22`, `0x24`, `0x25`, or `0x26`, or the character id is from `0x3c` through `0x44`. Kind 4 writes `+0x25` and kind 1 writes `+0x26`. A spell applies the same kind of count through `object 1 + 0x18f40`. The six countdowns, and which spell and item kinds write them, are in [Units](units.md).
 
 ```
 attack  = attacker[+0x48]

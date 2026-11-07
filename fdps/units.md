@@ -124,7 +124,7 @@ struct Item {                /* object 1 + 0x8b30, 251 rows of 0x17 */
     uint16_t hit;            /* +3 */
     uint16_t defense;        /* +5  drawn for the other types below 0x28 */
     uint16_t avoid;          /* +7 */
-    uint8_t swing;           /* +9  1 and 4 write a count, 2 plays a second swing. Combat */
+    uint8_t swing;           /* +9  1 writes +0x26, 4 writes +0x25, 2 plays a second swing. Status counts */
     uint8_t at_0x0a;         /* not read */
     uint8_t inner;           /* +0x0b the swing's inner radius */
     uint8_t shape;           /* +0x0c the swing's target shape */
@@ -194,6 +194,29 @@ The flood fill indexes a `ProMap` row by the terrain byte, so byte 8 is also the
 
 `RankUp.dat` is those 9 rows, so the index runs through character ids 0 through 8. `object 1 + 0x25030`, called from the rank window at `object 1 + 0x244b5`, reads `RankUp` of unit byte `+8` at `object 1 + 0x251e1`. The triple index comes from the caller's array, and the window draws interface string `choice.class_id + 0xa1`. `object 1 + 0x24980` selects its triple with `argument * 3`. It indexes the table with unit `+8` and does not write that byte. Byte 0 of the chosen triple is stored at `+7`, and byte 1 at `+0x20`. `object 1 + 0x24310` compares byte 0 of the row with byte 0 of the selected triple, stores byte 1 at `object 2 + 0x4034`, and stores byte 2 at `object 2 + 0x4038` before the text call at `object 1 + 0x246f6`. The same function stores `row[7] + 1` at `object 2 + 0x4030`. A roster record is eligible when `+0x21` is at least `0x14` and `+7` is below 9. Character id 0 carrying item `0xdb` is marked 3. Item `0xe0` marks 1, item `0xe1` marks 2, and neither marks 0. A count of 0 shows interface string `0x214` and returns. Accepting removes the marking item, adds the stored byte 2 to `+0x3b`, and adds bytes 1, 3, 5, 7, and 9 of `FriLevUp` for the chosen character id to `+0x37`, `+0x39`, `+0x3e`, both hp words, and both mp words. It stores 1 in `+0x21` and calls `object 1 + 0x14d40`.
 
-The six bytes at `+0x22` are counts. Spawn clears them: `push 6`, `push 0`, `push unit + 0x22`, then the call at `object 1 + 0x13715`. `object 1 + 0x18f40(kind, id)` looks the unit up and, when `rand % 100` is below byte `+2` of a `MagicDat.dat` row and the chosen byte is still 0, stores `rand % 2 + 2`. Kind `0x11` chooses `+0x27`, kind `0x12` chooses `+0x25`, and kind `0x13` chooses `+0x26`. Any other kind chooses byte `kind + 0x22` and reads the chance from magic row `0x14`. Kinds `0x11`, `0x12`, and `0x13` also require `object 1 + 0x19050` to return 0. The spell player `object 1 + 0x188c0` calls this with kind `0x11`, with its own argument when that argument is `0x12` or `0x13`, and with 0, 1, and 2 when the argument is `0x14`. The phase tick that counts the bytes down is in [Turns](turns.md).
+## Status counts
 
-How those words are combined in an attack is in [Combat](combat.md). How a scenario places the records is in [Scenario files](scenario.md).
+A status is a countdown on the unit. The six bytes at `+0x22` through `+0x27` are those countdowns. Zero is off. Any other value is how many phase changes are left. Spawn writes zero over all six: `push 6`, `push 0`, `push unit + 0x22`, then the call at `object 1 + 0x13715`. A scenario can store a count itself. The first battle's opener writes `0xb` into slot 2's `+0x25` and 100 into its hit points, in [Opening](opening.md).
+
+On a phase change, `object 1 + 0xfa00` in [Turns](turns.md) does two things, in this order. While `+0x25` is nonzero it sets hit points to `max(0, +0x40 − +0x42 / 10)`. Then every nonzero byte from `+0x22` through `+0x27` drops by one, and a byte that reaches zero is followed by the combat-word rebuild `object 1 + 0x14d40`.
+
+| Byte | While it is nonzero |
+| --- | --- |
+| `+0x22` | The rebuild multiplies attack by 1.15 |
+| `+0x23` | The rebuild multiplies defense by 1.15 |
+| `+0x24` | The rebuild adds 15 to hit and to avoid |
+| `+0x25` | Poison. Each phase takes a tenth of maximum hit points, as above. Regeneration and rest both skip the unit |
+| `+0x26` | The map sprite stays on frame 0 of its facing and jitters one pixel. The cursor will not command the unit |
+| `+0x27` | The spell command is refused, and the spell scorer skips the unit |
+
+The mark under the sprite is `ICONSTS.CEL`, in [Pictures](pictures.md). Five pictures are tried, in the order `+0x23`, `+0x22`, `+0x24`, `+0x25`, `+0x27`, so poison is picture 3. `+0x26` has no picture. A byte of zero is skipped. When more than one of the five is set, the tick modulo that count picks which mark is drawn. The mark is 24×11 and sits 12 rows below the sprite.
+
+A weapon, a spell, or a use selects one of these bytes by a number in its row. The id tables, with an estimated name on each row, are in [Combat](combat.md).
+
+`Item.swing`, byte `+9` of `Item.dat`, is the weapon's choice. Value 4 writes `+0x25`. Value 1 writes `+0x26`. Value 2 plays a second swing and writes no count. The damage formula in [Combat](combat.md) rolls `rand % 100` against `arg` before the write, and skips the write when `object 1 + 0x19050` returns 1. That return is 1 for class `0x19`, `0x21`, `0x22`, `0x24`, `0x25`, or `0x26`, and for a character id from `0x3c` through `0x44`. A poison write stores `rand % 4 + 2`, so the count is 2, 3, 4, or 5. A `+0x26` write stores `rand % 2 + 2`, so the count is 2 or 3. Which field supplies `arg` is not named in that formula.
+
+A spell selects the byte by its id. `object 1 + 0x18f40(kind, id)` reads `MagicDat.chance` of that row. When `rand % 100` is below that chance and the chosen byte is still 0, it stores `rand % 2 + 2`. Kind `0x12` chooses `+0x25`, kind `0x13` chooses `+0x26`, and kind `0x11` chooses `+0x27`. Any other kind chooses byte `kind + 0x22` and reads the chance from magic row `0x14`. Kinds `0x11`, `0x12`, and `0x13` also require `object 1 + 0x19050` to return 0, the same immunity as the weapon. The spell player calls this with kind `0x11`, with its own id when that id is `0x12` or `0x13`, and with 0, 1, and 2 when the id is `0x14`. Spell `0x14` is therefore the three rebuild counts, and its chance is row `0x14` rather than its own row. Spell `0x0d` is a separate roll: each of `+0x25`, `+0x26`, and `+0x27` is set to `rand % 2 + 2` when `rand % 100` is below `0x14` and the same immunity check returns 0. Spell `0x18` stores 0 in those three bytes.
+
+A carried item clears one countdown and is consumed. Use kind `0x16` clears `+0x25`. Use kind `0x18` clears `+0x26`. Both play `Cure.saf`. The kind is `Item.kind`, byte `+0x0d`, and the table of uses is in [Combat](combat.md).
+
+How the combat words are combined in an attack is in [Combat](combat.md). How a scenario places the records is in [Scenario files](scenario.md).

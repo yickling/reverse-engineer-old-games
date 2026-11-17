@@ -14,7 +14,7 @@ An address in these notes is an offset from an object's own base in the executab
 
 ## Notes
 
-Read the file for the question in front of you. Add a finding to that file. When the finding is a function or a table, add the row to [Functions](functions.md). Add an address that is still unread to [Gaps](gaps.md), under the same heading.
+Read the file for the question in front of you. Add a finding to that file. When the finding is a function or a table, add the row to [Functions](functions.md). The study is the gameplay. An unread address that changes a battle, a town, a character, or a save goes in [Gaps](gaps.md), under the same heading. A body that only starts a sample, talks to Miles, asks the CD drive, walks the heap, or picks the bar gift is discarded, and it is not a gap.
 
 | Note | What it holds |
 | --- | --- |
@@ -26,16 +26,18 @@ Read the file for the question in front of you. Add a finding to that file. When
 | [Map](map.md) | Camera, tiles, terrain bytes, movement cost, and what a section's order and highlight bytes do to a range. |
 | [Units](units.md) | The 80-byte unit record, including the six status counts. |
 | [Combat](combat.md) | The map-to-fight handoff, the damage formula, and what a destroyed unit does. |
+| [Names](names.md) | The id tables for a character, a spell, an item, and a chapter. |
 | [Pictures](pictures.md) | The picture decoder, `SAF` clips, battle playback, map sprites, the frame extractor, and the screen a new engine keeps. |
 | [Text](text.md) | Glyph-index strings, the font cell, where a string is drawn, and the extracted reading. |
 | [Archives](archives.md) | The VFS directory. |
 | [File formats](formats.md) | On-disk layouts of sprites, scenario files, maps, strings, and sound. |
 | [Save](save.md) | `FDE.SAV`, including the four load slots. |
 | [Functions](functions.md) | Which bodies were decompiled, which were disassembled, and which were only seen, and the data tables. |
-| [Gaps](gaps.md) | What is still missing for a full account of the design and the implementation. |
+| [Verdicts](verdicts.md) | Whether a reconstruction is possible, and whether a remake can start. |
+| [Gaps](gaps.md) | The gameplay list is complete. The page against the program is complete. |
 
-The extractors are in [scripts](scripts/). They write into [extract](extract/). That directory stays on disk and is not committed. The work log is [TODO](TODO.md). `scripts/extract_fight_sprites.py` writes the fight frames, `scripts/extract_cel_pictures.py` writes the map and interface pictures, `scripts/extract_text.py` writes the scenario strings, and `scripts/extract_sounds.py` writes the named waves and the `SAF` samples, and `scripts/extract_videos.py` writes the cinematic `SAF` clips, and `scripts/extract_scenario_records.py` writes each scenario index and every icon script. What each one writes is in [Pictures](pictures.md), [Text](text.md), and [File formats](formats.md).
+The extractors are in [scripts](scripts/). They write into [extract](extract/). That directory stays on disk and is not committed. The work log is [TODO](TODO.md). `scripts/extract_fight_sprites.py` writes the fight frames, `scripts/extract_cel_pictures.py` writes the map and interface pictures, `scripts/extract_text.py` writes the scenario strings, `scripts/extract_glyphs.py` writes the 16×16 cell masks and the cell-index sections, and `scripts/extract_sounds.py` writes the named waves and the `SAF` samples, and `scripts/extract_videos.py` writes the cinematic `SAF` clips, and `scripts/extract_scenario_records.py` writes each scenario index and every icon script. What each one writes is in [Pictures](pictures.md), [Text](text.md), and [File formats](formats.md).
 
 ## Still open
 
-The open list is [Gaps](gaps.md). Add an address, file, or field that was seen and not read there, under the same heading as the topic. Remove it when the topic file records the finding, and add the function or the table to [Functions](functions.md).
+The gameplay list in [Gaps](gaps.md) is complete. An address that is gameplay and was seen and not read goes there, under the same heading as the topic. Remove it when the topic file records the finding, and add the function or the table to [Functions](functions.md). A body outside the gameplay is discarded. The page against the program is the second list in that file. That list is complete.

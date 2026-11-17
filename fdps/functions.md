@@ -2,11 +2,11 @@
 
 Part of the [FDPS notes](README.md). Decompiled functions are Ghidra output, not original source. Nothing here was checked by running the game.
 
-This is the status list. The behavior stays in the topic file. A row is where the body sits, how it was read, and one line of what it does. When a body is read, add the row and take it out of [Gaps](gaps.md). A body that was only seen stays under Not read and in Gaps.
+This is the status list. The behavior stays in the topic file. A row is where the body sits, how it was read, and one line of what it does. When a body is read, add the row. The study is the gameplay. A body that only starts a sample, talks to Miles, asks the CD drive, walks the heap, or picks the bar gift is discarded. It stays in the list at the end, and it is not a gap.
 
-Where is `object N + offset`, from that object's base in the executable, as in [Binary](binary.md). A row is decompiled unless this file says it was disassembled or not read. The session loop, the thirty openers, the thirty endings, the thirty after-action checks, and the step handlers were disassembled, because Ghidra had not created functions there.
+Where is `object N + offset`, from that object's base in the executable, as in [Binary](binary.md). A row is decompiled unless this file says it was disassembled or discarded. The session loop, the thirty openers, the thirty endings, the thirty after-action checks, and the step handlers were disassembled, because Ghidra had not created functions there.
 
-Decompiled: 260, plus the picture-mode bodies in the table under Pictures. Disassembled: the blocks below. Not read: the list at the end.
+Decompiled: 260, plus the picture-mode bodies in the table under Pictures. Disassembled: the blocks below. Discarded: the list at the end.
 
 ## Disassembled
 
@@ -123,7 +123,7 @@ One line is the body the topic file records.
 | `object 1 + 0x83c0` | Four toggles. Corner 2 of the command diamond. |
 | `object 1 + 0x84e0` | The search on the fourth command corner. |
 | `object 1 + 0xe3c0` | The turn change. |
-| `object 1 + 0xead0` | Plays the phase clip. The enemy clip is followed by the side-0 walk. |
+| `object 1 + 0xead0` | Plays the phase clip. A name equal to `PLYPHASE.SAF` calls `object 1 + 0xe810` first. The enemy clip is followed by the side-0 walk. |
 | `object 1 + 0xfa00` | Walks the units whose side byte equals that argument and whose flag bit 0 is clear. |
 | `object 1 + 0x13df0` | Reads the save buffer back and restores the battle at the front of FDE.SAV. |
 | `object 1 + 0x14d40` | Rebuilds the four combat words from the bases and the equipped items. |
@@ -142,6 +142,9 @@ One line is the body the topic file records.
 | `object 1 + 0x1d320` | One of the four walk steps. Passes the cursor tile divided by 24, and 0. |
 | `object 1 + 0x1d430` | One of the four walk steps. Passes the cursor tile divided by 24, and 0. |
 | `object 1 + 0x1d7e0` | Reads a roster slot and slides the camera to that tile. |
+| `object 1 + 0x1def0` | Key `0x3b`. Draws section 0 scaled about VGA `(0xa0, 0x64)`, then a mark per visible unit. |
+| `object 1 + 0x1e3d0` | Expands section 0's CEL into 24×24 slots for that overview. |
+| `object 1 + 0x1e4a0` | Samples the 312×192 window from those slots at the overview's step. |
 | `object 1 + 0x1d9b0` | Walks the battle slots for one id. |
 | `object 1 + 0x1da80` | Draws ADWin.cel picture 0 when both panel bytes are set. |
 | `object 1 + 0x1dd20` | Allocates (`object 2 + 0x150` + 1) * 0x50 bytes, copies that many bytes out of the unit array, clears `object 2 + 0x150` * 0x50 bytes of the old array, frees it, and keeps the new pointer. |
@@ -150,6 +153,7 @@ One line is the body the topic file records.
 | `object 1 + 0x1e7a0` | Looks for a side-2 unit that is still eligible (flag bits 0x81 clear, +0x26 clear). |
 | `object 1 + 0x20a30` | Reads the CD track byte at `object 1 + 0x20230` + scenario * 2 + argument and starts that track. |
 | `object 1 + 0x220e0` | (0xa8208, 0x140) draws command pictures 0x34 through 0x36 at VGA (8, 104) and that dword in eight digits. |
+| `object 1 + 0x21690` | The eight intermediate frames of a village room. The source window is in [Turns](turns.md). |
 | `object 1 + 0x22150` | A village menu that stays until the selection is −1. |
 | `object 1 + 0x222e0` | Plays ShopWin.Cel in nine steps through expander mode 4. |
 | `object 1 + 0x23440` | Picks a roster index. |
@@ -169,7 +173,7 @@ One line is the body the topic file records.
 | `object 1 + 0x11e00` | Icon opcode 5. Slides the camera toward a tile, then snaps the cursor there. |
 | `object 1 + 0x123e0` | Icon opcode 14. Waits, then fades the palette down by a bias. |
 | `object 1 + 0x12bb0` | Opens ICON.CEL (the string at `object 2 + 0x1a03`, mode at `object 2 + 0x1a00`) and loads map%02d.cod from FIELD.VFS into `object 2 + 0x140`. |
-| `object 1 + 0x13800` | (scenario, group, arg) opens ICON.CEL and loads map%02d.cod from FIELD.VFS into `object 2 + 0x140` through `object 1 + 0x193d0`. |
+| `object 1 + 0x13800` | (scenario, group, arg) opens ICON.CEL and loads map%02d.cod from FIELD.VFS into `object 2 + 0x140` through `object 1 + 0x193d0`. The actor walk stops at byte 2 of the loaded map. |
 | `object 1 + 0x151d0` | The value a shop multiplies by 5 and shifts right by 2, then subtracts from the price. |
 | `object 1 + 0x1bc40` | Redraws the map. |
 | `object 1 + 0x21470` | (group, dest) copies bytes from group * 12 until 0xff or 12 bytes, each byte widened to a dword item id, and returns the count. |
@@ -260,7 +264,7 @@ One line is the body the topic file records.
 | `object 1 + 0x16dd0` | Plays the formatted clip on the map. Draws it twice per frame. |
 | `object 1 + 0x16fa0` | Plays Posion.saf and adds. |
 | `object 1 + 0x17040` | Writes min(+0x42, +0x40 + spread). |
-| `object 1 + 0x17150` | Returns 0, so a script that called it continues. |
+| `object 1 + 0x17150` | Uses the stored item. A line item's stand is clamped with the two words at the start of the MPL, in [Combat](combat.md). |
 | `object 1 + 0x174b0` | Copies the three bytes at +0x31 into the death list when the pool is below 1 and the first byte is 2, 3, 4, or 5. |
 | `object 1 + 0x17570` | Adds to the pool at +0x44, capped at +0x46. |
 | `object 1 + 0x17810` | Fills the id list, the same call that enables menu slot 1, and byte +0x27 must be 0. |
@@ -310,6 +314,7 @@ The other picture functions:
 | `object 1 + 0x62f0` | Stamps the sheet onto that picture at pitch 0x140. |
 | `object 1 + 0x6830` | Opens Status.cel. |
 | `object 1 + 0x6a90` | The status window. |
+| `object 1 + 0x68d0` | Closes the status sheet. Steps 5 down through 0, then restores `object 2 + 0x159`. |
 | `object 1 + 0x6e70` | One frame of the window open. Steps 0 through 8 on the status sheet. |
 | `object 1 + 0x7730` | Draws one status bar: the filled picture, then picture 0 for the remainder. |
 | `object 1 + 0x70b0` | Waits while text is up, and it is the call that passes expander mode 8. |
@@ -323,18 +328,21 @@ The other picture functions:
 | `object 1 + 0xa4a0` | (attacker, spellId, targetCount, targets). |
 | `object 1 + 0xba10` | The ending reel. Draws the backdrop, the stand, the act, and the scenario string. |
 | `object 1 + 0xcad0` | Draws a 41-step bar, separate from the fight bars. |
-| `object 1 + 0xe810` | Called before PlyPhase.saf plays. |
+| `object 1 + 0xe810` | The turn card. Slides `Turn.saf` frame 0 and the turn counter in before `PlyPhase.saf`. |
 | `object 1 + 0x12290` | Plays that file on the map. |
-| `object 1 + 0x12f10` | Writes VGA colors 0 through 255 from the block at `object 2 + 0x43e4`. |
+| `object 1 + 0x12f10` | Writes one palette range to the DAC. The arguments are the buffer, the first index, the last index, then red, green, and blue. |
 | `object 1 + 0x13020` | Is called with the character id as its first argument. |
-| `object 1 + 0x14620` | Opens LoadKon.cel. |
-| `object 1 + 0x176c0` | Draws the list, and the same margins run back down. |
+| `object 1 + 0x14620` | The slot picker. One `LoadKon.cel` picture follows the slot. The three bars are `object 1 + 0x14a10`, in [Save](save.md). |
+| `object 1 + 0x1f910` | Reveals `Save.cel` and `Load.cel` as 256 shuffled cells. The block copy is in [Save](save.md). |
+| `object 1 + 0x176c0` | Draws the learned-spell list onto the sheet. The reveal around it is in [Pictures](pictures.md). |
+| `object 1 + 0x178b0` | Holds the spell list until a key. The icon cycle and the page marks are in [Pictures](pictures.md). |
 | `object 1 + 0x1a1c0` | Plays Miss.wav. |
 | `object 1 + 0x1a920` | Plays GameOver.saf, runs sixteen blend steps, and waits on a key. |
 | `object 1 + 0x1ca60` | (unit, `object 2 + 0x168`) then picks a 24×11 mark from ICONSTS.CEL at `object 2 + 0x43d8`. |
 | `object 1 + 0x1cb30` | Picks the map sprite. The index is slot * 12 + facing * 3 + step. |
 | `object 1 + 0x1d830` | Picks the unit under the cursor. |
 | `object 1 + 0x1d930` | (cel, index, dest, pitch, x, y, remap, mode) is the blit that reads the size. |
+| `object 1 + 0x1fbd0` | Fills each block of a rectangle with the source pixel at that block's centre. The spell margins are in [Pictures](pictures.md). |
 | `object 1 + 0x107f0` | Dismisses the message box in six steps, then copies the plain window back. |
 | `object 1 + 0x1e840` | Pulses a run of palette entries on the scenarios in the Pictures table. |
 | `object 1 + 0x1efd0` | Writes count palette entries, three bytes each, after vertical retrace. |
@@ -371,6 +379,8 @@ The other picture functions:
 | `object 1 + 0x20f80` | Stores 1 into the byte at `object 1 + 0x21066` and stores ShopWin.Cel at `object 2 + 0x9d84`, then stores 0 at `object 1 + 0x2122c`. |
 | `object 1 + 0x46523` | Copies the key ring's read index onto the other index, so the next read is empty. |
 | `object 1 + 0x4652e` | Returns one byte from the ten-byte key ring, or 0xff when the indexes match. |
+| `object 1 + 0x465a7` | The keyboard interrupt. A press enters the ring and advances the write index, in [Text](text.md). |
+| `object 1 + 0x46608` | Sums the plain save bytes. The following walk is in [Save](save.md). |
 
 ### [Archives](archives.md)
 
@@ -401,16 +411,13 @@ The other picture functions:
 | --- | --- |
 | `object 1 + 0x32b7f` | Exits. Argument 1 is the failure exit the CRT uses. |
 
-## Not read
+## Discarded
 
-Seen, and the body is not in a topic file. The longer note is in [Gaps](gaps.md).
+Outside the gameplay. Seen, and not read. These are not gaps.
 
 | Address | What it is believed to be |
 | --- | --- |
-| `object 1 + 0x6790` | A FACE.CEL call whose arguments were not read. |
-| `object 1 + 0x14605` | A call inside the save loader. |
-| `object 1 + 0x1fbd0` | Reveals the spell rectangle. The margins are in [Pictures](pictures.md). |
-| `object 1 + 0x261d0` | Opens Bonus-1.saf and Bonus.wav. The frames were not walked. |
+| `object 1 + 0x261d0` | Bar bonus. Plays only on 28 January 1998, and only while `object 2 + 0x4110` is 0. The gift selector is not stored before the compare. |
 | `object 1 + 0x2d0f3` | The heap walk `object 1 + 0x2d0e5` returns. A size of 0 returns 0. The rest was not read. |
 | `object 1 + 0x2ec6b` / `object 1 + 0x2f26e` | Called on the sample slot before the address is set. |
 | `object 1 + 0x34cb2` / `object 1 + 0x2d3e6` / `object 1 + 0x34ef3` | The log gate around the sample wrappers. |
@@ -418,7 +425,7 @@ Seen, and the body is not in a topic file. The longer note is in [Gaps](gaps.md)
 | `object 1 + 0x2da33` | The driver call sample start issues with `0x401`. |
 | `object 1 + 0x34cbe` / `object 1 + 0x34e50` / `object 1 + 0x34d78` | The Miles bodies the timer wrappers forward to. |
 | `object 1 + 0x2f439` | Called when the register-timer wrapper logs. |
-| `object 1 + 0x68d0` | Runs the status blit for steps 5 down through 0. The rest of the body was not read. |
+| `object 1 + 0x2bf87`, `object 1 + 0x2c16a`, `object 1 + 0x2c26f`, `object 1 + 0x2c316`, `object 1 + 0x2c51a` | Device requests beside the CD play path. No direct call was found. |
 
 ## Data tables
 

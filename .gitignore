@@ -3,3 +3,4 @@ __stash/
 
 # Extracted pictures, sound, text, and video for every game. Kept on disk. Do not commit.
 **/extract/
+**/reconstruction/

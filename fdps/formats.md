@@ -10,11 +10,11 @@ Two picture containers. Both store palette indexes, not RGB. A palette file is 7
 
 ### CEL
 
-Map sprites, portraits, section tiles, and the interface windows. The header is `CEL`, version byte `0x01`. On every file checked, byte 6 is 0 and byte 8 is 0 or 1. `object 1 + 0x1d930` takes the width from the little-endian short at `+7` and the height from the little-endian short at `+9`. That width is byte 7 plus 256 times byte 8, so a section tile is 24×24 and `VILLAGE.CEL` is 320×200. The directory offset is the big-endian short at `+4`, and it is `0x0f` on every file checked, including all 69 section files in `FIELD1.VFS`. The little-endian dwords there are picture offsets. Picture `i` is the bytes from dword `i` to dword `i+1`. The uint16 at `+10` is the picture count for the `.cel` members of `MISC.VFS` and for `FACE.CEL`. On `ICON.CEL` that field is 128, and the ordered directory holds 1920 pictures.
+Map sprites, portraits, section tiles, and the interface windows. The header is `CEL`, version byte `0x01`. On every file checked, byte 6 is 0 and byte 8 is 0 or 1. `object 1 + 0x1d930` takes the width from the little-endian short at `+7` and the height from the little-endian short at `+9`. That width is byte 7 plus 256 times byte 8, so a section tile is 24×24 and `VILLAGE.CEL` is 320×200. The directory offset is the big-endian short at `+4`, and it is `0x0f` on every file checked, including all 69 section files in `FIELD1.VFS`. The little-endian dwords there are picture offsets. Picture `i` is the bytes from dword `i` to dword `i+1`. The little-endian short at `+11` is the picture count. It equals the directory run on every `.cel` member of `MISC.VFS`, on all 69 section files, on `FACE.CEL` (160), and on `ICON.CEL` (1920).
 
 A picture is a signed column count, a signed row count, and then that many cell indexes. None of the fight pictures has a negative count. Each cell is a compressed stream. Mode 0 of `object 1 + 0x4664b` is the decoder that writes the stored indexes. The opcodes are in [Pictures](pictures.md).
 
-`ICON.CEL` gives character `id` pictures `id * 12` through `id * 12 + 11`. `object 1 + 0x13020` reads the directory at `0x0f`. The 1921 dwords run through index 1920, where the dword equals the file size, so ids 0 through 159 each have 12 frames. A frame expands to 24×24. `FACE.CEL` is one 125×100 picture per id, 160 pictures. Section tiles are the same container, one picture per `ATTR` record on 68 of the 69 section files. `M310.CEL` is the exception named in [Map](map.md).
+`ICON.CEL` gives character `id` pictures `id * 12` through `id * 12 + 11`. `object 1 + 0x13020` reads the directory at `0x0f`. The 1921 dwords run through index 1920, where the dword equals the file size, so ids 0 through 159 each have 12 frames. A frame expands to 24×24. `FACE.CEL` is one 125×100 picture per id, 160 pictures. Section tiles are the same container. On 67 of the 69 section files the picture count equals the `ATTR` record count. `M630.CEL` and `M310.CEL` are the two exceptions in [Map](map.md).
 
 ### SAF
 
@@ -182,10 +182,9 @@ struct DscFile {                 /* FIELD2.VFS. 4 + count * 32 bytes */
 };
 
 struct MplFile {                 /* FIELD1.VFS. Length is 11 + width * height * 2 */
-    char magic[3];               /* MPL */
-    uint8_t at_3;                /* not read */
-    uint8_t version;             /* +4  1 in all 68 files */
-    uint16_t at_5;               /* +5  11 in all 68 files */
+    char magic[4];               /* +0  two signed words, 0x504d and 0x004c in every file. object 1 + 0x17330 clamps the stand tile to below them */
+    uint8_t version;             /* +4  1 in every file. Not addressed */
+    uint16_t at_5;               /* +5  11 in every file. Not addressed */
     uint16_t width;              /* +7 */
     uint16_t height;             /* +9 */
     int16_t cell[];              /* +0x0b  file + 0x0b + (y * width + x) * 2 */
@@ -200,26 +199,27 @@ struct Attr {                    /* 4 bytes at ATTR + 0x11 + picture * 4 */
 
 struct AttrFile {                /* FIELD2.VFS. Count is (length - 0x11) / 4 */
     char magic[3];               /* ATR */
-    uint8_t at_3;                /* not read */
-    uint8_t version;             /* +4  1 in all 69 files */
-    uint16_t at_5;               /* +5  13 in all 69 files */
-    uint8_t pad[0x11 - 7];       /* +7  not read */
+    uint8_t at_3;                /* 0 in every file. Not addressed */
+    uint8_t version;             /* +4  1 in every file. Not addressed */
+    uint16_t at_5;               /* +5  13 in every file. Not addressed */
+    uint16_t count;              /* +7  equals the record count in every file. Not addressed */
+    uint8_t at_9[8];             /* +9  04 00 04 00 01 01 01 01 in every file. Not addressed */
     Attr record[];
 };
 
 struct DtlFile {                 /* FIELD1.VFS. 63 files are 16 + width * height */
     char magic[3];               /* DTL */
-    uint8_t at_3;                /* not read */
-    uint8_t version;             /* +4  1 in all 64 files */
-    uint16_t at_5;               /* +5  14 in all 64 files */
+    uint8_t at_3;                /* 0 in every file. Not addressed */
+    uint8_t version;             /* +4  1 in every file. Not addressed */
+    uint16_t at_5;               /* +5  14 in every file. Not addressed */
     uint16_t width;              /* +7 */
-    uint16_t height;             /* +9 */
-    uint8_t pad[0x10 - 11];      /* +0x0b  not read */
+    uint16_t height;             /* +9  present in every file. Not addressed */
+    uint8_t at_b[5];             /* +0x0b  01 01 00 ff 00 in 63 files, 02 01 00 ff ff in M31. Not addressed */
     uint8_t tile[];              /* +0x10  one byte per tile */
 };
 ```
 
-`M%02d%d.CEL` is the tile sheet for that section. The container is the `CEL` layout above. The big-endian short at `+4` is `0x0f` on all 69 section files. `object 1 + 0x1c0c0` reads `MplFile.cell`. `object 1 + 0x1b790` reads one `Attr` and one `DtlFile` byte. The order and highlight bytes, and the two files whose record counts do not match, are in [Map](map.md). `M31.DTL` is 51 by 64 and 6545 bytes. The 3265 bytes after those tiles have no reader. They are copied unchanged to `extract/scenario/31/dtl-tail.bin`.
+`M%02d%d.CEL` is the tile sheet for that section. The container is the `CEL` layout above. The big-endian short at `+4` is `0x0f` on all 69 section files. `object 1 + 0x1c0c0` reads `MplFile.cell`. `object 1 + 0x1b790` reads one `Attr` and one `DtlFile` byte. Every load of the three pointers was followed. An `ATTR` byte is first read at `+0x11`. A `DTL` byte is read at `+7` and at `+0x10`. Nothing addresses an `ATTR` byte before the records, a `DTL` byte other than the width and the tile, or bytes `+4` through `+6` of an `MPL`. The order and highlight bytes, and the two files whose record counts do not match, are in [Map](map.md). `M31.DTL` is 51 by 64 and 6545 bytes. Every tile byte is 0, and so are the 3265 bytes after the plane. `object 1 + 0x1b790` reads `file + 0x10 + y * width + x`, with the width at `+7`, and does not address that tail. The tail is copied unchanged to `extract/scenario/31/dtl-tail.bin`.
 
 ## Strings
 
@@ -245,7 +245,7 @@ A `SAF` sample is not a `WAVE` file. The record at `file + dword[sample_table + 
 
 `BaseAni.vfs` is the other nested archive in `MISC.VFS`. Its three members are `SAF` clips, not waves.
 
-Music is a CD audio track. The recording is not in the executable or the archives. No `FORM`/`XMID` sequence and no `MThd` header is in those files. The sixty bytes in [Turns](turns.md) are track numbers. `object 1 + 0x20a30` calls `object 1 + 0x2c5cb` with the byte plus 1, and that plus 1 is the track the drive is asked for. The title's request of 1 asks for track 2. The table's bytes run from 1 to 18, so the drive is asked for tracks 2 through 19. Those tracks are named in `extract/music/missing.json`.
+Music is a CD audio track. The recording is not in the executable or the archives. No `FORM`/`XMID` sequence and no `MThd` header is in those files. The sixty bytes in [Turns](turns.md) are track numbers. `object 1 + 0x20a30` calls `object 1 + 0x2c5cb` with the byte plus 1, and that plus 1 is the track the drive is asked for. The title's request of 1 asks for track 2. The table's bytes run from 1 to 18, so the drive is asked for tracks 2 through 19. Those tracks are named in `extract/music/missing.json`. Track 1 is the data track. The check in [Turns](turns.md) treats an index below 18 as disc 1 and an index of 18 or more as disc 2. It reads that digit from the first byte of `{prefix}\Pack.vfs` and is not entered in this build. The same track number addresses a different recording on each disc.
 
 `object 1 + 0x2c3a6` was disassembled. It calls `object 1 + 0x32fd8` with interrupt `0x2f`. The register block at `object 2 + 0x9dc8` has `AX` = `0x1500` and `EBX` = 0. The returned `BX` is stored at `object 2 + 0x9dfc` and the returned `CL` at `object 2 + 0x9dfe`. A `BX` of 0 returns 0. Otherwise, when `object 2 + 0x9e54` is 0, `object 1 + 0x2b84e` allocates two real-mode blocks of `0x20` paragraphs through interrupt `0x31` with `AX` = `0x0100`. The first segment, shifted left by 4, is the request block at `object 2 + 0x9de8`. The second is the data block at `object 2 + 0x9da4`, and its segment in the high word is the transfer address at `object 2 + 0x9da8`. It then reads the disc. The status word at request offset 3 is compared with `0x810c`. That value returns 2. Any other value returns 1. The startup compare against 1 does not branch, in [Session](session.md).
 

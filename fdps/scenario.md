@@ -40,7 +40,7 @@ Section 0 for indexes 0 through 29:
 | 8 | 26×24 | 18 | 33×25 | 28 | 26×25 |
 | 9 | 20×24 | 19 | 33×25 | 29 | 21×18 |
 
-`MAP##.DAT` says who is on that grid. Byte 0 is 0 in every file. Byte 1 is stored in `object 2 + 0x4118` and is how many unit slots are allocated. Byte 2 is stored in `object 2 + 0x410c` and is how many 26-byte records sit at `+0x83`. Every file except `MAP31.DAT` is `0x83 + byte 2 * 26` bytes. `MAP31.DAT` is 469 bytes. Byte 2 is 2, and thirteen records of that same stride fill the file. The saved copy of `0x8a3` bytes is that length at 80 records.
+`MAP##.DAT` says who is on that grid. Byte 0 is 0 in every file. Byte 1 is stored in `object 2 + 0x4118` and is how many unit slots are allocated. Byte 2 is stored in `object 2 + 0x410c` and is how many 26-byte records sit at `+0x83`. Every file except `MAP31.DAT` is `0x83 + byte 2 * 26` bytes. `MAP31.DAT` is 469 bytes. Byte 1 is 0 and byte 2 is 2, and thirteen records of that same stride fill the file. `object 1 + 0x13800` is the only caller of the spawner, and its loop stops when the index reaches byte 2, so records 2 through 12 are not indexed. There is no `DSC31.DAT`, so the section load does not finish for that index. The saved copy of `0x8a3` bytes is that length at 80 records.
 
 Bytes 3 through `0x32` are sixteen rows of three, read by `object 1 + 0x1de50`. For each row, when byte 0 equals the turn counter `object 2 + 0x9ce8` and byte 2 equals the side argument, it calls the pointer at `object 2 + 0x1c4 + byte 1 * 4` with argument 0. The dwords from `object 2 + 0x1c4` up to the after-action table at `object 2 + 0x28c` are 50 pointers. A row of `255, 255, 0` does not match a turn. The other rows of maps 0 through 29 are turn, handler, side:
 
@@ -142,10 +142,16 @@ A pan clears `object 2 + 0x9cd0`, calls `object 1 + 0x1d550` with the pair as it
 | 18 | 4 | Writes the third byte into the unit's count byte at `+0x25` plus the second byte. |
 | 19 | 3 | Stores the second byte into `object 2 + 0x40d8` at the first byte, then calls `object 1 + 0x1e6a0`. |
 | 20 | 5 | Writes the short at the third byte into the section-0 cell at the first two bytes. |
-| 21 | 4 | `object 1 + 0x12f10` with the next three bytes. |
+| 21 | 4 | Adds the next three bytes to red, green, and blue of the map palette. The call is below. |
 | 97 | 1 | Ten times, stores 99 and calls `object 1 + 0xdd00(3)`, then calls `object 1 + 0x13950`. |
-| 98 | 3 | `object 1 + 0x10` with the next two bytes. |
-| 99 | 1 | `object 1 + 0x125d0`. Two yes-or-no questions. Returns 1, 2, or 3, which a later opcode 4 can use as the group. |
+| 98 | 3 | Runs one unit's phase. The first byte is the slot and the second is the side filter. The call is below. |
+| 99 | 1 | `object 1 + 0x125d0`. Returns 1, 2, or 3, which a later opcode 4 can use as the group. The questions are below. |
+
+`object 1 + 0x125d0` starts at 3. It shows scenario string `0x10` with portrait `0x7a` and waits. Accepting shows string `0x11` and returns 1. Refusing shows string `0x13` with the same portrait and waits. Accepting that shows string `0x14` and returns 2. Refusing shows string `0x15` and returns 3.
+
+Opcode 21 was disassembled at `object 1 + 0x11ccc`. It calls `object 1 + 0x12f10` with the map palette at `object 2 + 0x43cc`, indexes 0 through 255, and the three bytes in order as the red, green, and blue bias. Each byte is zero-extended, added to that component, and clamped to 0 through 63, in [Pictures](pictures.md). The buffer itself is not rewritten, so the next install of that palette clears the bias. Index 29's opener and its win script are the only two members that use it. Each pair writes 64, which clamps every channel to 63, and then writes 0.
+
+Opcode 98 was disassembled at `object 1 + 0x11d51`. The first byte is the slot and the second is the side filter of `object 1 + 0x10`, the phase in [Turns](turns.md). A set bit 0 of byte `+5` returns before the script. The tail calls `object 1 + 0x1ddc0` with the unit's tile and 1, sets bit `0x80` of byte `+5`, and redraws. One member uses it: index 14's opener, on slot 35 with filter 0.
 
 Opcode 0, and any other byte, ends the script. Every `.dat` member of `IconAni.vfs` walks to a final 0 with the lengths above. Handler 0, at `object 1 + 0x26920`, is the map 2 row in the table above. The archive directory is in [Archives](archives.md).
 
@@ -172,3 +178,5 @@ Opcode 17 is a scene change inside the script. The opener for index n passes `Ic
 The instructions in `Icon00.dat` are in [Opening](opening.md). The other `Icon00.dat` through `Icon29.dat` contain no opcode 17. `Icon7-1.dat`, `Icon7-2.dat`, and `Icon7-3.dat` also contain none. Map 7's handler plays the first two, and handler 12 plays the third, in the table above.
 
 The ending plays its `Win` script before it stores the successor, so the last index in that script is not the next battle. The sequences are `Win00.dat` 36, 41, 42, 43; `Win03.dat` 39; `Win05.dat` 46; `Win08.dat` 57; `Win09.dat` 37; `Win11.dat` 53; `Win16.dat` 60; `Win17.dat` and `Win17-1.dat` 45 then 17; `Win18.dat` 44; `Win20.dat` 51 then 20; `Win22.dat` 50; `Win24.dat` 59, 3, 47, 51, 22, 59; `Win26.dat` 62 then 26; `WinGA26.dat` 61; `Win29.dat` 63 then 29. `GoodEnd.dat` stores 64. The other `Win` files contain no opcode 17. What the ending stores afterwards is in [Session](session.md).
+
+The chapter heading and the name drawn on a save bar are in [Names](names.md).

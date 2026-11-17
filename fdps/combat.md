@@ -342,7 +342,7 @@ other: amount = object 1 + 0x182f0(caster, target, id)    # object 1 + 0x18e1f
 
 `object 1 + 0x174b0` fills that list. It copies the three bytes at `+0x31` when flag bit 0 is clear, `+0x40` is below 1, and the first of those bytes is 2, 3, 4, or 5. `object 1 + 0x16150`, used after a swing, copies a first byte other than `0xff` and does not require that range.
 
-`object 1 + 0x17150` uses the stored item slot. Range byte `+0x10` below `0x10` lists targets from the stand tile with byte `+0x12`. At or above `0x10` the list is the line, called at `object 1 + 0x17239`. It faces the first listed id, fades the palette from white back to the installed colors, and moves the cursor `range - 0x10` tiles from the camera tile toward the stand tile, clamped to the map. `object 1 + 0x16270` then applies the item. The kind is byte `+0x0d` of the record, and the short at `+0x0e` is the amount passed to the helper. The experience term is cleared, and the death spin runs. `object 1 + 0x17150` returns 0, so a script that called it continues.
+`object 1 + 0x17150` uses the stored item slot. Range byte `+0x10` below `0x10` lists targets from the stand tile with byte `+0x12`. At or above `0x10` the list is the line, called at `object 1 + 0x17239`. It faces the first listed id and fades the palette from white back to the installed colors. `object 1 + 0x17330` then sets the stand to the cursor tile plus `(range − 0x10)` times the stand's distance from the cursor. The result is kept at 0 or above, and below the signed words at `MPL` `+0` and `+2`. Those words are `0x504d` and `0x004c` in every file, so the limits are 20557 and 76. The cursor slides to that tile. `object 1 + 0x16270` then applies the item. The kind is byte `+0x0d` of the record, and the short at `+0x0e` is the amount passed to the helper. The experience term is cleared, and the death spin runs. `object 1 + 0x17150` returns 0, so a script that called it continues.
 
 | Kind | What `object 1 + 0x16270` does |
 | --- | --- |
@@ -364,147 +364,147 @@ other: amount = object 1 + 0x182f0(caster, target, id)    # object 1 + 0x18e1f
 
 ## Effect ids
 
-The names in the two tables below are estimates, inferred from the effect. They are a list to correct. The game's own label for an item is interface string `id + 0xc9`, and for a spell it is interface string `id + 0x1be`, in [Text](text.md). Those strings are not copied here.
+The name is the string the program draws. The four lists are in [Names](names.md). A cell can be off by one stroke, in [Text](text.md).
 
 A spell's effect is the id. `MagicDat.dat` supplies the power, the chance, the step budget, the area, the cost taken from `+0x44`, and the side. A positive power is magic damage, scaled by the target's spell percent. A negative power is damage from the caster's attack. Ids `0x0e`, `0x0f`, `0x10`, and `0x21` add the power to hit points instead. The branches are the spell player above.
 
-| Id | Estimated name | Effect |
+| Id | Name | Effect |
 | --- | --- | --- |
-| 0 | Fire | Damage 70. Cost 7. |
-| 1 | Raging fire | Damage 150. Cost 15. |
-| 2 | Hellfire | Damage 310. Cost 35. |
-| 3 | Light arrow | Damage 300. Cost 20. |
-| 4 | Holy pillar | Damage 600. Cost 40. |
-| 5 | Thunder | Damage 50. Cost 8. |
-| 6 | Thunderbolt | Damage 110. Cost 15. |
-| 7 | Thunder strike | Damage 250. Cost 32. |
-| 8 | Ice burst | Damage 60. Cost 10. |
-| 9 | Deep ice | Damage 130. Cost 20. |
-| 10 | Fissure | Damage 150, and the screen shakes. Skips the classes in `object 1 + 0x2550`. Cost 45. |
-| 11 | Cataclysm | Damage 350, and the screen shakes. Same skip. Cost 95. |
-| 12 | Gravity bolt | Damage 350. Cost 35. |
-| 13 | Necro array | Damage 500. A hit also rolls the poison, freeze, and silence counts. Cost 100. |
-| 14 | Restore | Heals 70. Cost 4. Side byte 1. |
-| 15 | Healing wind | Heals 200. Cost 10. Side byte 1. |
-| 16 | Healing spring | Heals 500. Cost 25. Side byte 1. |
-| 17 | Silence | May set `+0x27` for 2 or 3 phases, when that byte is still 0. Cost 25. |
-| 18 | Poison | May set `+0x25` for 2 or 3 phases, when that byte is still 0. Cost 10. |
-| 19 | Paralyze | May set `+0x26` for 2 or 3 phases, when that byte is still 0. Cost 20. |
-| 20 | Blessing | May set `+0x22`, `+0x23`, and `+0x24`, each for 2 or 3 phases. Those three writes read magic row 20, which is this row, so the chance is 100. Cost 50. Side byte 1. |
-| 21 | Teleport | Moves the first target onto the confirmed aim. Cost 50. Side byte 1. |
-| 22 | Refresh | Clears the acted flag, bit `0x80` of byte `+5`, so the target can be ordered again. Cost 40. Side byte 3. |
-| 23 | Death curse | Damage 9999, chance 60. Cost 100. |
-| 24 | Cure ailments | Clears `+0x25`, `+0x26`, and `+0x27`. Cost 30. Side byte 1. |
-| 25 | Dragon blaze | Attack-scaled damage, power 160. The caster can step 23. Cost 65. |
-| 26 | Power impact | Attack-scaled damage, power 160. The caster can step 23. Cost 50. |
-| 27 | Diamond cut | Attack-scaled damage, power 200. Step budget 1. Cost 30. |
-| 28 | Fire break | Attack-scaled damage, power 160. Cost 65. |
-| 29 | God cannon | Attack-scaled damage, power 120. Area byte 3. Cost 75. |
-| 30 | Meteor arrow | Attack-scaled damage, power 120. Cost 40. |
-| 31 | Spirit shot | Attack-scaled damage, power 140. The caster can step 20. Cost 35. |
-| 32 | Judgment bolt | Damage 520. Cost 70. |
-| 33 | Requiem | Heals 800. Cost 55. Side byte 1. |
-| 34 | Gravity well | Damage 1000. Cost 80. |
-| 35 | Holy dragon slash | Attack-scaled damage, power 250. The caster can step 31. Cost 100. |
-| 36 | Flame dragon | Damage 700. Cost 60. |
-| 37 | Ice missile | Damage 270. Cost 35. |
-| 38 | Absolute zero | Damage 700. Cost 65. |
-| 39 | Advent | Damage 1400. Cost 130. |
+| 0 | 業火 | Damage 70. Cost 7. |
+| 1 | 狂暴亘燄 | Damage 150. Cost 15. |
+| 2 | 烈獄之火 | Damage 310. Cost 35. |
+| 3 | 光之箭 | Damage 300. Cost 20. |
+| 4 | 聖光柱 | Damage 600. Cost 40. |
+| 5 | 落雷術 | Damage 50. Cost 8. |
+| 6 | 奔雷彈 | Damage 110. Cost 15. |
+| 7 | 暴雷絕擊 | Damage 250. Cost 32. |
+| 8 | 冰爆術 | Damage 60. Cost 10. |
+| 9 | 絕殺冰封 | Damage 130. Cost 20. |
+| 10 | 裂地術 | Damage 150, and the screen shakes. Skips the classes in `object 1 + 0x2550`. Cost 45. |
+| 11 | 封神裂震 | Damage 350, and the screen shakes. Same skip. Cost 95. |
+| 12 | 震空重力彈 | Damage 350. Cost 35. |
+| 13 | 鬼動死靈陣 | Damage 500. A hit also rolls the poison, freeze, and silence counts. Cost 100. |
+| 14 | 恢復之光 | Heals 70. Cost 4. Side byte 1. |
+| 15 | 治癒之風 | Heals 200. Cost 10. Side byte 1. |
+| 16 | 痊癒之泉 | Heals 500. Cost 25. Side byte 1. |
+| 17 | 封魔咒術 | May set `+0x27` for 2 or 3 phases, when that byte is still 0. Cost 25. |
+| 18 | 腐毒術 | May set `+0x25` for 2 or 3 phases, when that byte is still 0. Cost 10. |
+| 19 | 麻痺術 | May set `+0x26` for 2 or 3 phases, when that byte is still 0. Cost 20. |
+| 20 | 神之祝褔 | May set `+0x22`, `+0x23`, and `+0x24`, each for 2 or 3 phases. Those three writes read magic row 20, which is this row, so the chance is 100. Cost 50. Side byte 1. |
+| 21 | 傳送術 | Moves the first target onto the confirmed aim. Cost 50. Side byte 1. |
+| 22 | 神行術 | Clears the acted flag, bit `0x80` of byte `+5`, so the target can be ordered again. Cost 40. Side byte 3. |
+| 23 | 咒殺術 | Damage 9999, chance 60. Cost 100. |
+| 24 | 甦癒術 | Clears `+0x25`, `+0x26`, and `+0x27`. Cost 30. Side byte 1. |
+| 25 | 魔龍霸炎 | Attack-scaled damage, power 160. The caster can step 23. Cost 65. |
+| 26 | 強力衝擊 | Attack-scaled damage, power 160. The caster can step 23. Cost 50. |
+| 27 | 金剛斬 | Attack-scaled damage, power 200. Step budget 1. Cost 30. |
+| 28 | 獄炎烈破彈 | Attack-scaled damage, power 160. Cost 65. |
+| 29 | 轟神砲 | Attack-scaled damage, power 120. Area byte 3. Cost 75. |
+| 30 | 流星箭 | Attack-scaled damage, power 120. Cost 40. |
+| 31 | 靈彈超必殺 | Attack-scaled damage, power 140. The caster can step 20. Cost 35. |
+| 32 | 審判之雷 | Damage 520. Cost 70. |
+| 33 | 鎮魂之歌 | Heals 800. Cost 55. Side byte 1. |
+| 34 | 超重力黑洞 | Damage 1000. Cost 80. |
+| 35 | 聖龍烈霸斬 | Attack-scaled damage, power 250. The caster can step 31. Cost 100. |
+| 36 | 爆炎狂龍 | Damage 700. Cost 60. |
+| 37 | 冰魔超速彈 | Damage 270. Cost 35. |
+| 38 | 極度冰凍 | Damage 700. Cost 65. |
+| 39 | 萬神降臨 | Damage 1400. Cost 130. |
 
 An item's use is `Item.kind`, byte `+0x0d`. The amount is the short at `+0x0e`. Kinds `0x01` through `0x04`, and kind `0x0b`, are consumed. Kinds `0x07` through `0x0a` play the same four clips and stay in the inventory, and kind `0x20` is the heal that stays. `Item.swing`, byte `+9`, is a separate effect on the attack: 1 may freeze, 2 plays a second swing, 3 adds to the crit roll, and 4 may poison. A row whose kind is 0 and whose swing is 0 only changes the equipped stats, and it is left out.
 
-`object 1 + 0x16270` has no branch for kind `0x05`, `0x06`, `0x0d`, or `0x1b`. Those four rows are listed with the effect left open.
+No instruction compares a kind with `0x05`, `0x06`, `0x0d`, or `0x1b`. The other reads of byte `+0x0d` test 0, `0x0b`, `0x0c`, `0x19`, or `0x1c`. A use of one of these four still reaches the tail at `object 1 + 0x16d8c`: the experience term is cleared and the death spin runs, and the pair is not removed. The rows are ids 14, 67, 204, 208, and 213.
 
-| Id | Estimated name | Effect |
+| Id | Name | Effect |
 | --- | --- | --- |
-| 9 | Thunder sword | Lightning damage 130. Kept. |
-| 10 | Ice sword | Ice damage 150. Kept. |
-| 11 | Holy-fire sword | Fire damage 200. Kept. |
-| 12 | Earth sword | Quake damage 400. Kept. |
-| 14 | Spirit sword | Kind `0x0d`, amount 300. No branch. |
-| 18 | Poison claw | A hit may poison. |
-| 28 | Goddess staff | Heals 400. Kept. |
-| 34 | Silver spear | Ice damage 140. Kept. |
-| 35 | Thunder spear | Lightning damage 100. Kept. |
-| 36 | Holy-light spear | Heals 200, and a hit adds to the crit roll. Kept. |
-| 38 | Gem lance | A hit plays a second swing. |
-| 40 | Aurora spear | Heals 200, and a hit adds to the crit roll. Kept. |
-| 42 | Holy spear | A hit adds to the crit roll. |
-| 47 | Magic staff | Fire damage 30. Kept. |
-| 49 | Dark staff | A hit may poison. |
-| 50 | Sun staff | Fire damage 80. Kept. |
-| 51 | Light staff | Heals 80. Kept. |
-| 52 | Angel staff | Heals 120. Kept. |
-| 53 | Merlin's staff | Fire damage 150. Kept. |
-| 54 | Dragon staff | Fire damage 200. Kept. |
-| 55 | Diamond staff | Ice damage 200. Kept. |
-| 60 | Poison ring | A hit may poison. |
-| 62 | Curse ring | A hit may freeze. |
-| 67 | Seal glove | Kind `0x1b`, amount 80. No branch. |
-| 68 | Elusive glove | A hit adds to the crit roll. |
-| 71 | Snipe bow | A hit adds to the crit roll. |
-| 74 | Wind bow | Heals 200, and a hit adds to the crit roll. Kept. |
-| 75 | Demon blade | A hit may freeze. |
-| 78 | Iron shot | A hit adds to the crit roll. |
-| 79 | Ballista | A hit plays a second swing. |
-| 80 | Vulcan | A hit plays a second swing. |
-| 88 | Named fire sword | Fire damage 100. Kept. |
-| 90 | Named lightning sword | Lightning damage 100, and a hit adds to the crit roll. Kept. |
-| 95 | Spirit strike | A hit may freeze. |
-| 98 | Flame-dragon sword | Fire damage 300. Kept. |
-| 99 | Light cannon | Damage 9999. The pair stays. Range byte 30. |
-| 160 | Scorching sword | Fire damage 200. Kept. |
-| 161 | Firelight sword | Fire damage 300, and a hit adds to the crit roll. Kept. |
-| 162 | True flame-dragon sword | Fire damage 500, and a hit adds to the crit roll. Kept. |
-| 164 | Fortify kit | On character 9: attack base and defense base gain 30, move gains 1, and spell 29 is learned. Consumed. Any other character shows text and is unchanged. |
-| 165 | Demon blade, lesser | A hit may freeze. |
-| 166 | Demon blade, middle | A hit may freeze. |
-| 167 | Demon blade, greater | A hit may freeze. |
-| 168 | Royal bow | Heals 120, and a hit plays a second swing. Kept. |
-| 170 | Venom claw | A hit may poison. |
-| 171 | Familiar | A hit may freeze. |
-| 172 | Ancient cannon | A hit adds to the crit roll. |
-| 173 | Vitality kit | On character 9: maximum hit points gain 100. Consumed. Any other character shows text and is unchanged. |
-| 177 | Keepsake ring | A hit adds to the crit roll. |
-| 178 | Hell bow | A hit may poison. |
-| 180 | Herb | Heals 50. Consumed. |
-| 181 | Tonic | Heals 100. Consumed. |
-| 182 | Regen draught | Heals 250. Consumed. |
-| 183 | Magic herb | Restores 40 of the second pool. Consumed. |
-| 184 | Magic water | Restores 100 of the second pool. Consumed. |
-| 185 | Crystal grain | Restores 250 of the second pool. Consumed. |
-| 187 | High-energy device | When byte `+8` is 8 and the unit also carries item 163, both are removed and item 190 is given. Otherwise text, and nothing is removed. |
-| 190 | High-energy cannon | Fire damage 400, and a hit adds to the crit roll. Kept. Range byte 22. |
-| 191 | Iron-cutting sword, lesser | A hit adds to the crit roll. |
-| 192 | Iron-cutting sword, middle | A hit adds to the crit roll. |
-| 193 | Iron-cutting sword, greater | A hit adds to the crit roll. |
-| 194 | Holy water | Heals 1000. Consumed. |
-| 195 | Fire bead | Fire damage 100. Consumed. |
-| 196 | Thunder bead | Lightning damage 100. Consumed. |
-| 197 | Ice bead | Ice damage 100. Consumed. |
-| 198 | Earth bead | Quake damage 100. Consumed. |
-| 199 | Flame | Damage 300. The pair stays. Range byte 30. |
-| 200 | Fire gem | Fire damage 150. Consumed. |
-| 201 | Thunder gem | Lightning damage 150. Consumed. |
-| 202 | Ice gem | Ice damage 150. Consumed. |
-| 203 | Earth gem | Quake damage 150. Consumed. |
-| 204 | Blank | Kind `0x05`, amount 150. The interface string is empty. No branch. |
-| 205 | Fire crystal | Fire damage 200. Consumed. |
-| 206 | Thunder crystal | Lightning damage 200. Consumed. |
-| 207 | Ice crystal | Ice damage 200. Consumed. |
-| 208 | Light crystal | Kind `0x06`, amount 200. No branch. |
-| 210 | Fire stone | Fire damage 400. Consumed. |
-| 211 | Thunder stone | Lightning damage 400. Consumed. |
-| 212 | Ice stone | Ice damage 400. Consumed. |
-| 213 | Sky gem | Kind `0x06`, amount 250. No branch. |
-| 214 | Life fruit | Maximum hit points gain 15. Consumed. |
-| 215 | Magic crystal | Maximum of the second pool gains 15. Consumed. |
-| 216 | Strength draught | Attack base gains 7, then the combat words are rebuilt. Consumed. |
-| 217 | Endurance draught | Defense base gains 7, then the combat words are rebuilt. Consumed. |
-| 218 | Hit draught | Hit base gains 7, then the combat words are rebuilt. Consumed. |
-| 221 | Wind feather | Move gains 1. Consumed. |
-| 222 | Antidote | Clears `+0x25`. Consumed. |
-| 223 | Freeze cure | Clears `+0x26`. Consumed. |
+| 9 | 雷神之劍 | Lightning damage 130. Kept. |
+| 10 | 寒冰劍 | Ice damage 150. Kept. |
+| 11 | 聖火之劍 | Fire damage 200. Kept. |
+| 12 | 大地之劍 | Quake damage 400. Kept. |
+| 14 | 精靈之劍 | Kind `0x0d`, amount 300. The use clears the experience term and the pair stays. |
+| 18 | 淬毒爪 | A hit may poison. |
+| 28 | 女神之杖 | Heals 400. Kept. |
+| 34 | 白銀之槍 | Ice damage 140. Kept. |
+| 35 | 雷之槍 | Lightning damage 100. Kept. |
+| 36 | 神光之矛 | Heals 200, and a hit adds to the crit roll. Kept. |
+| 38 | 寶石之槍 | A hit plays a second swing. |
+| 40 | 極光之矛 | Heals 200, and a hit adds to the crit roll. Kept. |
+| 42 | 聖光之矛 | A hit adds to the crit roll. |
+| 47 | 魔法之杖 | Fire damage 30. Kept. |
+| 49 | 黑暗之杖 | A hit may poison. |
+| 50 | 日輪之杖 | Fire damage 80. Kept. |
+| 51 | 光之杖 | Heals 80. Kept. |
+| 52 | 天使之杖 | Heals 120. Kept. |
+| 53 | 梅林之杖 | Fire damage 150. Kept. |
+| 54 | 龍牙杖 | Fire damage 200. Kept. |
+| 55 | 鑽石之杖 | Ice damage 200. Kept. |
+| 60 | 淬毒指環 | A hit may poison. |
+| 62 | 詛咒指環 | A hit may freeze. |
+| 67 | 封咒手套 | Kind `0x1b`, amount 80. The use clears the experience term and the pair stays. |
+| 68 | 迷蹤手套 | A hit adds to the crit roll. |
+| 71 | 狙擊弓 | A hit adds to the crit roll. |
+| 74 | 風神弓 | Heals 200, and a hit adds to the crit roll. Kept. |
+| 75 | 妖刀 | A hit may freeze. |
+| 78 | 鐵珠砲 | A hit adds to the crit roll. |
+| 79 | 弩砲 | A hit plays a second swing. |
+| 80 | 火神砲 | A hit plays a second swing. |
+| 88 | 修佩魯 | Fire damage 100. Kept. |
+| 90 | 亞德尼恩 | Lightning damage 100, and a hit adds to the crit roll. Kept. |
+| 95 | 靈擊 | A hit may freeze. |
+| 98 | 炎龍劍 | Fire damage 300. Kept. |
+| 99 | 光東砲 | Damage 9999. The pair stays. Range byte 30. |
+| 160 | 灼烈之劍 | Fire damage 200. Kept. |
+| 161 | 火光之劍 | Fire damage 300, and a hit adds to the crit roll. Kept. |
+| 162 | 真炎龍劍 | Fire damage 500, and a hit adds to the crit roll. Kept. |
+| 164 | 強化套伴 | On character 9: attack base and defense base gain 30, move gains 1, and spell 29 is learned. Consumed. Any other character shows text and is unchanged. |
+| 165 | 妖刀村雨 | A hit may freeze. |
+| 166 | 妖刀村正 | A hit may freeze. |
+| 167 | 妖刀正宗 | A hit may freeze. |
+| 168 | 皇家聖弓 | Heals 120, and a hit plays a second swing. Kept. |
+| 170 | 猛毒爪 | A hit may poison. |
+| 171 | 使魔 | A hit may freeze. |
+| 172 | 古代砲 | A hit adds to the crit roll. |
+| 173 | 強化套伴 | On character 9: maximum hit points gain 100. Consumed. Any other character shows text and is unchanged. |
+| 177 | 形見指環 | A hit adds to the crit roll. |
+| 178 | 地獄弓 | A hit may poison. |
+| 180 | 藥草 | Heals 50. Consumed. |
+| 181 | 回復劑 | Heals 100. Consumed. |
+| 182 | 再生藥 | Heals 250. Consumed. |
+| 183 | 魔法草 | Restores 40 of the second pool. Consumed. |
+| 184 | 魔法水 | Restores 100 of the second pool. Consumed. |
+| 185 | 水晶粒 | Restores 250 of the second pool. Consumed. |
+| 187 | 高能量裝置 | When byte `+8` is 8 and the unit also carries item 163, both are removed and item 190 is given. Otherwise text, and nothing is removed. |
+| 190 | 高能量砲 | Fire damage 400, and a hit adds to the crit roll. Kept. Range byte 22. |
+| 191 | 斬鐵劍 | A hit adds to the crit roll. |
+| 192 | 斬鐵劍 | A hit adds to the crit roll. |
+| 193 | 斬鐵劍 | A hit adds to the crit roll. |
+| 194 | 神聖之水 | Heals 1000. Consumed. |
+| 195 | 炎之珠 | Fire damage 100. Consumed. |
+| 196 | 雷之珠 | Lightning damage 100. Consumed. |
+| 197 | 冰之珠 | Ice damage 100. Consumed. |
+| 198 | 地之珠 | Quake damage 100. Consumed. |
+| 199 | 火焰 | Damage 300. The pair stays. Range byte 30. |
+| 200 | 炎之寶石 | Fire damage 150. Consumed. |
+| 201 | 雷之寶石 | Lightning damage 150. Consumed. |
+| 202 | 冰之寶石 | Ice damage 150. Consumed. |
+| 203 | 地之寶石 | Quake damage 150. Consumed. |
+| 204 | Blank | Kind `0x05`, amount 150. The interface string is empty. The use clears the experience term and the pair stays. |
+| 205 | 炎之水晶 | Fire damage 200. Consumed. |
+| 206 | 雷之水晶 | Lightning damage 200. Consumed. |
+| 207 | 冰之水晶 | Ice damage 200. Consumed. |
+| 208 | 光之水晶 | Kind `0x06`, amount 200. The use clears the experience term and the pair stays. |
+| 210 | 炎之魔石 | Fire damage 400. Consumed. |
+| 211 | 雷之魔石 | Lightning damage 400. Consumed. |
+| 212 | 冰之魔石 | Ice damage 400. Consumed. |
+| 213 | 空之寶石 | Kind `0x06`, amount 250. The use clears the experience term and the pair stays. |
+| 214 | 生命之實 | Maximum hit points gain 15. Consumed. |
+| 215 | 魔力水晶 | Maximum of the second pool gains 15. Consumed. |
+| 216 | 力量藥水 | Attack base gains 7, then the combat words are rebuilt. Consumed. |
+| 217 | 耐力藥水 | Defense base gains 7, then the combat words are rebuilt. Consumed. |
+| 218 | 速度藥水 | Hit base gains 7, then the combat words are rebuilt. Consumed. |
+| 221 | 風精之羽 | Move gains 1. Consumed. |
+| 222 | 解毒劑 | Clears `+0x25`. Consumed. |
+| 223 | 退麻劑 | Clears `+0x26`. Consumed. |
 
 `object 1 + 0x16200` walks the targets and subtracts. `object 1 + 0x16fa0` plays `Posion.saf` and adds. Both draw the number that the helper returns, then call `object 1 + 0xf310`. The arithmetic is the same shape in `object 1 + 0x18430` (subtract from `+0x40`), `object 1 + 0x17040` (add to `+0x40`, capped at `+0x42`), and `object 1 + 0x17570` (add to `+0x44`, capped at `+0x46`). `rand` is `object 1 + 0x32a68`. It calls `object 1 + 0x32a62`, which returns the dword at `object 2 + 0x39c`. The call stores `seed * 0x41c64e6d + 0x3039` back into that dword and returns bits 16 through 30, so the value is 0 through `0x7fff`. A null pointer returns 0. The dword in the image is 1. `object 1 + 0x32a8a` stores its argument into the same dword. No function was created there, and no direct call of it was found. The timer tick is `object 1 + 0x20520`, in [Session](session.md). Disassembly of that body: it increments `object 2 + 0x9d64` and calls `rand` once, and the return value is discarded. That is the only call on the tick. The timer is started in startup, before the title, so the seed at the first command is the image seed advanced once for each tick that has fired. How many ticks that is depends on the title and the opener, and that count is not in the program. A roll is not fixed by the battle. The same command after a longer title, or a longer chapter card, draws a later value. A remake that seeds again at the first command will not match these rolls. Integer division is toward zero.
 
@@ -538,6 +538,7 @@ if object 1 + 0x2550(attacker) == 0:
 if object 1 + 0x2550(defender) == 0:
     defense += defense * defense_percent[terrain] / 100
 
+# arg is item byte +0x0a. object 1 + 0x9f60 loads it after byte +9.
 if kind == 3: crit += arg
 if kind == 4 and rand % 100 < arg and object 1 + 0x19050(defender) == 0:
     defender[+0x25] = rand % 4 + 2
@@ -583,6 +584,8 @@ on the first tick of a hit frame:
 
 The function returns that `hp`. The caller treats a nonzero return as "the defender can still answer." A counterattack is a second call of `object 1 + 0x96b0` with the two units swapped, and only when `object 1 + 0x37e0` returned 1.
 
+`object 1 + 0x37e0(attacker, defender)` returns 1 only when the defender's `+0x26` is 0, the two tiles are one apart, the defender has a weapon, and that weapon's byte `+0xb` is 1. Any other case returns −1. `object 1 + 0x25c0(unit, x, y)` is the score's copy. It returns 1 when that unit's `+0x26` is 0, the tile is one away, the unit has a weapon, and byte `+0xb` is 0 or 1. The swing scorer calls it with the target and the stand, so the term reads the target.
+
 ## After the pools change
 
 Both callers then do the same three steps, in a different order. The menu passes the attacker. `object 1 + 0x2e50` passes the defender.
@@ -613,9 +616,12 @@ object 1 + 0xdd00(defender)
    object 1 + 0x15990 or text 0x1e8.
 1: same side test. Show text 0x1e9 and add the short to object 2 + 0x43b8.
 2: call (&object 2 + 0x1c4)[short](unit).
-above 2: if the short is not 0xff and not -1, show that short as a text id.
+above 2: if the short is not 0xff and not -1, show that short as a scenario string.
    4 then stores 2 in the outcome dword. 5 stores 1.
+   any other kind in this range continues.
 ```
+
+A kind 0 or a kind 1 that fails the side test returns from `object 1 + 0xd960`, so the copies after it are not walked. Every other kind continues to the next copy. The menu path passes the attacker. The phase path passes the defender.
 
 `object 1 + 0x15cf0` is the give in [Units](units.md). `object 1 + 0x15990` is the carried-item pick in [Turns](turns.md). Outcome `1` and `2` are the session's game-over and scenario-end paths, in [Session](session.md).
 

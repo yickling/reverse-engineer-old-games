@@ -11,7 +11,7 @@ A game folder is an index plus one file per system that program actually has. Do
 1. What the program is, in one paragraph. Say that decompiler output is not original source. Say that the game was not run, unless it was. If the outer loop was disassembled because no function existed there, say that and point at the session topic.
 2. How to reopen the program from the file as shipped. Name the container, the bases or sections the file records, and the offset rule a finding uses. Do not name a machine path, a tool install, a temporary image, the base a tool chose, or a symbol the tool generated from that base. If the container had to be rebuilt before a tool could read it, say how, using only values from the file. Name the traps that move a tool onto the wrong body: a wrong entry, a selector that is not already a function, a handler the analyzer never turned into a function. One sentence on any program beside it that is not the game logic, such as an extender or a launcher.
 3. A table of the topic files. One row is a link and one line for what that file holds. Under the table, tell the next session to add a finding to that file, and to add anything still unread to `<game>/gaps.md`, under the same heading. When the folder has scripts, name `<game>/scripts/` there and say what each script writes. The layout stays in the topic file.
-4. `<game>/gaps.md` is the open list, kept for perusal. The index links to this file and does not copy it. The file opens with two verdicts, then the unread items under the same headings as the topic files. Keep both verdicts in this file. A separate document would hide the answer the open list is opened to find. A function worth opening is a row: the address, and what it is believed to be. A file or a field worth reading is a sentence that says where it was seen.
+4. `<game>/gaps.md` is the open list, kept for perusal. The index links to this file and does not copy it. The file opens with two verdicts, or with a link to the file that holds them. The verdict text is in one of those places. A function worth opening is a row: the address, and what it is believed to be. A file or a field worth reading is a sentence that says where it was seen. When the gameplay list is empty, its first sentence says so. A page built from the notes is a second list in the same file: where that page still differs. That list is not an unread address. Remove a line when the page matches. The program side stays in the topic file.
 
 Each verdict is a heading whose first sentence is the answer.
 
@@ -60,6 +60,12 @@ Create a file when that subject is long enough to continue on its own. Name the 
 | Text | How is text stored, and how is it extracted? |
 | Archives | How is packed content addressed? |
 | Progress | How is progress written back, field by field? |
+
+Three files sit beside those subjects. Create one when the procedure reaches it.
+
+- A ledger lists each body that was read: the address, how it was read, and one line. The behavior stays in the topic file. A body outside the gameplay is marked discarded there. It is not a gap.
+- A names file holds the id-to-label tables the program draws. The effect of an id stays in the rules topic. The names file does not hold the formula.
+- A work log lists the questions still to read. It is not a finding. Check an item when the finding is in the topic file and the gap row is gone.
 
 ## Claims
 

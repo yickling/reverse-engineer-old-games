@@ -1,6 +1,6 @@
 # Analyzing a game in this repository
 
-Instructions for a later session. Read this before studying a new game, and read that game's `README.md` before continuing one already started. Then open only the topic file for the question in front of you.
+Instructions for a later session. The order of a study is [procedure.md](procedure.md). Read this file before studying a new game, and read that game's `README.md` before continuing one already started. Then open only the topic file for the question in front of you. A session does the one task in the prompt.
 
 The goal is game design and construction: how the game is put together, how its content is represented, and how those pieces reach the player. Discover the structure this program actually has. Do not arrive with a genre in mind, and do not go looking for systems this game may not have.
 
@@ -34,4 +34,4 @@ When the study of a binary session is finished, close it.
 
 ## What the notes look like
 
-Follow [note-shape.md](note-shape.md). The index holds how to reopen the image and links to `<game>/gaps.md`. That file is the open list. It opens with two verdicts: whether a reconstruction is possible, and whether a modernised remake can start. Each verdict's first sentence is the answer. When the answer is no, the next sentence is the gap that blocks it. Then everything still unread. Each topic file holds one subject this program actually has. Mark each claim observed, inferred, or unknown, as that file describes.
+Follow [note-shape.md](note-shape.md). The index holds how to reopen the image and links to `<game>/gaps.md`. That file is the open list. It opens with two verdicts, or with a link to the file that holds them: whether a reconstruction is possible, and whether a modernised remake can start. Each verdict's first sentence is the answer. When the answer is no, the next sentence is the gap that blocks it. Then everything still unread. Each topic file holds one subject this program actually has. Mark each claim observed, inferred, or unknown, as that file describes.

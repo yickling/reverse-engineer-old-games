@@ -2,7 +2,7 @@
 
 The order of a study. How one reading is done is [LLMs.md](LLMs.md). The shape of what gets written is [note-shape.md](note-shape.md). The prompt to paste is [PROMPT.md](PROMPT.md).
 
-The study is the gameplay: a battle, a town, a character, a visit, and a save. A body that only starts a device, walks the heap, or picks a gift the play does not depend on is discarded. It is listed in the ledger and it is not a gap.
+The study is the play this program actually has: what the player does from start until stop, and what is kept so they can continue. Find that structure here. A phase whose question this program cannot answer is one sentence in the index, and the session goes on. A body that does not change what the player can do is discarded. It is listed in the ledger and it is not a gap. A device startup, a heap walk, and a gift the play does not depend on are examples of that, not the list.
 
 A session does one task. The task is either the next phase whose done line is still open, or the one open item named in the prompt. Read the game folder before writing. Other work may already be in the files.
 
@@ -16,9 +16,9 @@ Done when a later session can open the folder and know which file to read, and t
 
 ## 2. Load map
 
-Identify the container. Record where code and data sit, the real entry, and how a wrong entry or a bare selector opens the wrong body. Name any program beside it that is not the game. Read startup far enough to find the outer loop, and stop at the functions that loop calls.
+Identify the container and the reader, as in [LLMs.md](LLMs.md). Record where code and data sit, the real entry, and how a wrong entry opens the wrong body. Name any program beside it that is not the game. Read startup far enough to find the outer loop, and stop at the functions that loop calls.
 
-Done when a finding can be reopened from the file as shipped, and the outer loop's outcomes are named.
+Done when a finding can be reopened from the file as shipped, the reader is named in the index, and the outer loop's outcomes are named.
 
 ## 3. Session
 
@@ -36,25 +36,25 @@ Done when each container the play loads has a directory, and each record the pro
 
 Read input, selection, the turn or the phase, and the function that raises an outcome for the session loop.
 
-Done when one pass of play can be followed from the first command to the outcome, and the formulas that should be reproducible are pseudocode naming the function they were read from.
+Done when one pass of play can be followed from the first input to the outcome the session loop reads, and a formula that should be reproducible is pseudocode naming the function it was read from. When this program has no separate visit, that pass is the session topic, and the index says so.
 
 ## 6. Content, space, and actors
 
 Read what one stage loads, how actors are placed, how the space is drawn, and how movement uses it. Read the record kept per actor. Count a table across the files, not only in one file.
 
-Done when a stage index selects its files, a placed actor can be found in the actor record, and the space topic says what a tile costs and what is drawn.
+Done when each of a stage, a space, and an actor that this program has is written. A program with no separate stage, no walked space, or no per-actor record says so in the index, in one sentence each.
 
 ## 7. Rules and names
 
-Read each action the player can order. An id the player uses, such as a spell, an item, or a status, gets its effect in the rules topic. When the program draws a label from an id, the id-to-name tables go in one names file. The names file does not hold the formula, and the rules topic points at it.
+Read each action the player can take. An id the program uses to choose an effect gets that effect in the rules topic. When the program draws a label from an id, the id-to-name tables go in one names file. The names file does not hold the formula, and the rules topic points at it.
 
-Done when each such id has an effect, and each label the program draws is in the names file.
+Done when each action has its formula. A program that draws no label from an id has no names file, and the index says so.
 
 ## 8. Pictures, text, and progress
 
 Read a frame, what selects the next picture, and what is a separate clip. Read how text is stored and drawn. Read how progress is written and how a load restores it, field by field. A file the archives do not hold is recorded as absent.
 
-Done when a picture can be extracted again from the script, a string index can be found from the drawer, and a save can be laid back onto the records in the notes.
+Done when each of pictures, text, and saved progress that this program has is written, and a script can reproduce a walk the next session would otherwise repeat. One this program does not have is a sentence in the index. A file the program names and the archives do not hold is recorded as absent.
 
 ## 9. Ledger
 
@@ -66,7 +66,7 @@ Done when a body named in a topic file has a ledger row, and a discarded body is
 
 Answer the two verdicts. The first sentence of each is the answer, in the shape in [note-shape.md](note-shape.md). The gameplay list holds only an address that changes play and was seen and not read. When that list is empty, its first sentence says the gameplay is complete.
 
-A page built from the notes is not a finding. Where it still differs from the program is the second list in `<game>/gaps.md`. The program side is already in the topic file. Remove a line when the page matches.
+A page built from the notes is not a finding. Where it still differs from the program is the second list in `<game>/gaps.md`. The program side is already in the topic file. Remove a line when the page matches. Checking that page is a separate procedure, followed only when the page exists.
 
 The work log holds the questions still to read. Check an item when its finding is in the topic file and its gap row is gone.
 

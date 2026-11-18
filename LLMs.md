@@ -2,7 +2,7 @@
 
 Instructions for a later session. The order of a study is [procedure.md](procedure.md). Read this file before studying a new game, and read that game's `README.md` before continuing one already started. Then open only the topic file for the question in front of you. A session does the one task in the prompt.
 
-The goal is game design and construction: how the game is put together, how its content is represented, and how those pieces reach the player. Extract the gameplay mechanics and the algorithms that implement them. A mechanic is a rule the player can meet: what an action does, what changes a number, what decides success or failure, and what ends the visit. The algorithm is the steps the program uses to decide that rule. Write it as pseudocode that names the function, the inputs, the order of the operations, and the result. A description of the screen, with no arithmetic, is not the mechanic. Investigate the file formats this program uses to store its assets, and how those bytes are laid out. Look for art, music, sound, 3D models, scripts, and animation, and for any other kind a loader opens. For each kind the program stores, name the format, where the file sits, and the layout the loader reads. A kind it does not store is one sentence, not a guessed format. Discover the structure this program actually has. Do not arrive with a genre in mind, and do not go looking for systems this game may not have.
+The goal is game design and construction: how the game is put together, how its content is represented, and how those pieces reach the player. Read the gameplay loop, the mechanics that loop runs, and the presentation of art and sound assets: which picture, clip, or sample the loop asks for, and the format of that asset. A sound driver, a display device, and the rest of the platform that carries the request are outside the study. Name the request and the asset. Leave the driver unread. It is a discarded body, and it is not a gap. Extract the gameplay mechanics and the algorithms that implement them. A mechanic is a rule the player can meet: what an action does, what changes a number, what decides success or failure, and what ends the visit. The algorithm is the steps the program uses to decide that rule. Write it as pseudocode that names the function, the inputs, the order of the operations, and the result. A description of the screen, with no arithmetic, is not the mechanic. When that rule is still a sentence, rewrite it as that block. The block is the record. A sentence may name the function and say what the player sees. It does not keep the arithmetic. Investigate the file formats this program uses to store its assets, and how those bytes are laid out. Look for art, music, sound, 3D models, scripts, and animation, and for any other kind a loader opens. For each kind the program stores, name the format, where the file sits, and the layout the loader reads. A kind it does not store is one sentence, not a guessed format. When the picture is 2D, 3D models are ignored. When the picture is 3D, 2D sprites are ignored. The index says which the picture is. Discover the structure this program actually has. Do not arrive with a genre in mind, and do not go looking for systems this game may not have.
 
 Write the notes in the shape in [note-shape.md](note-shape.md). Copy the shape, not one game's filenames or systems.
 
@@ -41,6 +41,12 @@ A body in a topic file is done when a later session can reopen it from the file 
 If a protection check appears, report the branch that exists. Do not write a bypass.
 
 When the study of a binary session is finished, close it.
+
+## Coverage
+
+At the end of a pass, replace one line in the game index. The line is a whole-number percentage of how much of the gameplay mechanics and the presentation is covered.
+
+The numerator is the mechanics written as pseudocode, plus each picture, clip, and played asset whose selection and layout are written. The denominator is that numerator plus the mechanics and presentation still only named, or still an unread row. Platform and driver code is in neither count. When nothing in that pair has been seen, the line is 0%. The same sentence names the largest piece still outside the percentage.
 
 ## What the notes look like
 

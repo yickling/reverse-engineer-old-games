@@ -23,7 +23,16 @@ Part of the [FDPS notes](README.md). Decompiled functions are Ghidra output, not
 | `0x30d4` | 1 | `object 2 + 0x9d70` |
 | `0x59c7` | 4 | sum of the preceding `0x59c7` bytes, from `object 1 + 0x46608` |
 
-`object 1 + 0x46608(buffer, length)` returns the sum of the first `length − 4` bytes. The save passes `0x59cb`, so the sum covers the bytes before the dword at `0x59c7`. `object 1 + 0x46627` then walks those `0x59cb` bytes. A word starts at `0xa5`. Each byte adds `0x9014` to the word, rotates it left by 3, and xors the byte with the low half of the word. The same walk restores the bytes. The writer sums the plain buffer and then walks it. The reader walks it and then sums it.
+`object 1 + 0x46608(buffer, length)` returns the sum of the first `length − 4` bytes. The save passes `0x59cb`, so the sum covers the bytes before the dword at `0x59c7`. The same walk restores the bytes. The writer sums the plain buffer and then walks it. The reader walks it and then sums it.
+
+```
+# object 1 + 0x46627, over the 0x59cb bytes
+word = 0xa5
+for each byte:
+    word = word + 0x9014
+    word = rotate_left(word, 3)
+    byte = byte xor low_half(word)
+```
 
 `object 1 + 0x13df0` reads the same buffer back. A checksum that does not match the dword at `0x59c7` shows interface string `0x208` and the load continues. It copies the roster block, stores the scenario byte, and calls `object 1 + 0x127b0`. It then replaces the map block with the `0x8a3` bytes at the front and stores map byte 1 and byte 2 in `object 2 + 0x4118` and `object 2 + 0x410c`. The unit array is allocated to `0x1e00` bytes, 96 slots, and `count * 0x50` bytes are copied in. Each unit's byte `+2` is filled again from `ICON.CEL`. The turn counter, the camera, the cursor, the roster count, `object 2 + 0x43b8`, and the four option bytes are copied from `0x30c3` onward. `object 1 + 0x1e6a0` then advances the marked tiles, the map is redrawn, `PlyPhase.saf` plays, and the phase music is called with argument 0.
 

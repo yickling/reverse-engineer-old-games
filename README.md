@@ -17,7 +17,7 @@ The `Task` line is one of the two choices in the template, not both.
 - A new game, or a game whose next phase in [procedure.md](procedure.md) is still open: `Start the study at the first open phase.` The session stops when that phase's done line is met.
 - A game that already has notes: `Do the open item "<title>" and nothing else.` The title is the heading of one unchecked item in that game's work log, or one row still open in its `gaps.md`. The session does that item and stops.
 
-When the session ends, the finding is in the topic file. The next session starts from a fresh paste, with the next phase or the next open item.
+When the session ends, the finding is in the topic file, and the game index states the coverage percentage for the gameplay mechanics and the presentation. The next session starts from a fresh paste, with the next phase or the next open item.
 
 ## Notes
 

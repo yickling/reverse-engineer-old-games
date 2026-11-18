@@ -68,7 +68,24 @@ The same call stores the occupancy byte at `grid + (y * width + x) * 2 + 1` into
 
 On disk, byte 2 takes values 0, 1, 2, 5, and 6. Byte 3 takes 55 distinct values, the largest 63, which matches the 63 backdrop files. For 67 of the 69 `ATTR` files the record count equals that picture run, including `M310` at 192. `M630` has 192 pictures and 288 records, and every one of those records is 0. Its `MPL` only names tiles 0 through 149, and the painter indexes a record by that picture short, so the extra 96 records are never selected. `DSC15.DAT` has one section, so the loader names `ATTR150` and never `ATTR151`. There is no `DSC31.DAT` and no `DSC33.DAT`, so `ATTR310` and `ATTR330` are not named either. The section loop in `object 1 + 0x127b0` runs only to the `DSC` count.
 
-Movement is a flood fill in `object 1 + 0xde0`. The occupancy grid is `width * height` byte pairs. `object 1 + 0x127b0` writes the width and height of section 0, the first `MPL` of this scenario. The grids and the check that every placed coordinate lands inside them are in [Scenario files](scenario.md). `object 1 + 0xb20` sets each pair's second byte to `0xff` and masks the first with `0x3f`. The fill then treats the first byte's bit `0x40` as "do not enter" and bit `0x80` as "entering spends the whole remaining budget". The second byte is the best cost found so far. Cost of a step is `cost_here + move_row[terrain]`, where `move_row` is the 10-byte `ProMap.dat` row for the unit's class. `object 1 + 0xb90(filter)` calls `object 1 + 0xc30` on each visible unit the filter accepts. Filter 0 accepts a side other than 0, and any other filter accepts side 0. `object 1 + 0xc30` ORs `0x40` into the first byte of that unit's pair, and ORs `0x80` into the first byte of each of the four orthogonal neighbors that sit on the map. The walk that asks for this stamp is in [Turns](turns.md). The percents applied to attack and defense are signed dwords:
+Movement is a flood fill in `object 1 + 0xde0`. The occupancy grid is `width * height` byte pairs. `object 1 + 0x127b0` writes the width and height of section 0, the first `MPL` of this scenario. The grids and the check that every placed coordinate lands inside them are in [Scenario files](scenario.md). `move_row` is the 10-byte `ProMap.dat` row for the unit's class. The walk that asks for this fill is in [Turns](turns.md).
+
+```
+# object 1 + 0xb20, then object 1 + 0xde0
+pair.cost = 0xff
+pair.flags = pair.flags & 0x3f
+
+# object 1 + 0xb90(filter) calls object 1 + 0xc30 on each visible unit
+# filter 0 keeps a side other than 0; any other filter keeps side 0
+pair.flags |= 0x40                          # the unit's own tile: do not enter
+neighbor.flags |= 0x80                      # each orthogonal neighbor on the map
+
+# object 1 + 0xde0
+if pair.flags & 0x40: skip
+step = cost_here + move_row[terrain]
+if pair.flags & 0x80: step spends the remaining budget
+if step < pair.cost: pair.cost = step       # the second byte is the best cost
+``` The percents applied to attack and defense are signed dwords:
 
 | Terrain | Attack %, dwords at `object 2 + 0x40` | Defense %, dwords at `object 2 + 0x58` |
 | --- | --- | --- |

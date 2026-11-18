@@ -19,7 +19,24 @@ Part of the [FDPS notes](README.md). Decompiled functions are Ghidra output, not
 
 A shop file is three groups of 12 bytes. `object 1 + 0x21470(group, dest)` copies bytes from `group * 12` until `0xff` or 12 bytes, each byte widened to a dword item id, and returns the count. Every id in the thirty files is below 251, which is the `Item.dat` row count in [Units](units.md). Sixteen groups are twelve `0` bytes with no `0xff`, so that reader returns twelve ids of 0. One group begins with `0xff` and contributes nothing.
 
-`object 1 + 0x22480(group)` is the list. It returns the chosen id, or −1 on cancel. `object 1 + 0x238f0` calls it, then `object 1 + 0x8b30` on that id. The first byte of that row is the type. A type at most `0x15` makes the credit lookup `object 1 + 0x15110` with group 0, and a greater type makes it group 1. The price starts as the unsigned short at item `+0x13`, and that short is stored at `object 2 + 0x4038`. The confirm is interface string `0x1f6`. `object 2 + 0x4030` is the buyer's `+8` plus 1, and `object 2 + 0x4034` is the equipped id plus `0xc9`. When `object 1 + 0x7980` returns 0, the class can equip the bought id, and that lookup found a pair, the short at `+0x13` of the equipped record found by `object 1 + 0x151d0` is multiplied by 5 and shifted right by 2, and that credit is subtracted from the price. A price above 0 is refused when it is greater than the dword at `object 2 + 0x43b8`. A confirmed pay subtracts the price from that dword at `object 1 + 0x23bad`. A price at or below 0 is negated, and a confirmed pay adds it at `object 1 + 0x23c58`. The same function then gives the item with `object 1 + 0x15cf0`. The three village actions pass the group: `object 1 + 0x255d0` passes 0, `object 1 + 0x25d40` passes 1, and `object 1 + 0x25f80` passes 2. The other corners of those menus are in [Turns](turns.md).
+`object 1 + 0x22480(group)` is the list. It returns the chosen id, or −1 on cancel. `object 1 + 0x238f0` calls it, then `object 1 + 0x8b30` on that id. The confirm is interface string `0x1f6`. `object 2 + 0x4030` is the buyer's `+8` plus 1, and `object 2 + 0x4034` is the equipped id plus `0xc9`. The shifts are unsigned.
+
+```
+# object 1 + 0x238f0
+type = item[0]
+group = 0 if type <= 0x15 else 1
+price = uint16(item[+0x13])                    # also stored at object 2 + 0x4038
+if confirm == 0 and the class can equip the id and object 1 + 0x15110(group) found a pair:
+    equipped = object 1 + 0x151d0
+    price = price - ((uint16(equipped[+0x13]) * 5) >> 2)
+if price > 0:
+    if price > object 2 + 0x43b8: refuse
+    else on confirm: object 2 + 0x43b8 -= price    # object 1 + 0x23bad
+else:
+    price = -price
+    on confirm: object 2 + 0x43b8 += price         # object 1 + 0x23c58
+object 1 + 0x15cf0 gives the bought id
+``` The three village actions pass the group: `object 1 + 0x255d0` passes 0, `object 1 + 0x25d40` passes 1, and `object 1 + 0x25f80` passes 2. The other corners of those menus are in [Turns](turns.md).
 
 The scenario index is the battle map. `object 1 + 0x12720` passes `object 2 + 0x9cf4` to `object 1 + 0x12bb0`, and that function calls `object 1 + 0x127b0` before it places anyone. Every name in the table above is formatted with that same index. The walkable grid is section 0: `m%02d0.mpl`. Its width and height are the shorts at `+7` and `+9`, `object 1 + 0x127b0` copies those two shorts into the occupancy grid, and each cell is the picture short already described above. A later section is another plate on that visit, drawn as in [Map](map.md). Of indexes 0 through 29, scenarios 5 and 29 add a plate at order 8, and scenario 7 adds the plate at order 11. The other 27 have one section.
 

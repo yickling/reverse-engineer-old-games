@@ -115,17 +115,7 @@ def cpu_spell_area(caster):                    # object 1 + 0x3420
 
 ## The three scores
 
-Each scorer writes 0, then raises its global only when it finds a candidate. All three return 0. The numbers they store are bands, not the damage formula.
-
-`object 1 + 0x2230` is the swing. It reads the weapon through `object 1 + 0x15110(unit, 0)` and `object 1 + 0x8b30`, flood-fills with budget `+0x3b` on `object 1 + 0x8b60(class + 1)`, and asks `object 1 + 0x1da0` for the reachable tiles. `object 1 + 0x1da0` lists every tile whose cost byte is not `0xff`, in row-major order, and returns the count. `object 1 + 0x18f0` writes `0xff` into that byte for the other visible units on one side of the filter. The same two calls choose where a CPU walk stops, in [Turns](turns.md). From each stand tile, `object 1 + 0x1e50` lists targets with `shape` = weapon byte `+0xc`, `inner` = byte `+0xb`, and `side` = 1 when the phase filter is 0, else 0. A phase filter of 0 is the side-`0` walk, so that walk's swing list is every visible unit whose side is not 0. Side `1` passes filter 1, and its swing list is side 0. For a target the band is 0 when `attack - defense` is below 3, else 8. When that margin is greater than the target's `+0x40`, the margin is doubled and the band becomes `0x12`. `object 1 + 0x25c0` returns 1 only when the attacker's `+0x26` is 0, the two tiles are one step apart on a side (`object 1 + 0x2d0d4` is the absolute value, and the two absolutes sum to 1), the weapon-group lookup finds a pair, and that record's byte `+0xb` is below 2. Any other case returns −1. A return of 1 adds the attacker's `+0x4a` minus the target's `+0x48` to the margin. A target whose byte `+8` is 0 multiplies the margin by 3/2. The kept candidate is the highest band, and on a tie the larger margin. An equal band and an equal margin keeps the earlier stand tile, and within a tile the earlier unit index. It stores the target in `object 2 + 0x3f74` and the stand tile in `object 2 + 0x3f80` and `object 2 + 0x3f84`.
-
-`object 1 + 0x3420` is the spell. `object 1 + 0x17810` fills the id list, the same call that enables menu slot 1, and byte `+0x27` must be 0. A spell is skipped unless byte `+5` of its `object 1 + 0x8bc0` row is at or below the word at unit `+0x44`. The flood fill uses budget byte `+3` of that row and the class-0 move row. The reached tiles are copied, the grid is cleared, and each of them is then a center for the area mask in [The spell area](#the-spell-area). `object 1 + 0x1e50` lists targets with `shape` = row byte `+4`, `inner` = 0, and a side taken from row byte `+6`. The grid is cleared again after that list. When the phase filter is 0, byte `+6` equal to 0 becomes list side `1`, and any other value becomes list side `0`. When the phase filter is not 0, byte `+6` is the list side as stored. `object 1 + 0x3920` scores that list, and the kept candidate is the higher score, then the larger first short of the row. An equal score and an equal short keeps the earlier tile. The stand tile is `object 2 + 0x3f9c` and `object 2 + 0x3fa0`, and the spell id is `object 2 + 0x3f90`.
-
-`object 1 + 0x3920` sums a per-target band. Ids `0x0e`, `0x0f`, `0x10`, and `0x21` score the target's pool against its `+0x42`: 8 when the pool is below a third, 3 when it is below a half, otherwise 0, and bit 0 of `+0x34` doubles that. Id `0x11` adds 6 for each target that still has a spell list and whose `+0x27` is 0. Id `0x18` adds 6 for each target whose `+0x25`, `+0x26`, or `+0x27` is nonzero. Id `0x12` adds 10 for each target whose `+0x25` is 0. Id `0x13` does the same for `+0x26`. Id `0x14` calls that counter three times, for `+0x22`, `+0x23`, and `+0x24`, and keeps only the last return, so the score is 4 per target whose `+0x24` is 0. The counter is `object 1 + 0x3c20`. Every other id adds 8, or `0x18` when the pool is below the row's first short. Ids `0x0a` and `0x0b` skip a target that `object 1 + 0x2550` accepts. A target whose byte `+8` is 0 replaces that band with `trunc(band * 3 / 2)`. At `object 1 + 0x3bf0` the band, 8 or `0x18`, is loaded with `FILD` and multiplied by the double `1.5` at `object 2 + 0x1571`. `object 1 + 0x2d25c` then rounds toward zero: it stores the control word, sets the high byte to `0x1f`, runs `FRNDINT`, and restores the word. `FISTP` writes the result back. 8 becomes 12. `0x18` becomes 36.
-
-`object 1 + 0x3040` is the carried item. `object 1 + 0x15210` is the count, the same call that enables menu slot 2. Index `i` reads the id at unit `+0x0b + i * 2` and the record from `object 1 + 0x8b30`. Byte `+0x0d` of that record must be nonzero. The stand tiles come from one `object 1 + 0x1e50` at the unit's own tile whose list is discarded: byte `+0x10` below `0x10` is the `shape` and `inner` is 0, and a byte at or above `0x10` is painted with `shape` 1 and `inner` 1. From each stand tile the target list uses record byte `+0x12` as `shape` and `inner` 0 when byte `+0x10` is below `0x10`. At or above `0x10` the list is the line in [The spell area](#the-spell-area), called as `(stand x, stand y, buffer, unit x, unit y, byte +0x10 - 0x10, side)`. The side is record byte `+0x11`, with the same fold the spell uses: a phase filter of 0 turns byte 0 into list side `1` and any other byte into list side `0`. `object 1 + 0x32b0` scores that list, and a strictly higher score replaces `object 2 + 0x3f8c`. The stand tile is `object 2 + 0x3f98` and `object 2 + 0x3f94`, and the slot index is `object 2 + 0x3f7c`.
-
-`object 1 + 0x32b0` returns 0 unless byte `+0x0d` is `0x0b` or `0x1e`. Kind `0x0b` uses signed division toward zero. A target whose `+0x40` is at or below `+0x42 / 3` adds 8. Above that and at or below `+0x42 / 2` adds 3. Above half adds 0. Bit `0x80` of `+0x34` multiplies that term by 3. Kind `0x1e` adds `0x12` when `+0x40` is at or below the short at record `+0x0e`, and 8 when it is above that short.
+Each scorer writes 0, then raises its global only when it finds a candidate. All three return 0. The numbers they store are bands, not the damage formula. The bands are the routine below. The swing stores its target at `object 2 + 0x3f74` and its stand at `object 2 + 0x3f80` and `object 2 + 0x3f84`. The spell stores its stand at `object 2 + 0x3f9c` and `object 2 + 0x3fa0` and its id at `object 2 + 0x3f90`. The item stores its score at `object 2 + 0x3f8c`, its stand at `object 2 + 0x3f98` and `object 2 + 0x3f94`, and its slot at `object 2 + 0x3f7c`. An equal score keeps the earlier candidate. The same fill and the same punch choose where a CPU walk stops, in [Turns](turns.md).
 
 ## The CPU routine
 
@@ -155,6 +145,9 @@ def swing_margin(attacker, target, stand):             # object 1 + 0x2230
     if target[+0x40] < margin:
         margin = margin * 2
         band = 0x12
+    # object 1 + 0x25c0 returns 1 only when attacker[+0x26] == 0,
+    # the two tiles are one step apart, the weapon-group lookup finds a pair,
+    # and that record's byte +0xb is below 2. Any other case returns -1.
     if object 1 + 0x25c0(target, stand) == 1:
         margin = margin + attacker[+0x4a] - target[+0x48]
     if target[+8] == 0:
@@ -206,7 +199,7 @@ def spell_band(spell_id, targets):                     # object 1 + 0x3920
                 continue
             term = 0x18 if target[+0x40] < row.first_short else 8
             if target[+8] == 0:
-                term = trunc(term * 1.5)            # double at object 2 + 0x1571, object 1 + 0x2d25c
+                term = trunc(term * 1.5)            # double at object 2 + 0x1571, object 1 + 0x2d25c. 8 becomes 12. 0x18 becomes 36.
             total = total + term
     return total
 
@@ -625,15 +618,39 @@ A kind 0 or a kind 1 that fails the side test returns from `object 1 + 0xd960`, 
 
 `object 1 + 0x15cf0` is the give in [Units](units.md). `object 1 + 0x15990` is the carried-item pick in [Turns](turns.md). Outcome `1` and `2` are the session's game-over and scenario-end paths, in [Session](session.md).
 
-`object 1 + 0xdd00` returns immediately when the term is 0, or when `object 1 + 0x9b0` is nonzero. Character id `9` also returns at level `0x63`. Any other character returns at level `0x28`. Otherwise the term is capped at 99, added to byte `+0x3c`, and a number is drawn rising off the unit's tile for 15 map frames. If the sum passes 99, `Levup.wav` is started, `+0x21` increases by 1, the sum drops by 100, and a picture from `object 2 + 0x43a0` is held over the map until a key below `0x80` or 250 frames. The new level is capped again: character `9` at 99, anything else at `0x28`, and the remainder byte is cleared when a cap hits. One crossing subtracts 100 once, so one fight raises the level by at most 1.
-
-The row is `object 1 + 0x8ad0` of the character id. `object 1 + 0xe340` adds one rolled amount to each of five words. The pairs are bytes 0, 2, 4, 6, and 8 of that row, added to `+0x37`, `+0x39`, `+0x3e`, `+0x42`, and `+0x46`. The current pools at `+0x40` and `+0x44` are not raised with the maximums. `object 1 + 0x14d40` then rebuilds the combat words. `FriLevUp.dat` byte 10, unless it is `0xff`, selects a 12-byte row of `GetMgTab.dat` through `object 1 + 0x8bf0`. The loop at `object 1 + 0xe020` walks six pairs. When the first byte equals unit `+0x21`, the second byte is passed to `object 1 + 0x18280`, which sets the learned-id bit in [Units](units.md). The same call with id `0x1d` is item kind `0x21`. Ending 0 calls it as `object 1 + 0x18280(0, 0)`, in [Session](session.md).
+`object 1 + 0xdd00` applies one fight's experience. One crossing subtracts 100 once, so one fight raises the level by at most 1. The rising number is drawn for 15 map frames. The picture at `object 2 + 0x43a0` is held until a key below `0x80` or 250 frames.
 
 ```
+# object 1 + 0xdd00
+cap = 0x63 if unit[+8] == 9 else 0x28
+if term == 0 or object 1 + 0x9b0(unit) != 0 or unit[+0x21] >= cap:
+    return
+term = min(term, 99)
+unit[+0x3c] = unit[+0x3c] + term
+if unit[+0x3c] > 99:
+    unit[+0x21] = unit[+0x21] + 1          # play Levup.wav
+    unit[+0x3c] = unit[+0x3c] - 100
+    if unit[+0x21] >= cap:
+        unit[+0x21] = cap
+        unit[+0x3c] = 0
+```
+
+The row is `object 1 + 0x8ad0` of the character id. The current pools at `+0x40` and `+0x44` are not raised with the maximums. `object 1 + 0x18280` sets the learned-id bit in [Units](units.md). The same call with id `0x1d` is item kind `0x21`. Ending 0 calls it as `object 1 + 0x18280(0, 0)`, in [Session](session.md).
+
+```
+# object 1 + 0xe340. pairs are bytes 0, 2, 4, 6, 8 of the row,
+# added to +0x37, +0x39, +0x3e, +0x42, +0x46
 lo = pair[0]
 span = pair[1] - lo          # unsigned bytes, so a lower second byte wraps
 added = lo if span == 0 else lo + rand % span
 word = word + added
+object 1 + 0x14d40(unit)
+
+# object 1 + 0xe020, unless FriLevUp.dat byte 10 is 0xff
+row = object 1 + 0x8bf0(that byte)       # 12 bytes of GetMgTab.dat, six pairs
+for pair in the six pairs:
+    if pair[0] == unit[+0x21]:
+        object 1 + 0x18280(unit, pair[1])
 ```
 
 `rand` is `object 1 + 0x32a68`. The added amount is stored at `object 2 + 0x4038` and passed to `object 1 + 0x7520` with pitch `0xa4` and width 0. The card pixels and the 6×8 split are in [Pictures](pictures.md).

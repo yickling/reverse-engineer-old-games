@@ -2,9 +2,11 @@
 
 The order of a study. How one reading is done is [LLMs.md](LLMs.md). The shape of what gets written is [note-shape.md](note-shape.md). The prompt to paste is [PROMPT.md](PROMPT.md).
 
-The study is the play this program actually has: what the player does from start until stop, and what is kept so they can continue. Find that structure here. Extract each mechanic and the algorithm that implements it, as [LLMs.md](LLMs.md) requires. A phase is not done while a rule it touched is only described in words. A phase whose question this program cannot answer is one sentence in the index, and the session goes on. A body that does not change what the player can do is discarded. It is listed in the ledger and it is not a gap. A device startup, a heap walk, and a gift the play does not depend on are examples of that, not the list.
+The study is the play this program actually has: what the player does from start until stop, and what is kept so they can continue. Find that structure here. Extract each mechanic and the algorithm that implements it, as [LLMs.md](LLMs.md) requires. A phase is not done while a rule it touched is only described in words. Rewrite that rule as the pseudocode block. The block is the record. A phase whose question this program cannot answer is one sentence in the index, and the session goes on. A body that does not change what the player can do is discarded. It is listed in the ledger and it is not a gap. A device startup, a heap walk, and a gift the play does not depend on are examples of that, not the list.
 
-A session does one task. The task is either the next phase whose done line is still open, or the one open item named in the prompt. Read the game folder before writing. Other work may already be in the files.
+A session does one task. The task is either the next phase whose done line is still open, or the one open item named in the prompt. Read the game folder before writing. Other work may already be in the files. Read the gameplay loop and the presentation of art and sound assets, as [LLMs.md](LLMs.md) describes. A driver the loop calls is recorded as the request and the asset. The driver body stays unread.
+
+When the phase's done line is met, replace the coverage line in the game index. The line is the percentage in [LLMs.md](LLMs.md). State that percentage when the session ends.
 
 A finding goes in the topic file for that subject before the session ends. When the finding is something the player sees, the same paragraph says what they see, in the same terms as the offsets. An address, file, or field that was seen and not read goes in `<game>/gaps.md` under that topic. The row comes out when the topic file records the finding. Cite as [LLMs.md](LLMs.md) requires.
 
@@ -30,7 +32,7 @@ Done when the path from title to quit is in the session topic, and each outcome 
 
 Follow filenames to the loaders. Investigate every file format this program uses to store an asset, and how those bytes are stored, as [LLMs.md](LLMs.md) requires. Look for art, music, sound, 3D models, scripts, and animation, and for any other kind a loader opens. Check the reader's field offsets against a walk of the file, including that no member runs past the end. Write each record as the packed struct in [note-shape.md](note-shape.md). When the walk is one the next session would repeat, add the script that [note-shape.md](note-shape.md) describes.
 
-Done when each container the play loads has a directory, each asset kind the program stores has its format and layout, a kind it does not store is one sentence in the index, and each record the program reads can be seen without reassembling it from the prose.
+Done when each container the play loads has a directory, each asset kind the program stores has its format and layout, a kind it does not store is one sentence in the index, and each record the program reads can be seen without reassembling it from the prose. A 2D picture ignores 3D models. A 3D picture ignores 2D sprites. The index says which the picture is.
 
 ## 5. One visit
 

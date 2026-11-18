@@ -1,6 +1,6 @@
 # FDPS analysis notes
 
-Flame Dragon Plus (炎龙骑士团外传), a DOS/4GW game in `fdps/`. These notes are from static analysis of `FDPS.EXE` and the data files next to it. Decompiled functions are Ghidra output, not original source. Nothing here was checked by running the game.
+Flame Dragon Plus (炎龙骑士团外传), a DOS/4GW game in `fdps/`. These notes are from static analysis of `FDPS.EXE` and the data files next to it. Decompiled functions are Ghidra output, not original source. Nothing here was checked by running the game. The picture is 2D, so 3D models are not a stored kind.
 
 The real entry was never turned into a Ghidra function, so the top-level loop in [Session](session.md) is from disassembly of the flat image. The same is true of the thirty openers, the thirty endings, the thirty after-action checks, and the step handlers: Ghidra had not created functions there, and those notes are disassembly. A body these notes do not call a disassembly was decompiled. A bare selector that is not already a function decompiles the wrong body, as below.
 

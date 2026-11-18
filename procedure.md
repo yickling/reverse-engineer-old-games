@@ -26,11 +26,11 @@ Read the outer loop. Write what runs from startup until quit, and what that loop
 
 Done when the path from title to quit is in the session topic, and each outcome the loop branches on is named.
 
-## 4. Archives and records
+## 4. Archives, records, and assets
 
-Follow filenames to the loaders. Check the reader's field offsets against a walk of the file, including that no member runs past the end. Write each record as the packed struct in [note-shape.md](note-shape.md). When the walk is one the next session would repeat, add the script that [note-shape.md](note-shape.md) describes.
+Follow filenames to the loaders. Investigate every file format this program uses to store an asset, and how those bytes are stored, as [LLMs.md](LLMs.md) requires. Look for art, music, sound, 3D models, scripts, and animation, and for any other kind a loader opens. Check the reader's field offsets against a walk of the file, including that no member runs past the end. Write each record as the packed struct in [note-shape.md](note-shape.md). When the walk is one the next session would repeat, add the script that [note-shape.md](note-shape.md) describes.
 
-Done when each container the play loads has a directory, and each record the program reads can be seen without reassembling it from the prose.
+Done when each container the play loads has a directory, each asset kind the program stores has its format and layout, a kind it does not store is one sentence in the index, and each record the program reads can be seen without reassembling it from the prose.
 
 ## 5. One visit
 
@@ -70,4 +70,4 @@ A page built from the notes is not a finding. Where it still differs from the pr
 
 The work log holds the questions still to read. Check an item when its finding is in the topic file and its gap row is gone.
 
-Done when both verdicts are answered, each mechanic the notes rely on is that pseudocode or an unread row in the gameplay list, the gameplay list is otherwise empty or each remaining row is an unread gameplay address, and a page difference is not listed as an unread address.
+Done when both verdicts are answered, each mechanic the notes rely on is that pseudocode or an unread row in the gameplay list, each asset kind the program stores has its format and layout or an unread row, the gameplay list is otherwise empty or each remaining row is an unread gameplay address, and a page difference is not listed as an unread address.

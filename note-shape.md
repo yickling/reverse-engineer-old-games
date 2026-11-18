@@ -59,6 +59,7 @@ Create a file when that subject is long enough to continue on its own. Name the 
 | Pictures | What is a frame, what selects the next picture, what is a separate clip, and how are the pictures extracted? |
 | Text | How is text stored, and how is it extracted? |
 | Archives | How is packed content addressed? |
+| Assets | What file format stores each kind of asset this program loads, and how are those bytes laid out? Look for art, music, sound, 3D models, scripts, and animation, and for any other kind a loader opens. |
 | Progress | How is progress written back, field by field? |
 
 Three files sit beside those subjects. Create one when the procedure reaches it.

@@ -40,7 +40,7 @@ When a subject is a record the program reads — a file, a row of a table, or th
 
 Write a script when a finding is a walk the next session would otherwise repeat: pulling frames out of a picture file, turning stored indexes into text, or dumping a table. A formula that fits in the topic file does not need one.
 
-Put the script in `<game>/scripts/`. It takes the data directory as an argument. It does not embed a machine path, and it does not write into the local copy of the program. What it produces goes in `<game>/extract/`. For every game, that directory stays on disk and is not committed.
+A script that names this game's files goes in `<game>/scripts/`. When the walk is a container or a format another program can have, the program goes in `tools/` and this script calls it, as [procedure.md](procedure.md) describes. Read [tools/README.md](tools/README.md) before writing that program again. The script takes the data directory as an argument. It does not embed a machine path, and it does not write into the local copy of the program. What it produces goes in `<game>/extract/`. For every game, that directory stays on disk and is not committed.
 
 The topic file names the script and what it writes, and it keeps the layout the script implements. The notes do not paste the scenario text, pictures, or other copyrighted output the script writes.
 
@@ -75,4 +75,4 @@ Three files sit beside those subjects. Create one when the procedure reaches it.
 - **Inferred.** A role guessed from how a field is written and read, such as calling a word "health" because attacks subtract from it. Say that it is an inference.
 - **Unknown.** A file or a function that was seen and not read. List it in `<game>/gaps.md`. Do not fill the gap.
 
-`__stash/` is the local copy of programs under study. Read it. Do not create or change files there. Notes go in the game folder. A repeatable extractor goes in `<game>/scripts/`. Every other produced file goes in `<game>/extract/`. Do not commit any game's `extract/` directory. Notes describe structure. They do not paste scenario text or other copyrighted writing.
+`__stash/` is the local copy of programs under study. Read it. Do not create or change files there. Notes go in the game folder. A script that names one game's files goes in `<game>/scripts/`. A program another game can run goes in `tools/`. Every other produced file goes in `<game>/extract/`. Do not commit any game's `extract/` directory. Notes describe structure. They do not paste scenario text or other copyrighted writing.

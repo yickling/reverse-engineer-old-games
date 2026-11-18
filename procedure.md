@@ -8,6 +8,8 @@ A session does one task. The task is either the next phase whose done line is st
 
 When the phase's done line is met, replace the coverage line in the game index. The line is the percentage in [LLMs.md](LLMs.md). State that percentage when the session ends.
 
+Read [tools/README.md](tools/README.md) before writing a program that opens a container or an asset. When that file already names it, use that program. When the walk is a container or a format another program can have, put the program in `tools/`, add a row to that file, and leave a short script in `<game>/scripts/` that names this game's files and calls it. A script that only names this game's files stays in `<game>/scripts/`.
+
 A finding goes in the topic file for that subject before the session ends. When the finding is something the player sees, the same paragraph says what they see, in the same terms as the offsets. An address, file, or field that was seen and not read goes in `<game>/gaps.md` under that topic. The row comes out when the topic file records the finding. Cite as [LLMs.md](LLMs.md) requires.
 
 ## 1. Open the study
@@ -18,7 +20,7 @@ Done when a later session can open the folder and know which file to read, and t
 
 ## 2. Load map
 
-Identify the container and the reader, as in [LLMs.md](LLMs.md). Record where code and data sit, the real entry, and how a wrong entry opens the wrong body. Name any program beside it that is not the game. Read startup far enough to find the outer loop, and stop at the functions that loop calls.
+Identify the container and the reader, as in [LLMs.md](LLMs.md). Record where code and data sit, the real entry, and how a wrong entry opens the wrong body. Name any program beside it that is not the game. A program that opens this container follows the split above. Read startup far enough to find the outer loop, and stop at the functions that loop calls.
 
 Done when a finding can be reopened from the file as shipped, the reader is named in the index, and the outer loop's outcomes are named.
 
@@ -30,7 +32,7 @@ Done when the path from title to quit is in the session topic, and each outcome 
 
 ## 4. Archives, records, and assets
 
-Follow filenames to the loaders. Investigate every file format this program uses to store an asset, and how those bytes are stored, as [LLMs.md](LLMs.md) requires. Look for art, music, sound, 3D models, scripts, and animation, and for any other kind a loader opens. Check the reader's field offsets against a walk of the file, including that no member runs past the end. Write each record as the packed struct in [note-shape.md](note-shape.md). When the walk is one the next session would repeat, add the script that [note-shape.md](note-shape.md) describes.
+Follow filenames to the loaders. Investigate every file format this program uses to store an asset, and how those bytes are stored, as [LLMs.md](LLMs.md) requires. Look for art, music, sound, 3D models, scripts, and animation, and for any other kind a loader opens. Check the reader's field offsets against a walk of the file, including that no member runs past the end. Write each record as the packed struct in [note-shape.md](note-shape.md). When the walk is one the next session would repeat, add the script that [note-shape.md](note-shape.md) describes. A format another program can have follows the same split.
 
 Done when each container the play loads has a directory, each asset kind the program stores has its format and layout, a kind it does not store is one sentence in the index, and each record the program reads can be seen without reassembling it from the prose. A 2D picture ignores 3D models. A 3D picture ignores 2D sprites. The index says which the picture is.
 

@@ -4,7 +4,7 @@ Notes on how old games were built, written so we can reuse the ideas when making
 
 The interest is game design and construction: how a session is put together, how the world and its actors are represented, how content is stored and brought on screen, how progress is saved, the mechanics and algorithms that resolve play, and the file formats that store the assets. Each game is a folder with its own `README.md`, so a later session can continue from it. Conclusions stay tied to a file offset or a function address, and observations stay separate from guesses.
 
-Later analysis sessions follow [procedure.md](procedure.md). How one reading is done, including how a body is decompiled or disassembled, is [LLMs.md](LLMs.md). The shape of a game's notes is [note-shape.md](note-shape.md). Write findings into those notes. A chat reply is not a record the next session can read.
+Later analysis sessions follow [procedure.md](procedure.md). How one reading is done, including how a body is decompiled or disassembled, is [LLMs.md](LLMs.md). The shape of a game's notes is [note-shape.md](note-shape.md). Programs a later study can run on another game are in [tools/README.md](tools/README.md). Write findings into those notes. A chat reply is not a record the next session can read.
 
 ## How to start a session
 

@@ -10,7 +10,7 @@ The record of a study is the markdown in the game folder. A chat reply is not a 
 Before finishing any study of a game:
 
 1. Read [LLMs.md](LLMs.md), then [procedure.md](procedure.md), then that game's `README.md`. Follow [note-shape.md](note-shape.md) when adding or reshaping notes. A session does the one task in the prompt.
-2. Write every finding into the topic file for that subject. Create the topic file when the subject is long enough to continue on its own. A record the program reads is a packed struct, in the shape in [note-shape.md](note-shape.md), so a person can see the record without reassembling it from the prose.
+2. Write every finding into the topic file for that subject. Read [tools/README.md](tools/README.md) before writing a program that opens a container or an asset. Create the topic file when the subject is long enough to continue on its own. A record the program reads is a packed struct, in the shape in [note-shape.md](note-shape.md), so a person can see the record without reassembling it from the prose.
 3. Put any address, file, or field you saw and did not read into that game's `gaps.md`, under the same heading as the topic. Remove the row when the topic file records the finding. That file opens with two verdicts, or with a link to the file that holds them, in the shape in [note-shape.md](note-shape.md): whether a reconstruction is possible, and whether a modernised remake can start. The first sentence of each is the answer. When the answer is no, the next sentence is the gap that blocks it.
 4. The chat may summarize what was written. State the coverage percentage the index now holds. Do not end with the result only in the chat.
 

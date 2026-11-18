@@ -22,7 +22,7 @@ Each verdict is a heading whose first sentence is the answer.
 
 The first paragraph links back to the index and repeats the caution: decompiler output is not original source, and the game was not run unless it was.
 
-The rest is the findings for that subject. An observed claim names an offset from a base the file records, or a file offset in the program as shipped. It does not name a path, a tool install, or an address that exists only at the base a tool chose. A formula that should be reproducible is pseudocode, and it says which function the arithmetic was read from. When a claim belongs to another subject, link there instead of copying it. The topic file does not repeat the open list.
+The rest is the findings for that subject. An observed claim names an offset from a base the file records, or a file offset in the program as shipped. It does not name a path, a tool install, or an address that exists only at the base a tool chose. A mechanic is the rule and the algorithm that resolves it, written as pseudocode that names the function the arithmetic was read from. A description of the screen is not that algorithm. When a claim belongs to another subject, link there instead of copying it. The topic file does not repeat the open list.
 
 New findings go in the topic file. A newly seen address that was not read goes in `<game>/gaps.md`, under that topic's heading, and the row is removed when the finding is written. Do that in the files. A chat reply does not count, because the next session does not read the chat.
 

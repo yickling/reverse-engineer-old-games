@@ -2,7 +2,7 @@
 
 The order of a study. How one reading is done is [LLMs.md](LLMs.md). The shape of what gets written is [note-shape.md](note-shape.md). The prompt to paste is [PROMPT.md](PROMPT.md).
 
-The study is the play this program actually has: what the player does from start until stop, and what is kept so they can continue. Find that structure here. A phase whose question this program cannot answer is one sentence in the index, and the session goes on. A body that does not change what the player can do is discarded. It is listed in the ledger and it is not a gap. A device startup, a heap walk, and a gift the play does not depend on are examples of that, not the list.
+The study is the play this program actually has: what the player does from start until stop, and what is kept so they can continue. Find that structure here. Extract each mechanic and the algorithm that implements it, as [LLMs.md](LLMs.md) requires. A phase is not done while a rule it touched is only described in words. A phase whose question this program cannot answer is one sentence in the index, and the session goes on. A body that does not change what the player can do is discarded. It is listed in the ledger and it is not a gap. A device startup, a heap walk, and a gift the play does not depend on are examples of that, not the list.
 
 A session does one task. The task is either the next phase whose done line is still open, or the one open item named in the prompt. Read the game folder before writing. Other work may already be in the files.
 
@@ -36,7 +36,7 @@ Done when each container the play loads has a directory, and each record the pro
 
 Read input, selection, the turn or the phase, and the function that raises an outcome for the session loop.
 
-Done when one pass of play can be followed from the first input to the outcome the session loop reads, and a formula that should be reproducible is pseudocode naming the function it was read from. When this program has no separate visit, that pass is the session topic, and the index says so.
+Done when one pass of play can be followed from the first input to the outcome the session loop reads, and each mechanic on that pass is pseudocode naming the function it was read from. When this program has no separate visit, that pass is the session topic, and the index says so.
 
 ## 6. Content, space, and actors
 
@@ -46,9 +46,9 @@ Done when each of a stage, a space, and an actor that this program has is writte
 
 ## 7. Rules and names
 
-Read each action the player can take. An id the program uses to choose an effect gets that effect in the rules topic. When the program draws a label from an id, the id-to-name tables go in one names file. The names file does not hold the formula, and the rules topic points at it.
+Read each action the player can take and extract its mechanic: the rule, and the algorithm that resolves it. An id the program uses to choose an effect gets that effect in the rules topic. When the program draws a label from an id, the id-to-name tables go in one names file. The names file does not hold the algorithm, and the rules topic points at it.
 
-Done when each action has its formula. A program that draws no label from an id has no names file, and the index says so.
+Done when each action's algorithm is pseudocode naming the function it was read from. A program that draws no label from an id has no names file, and the index says so.
 
 ## 8. Pictures, text, and progress
 
@@ -70,4 +70,4 @@ A page built from the notes is not a finding. Where it still differs from the pr
 
 The work log holds the questions still to read. Check an item when its finding is in the topic file and its gap row is gone.
 
-Done when both verdicts are answered, the gameplay list is either empty or each remaining row is an unread gameplay address, and a page difference is not listed as an unread address.
+Done when both verdicts are answered, each mechanic the notes rely on is that pseudocode or an unread row in the gameplay list, the gameplay list is otherwise empty or each remaining row is an unread gameplay address, and a page difference is not listed as an unread address.

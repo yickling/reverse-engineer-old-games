@@ -2,7 +2,7 @@
 
 Notes on how old games were built, written so we can reuse the ideas when making games.
 
-The interest is game design and construction: how a session is put together, how the world and its actors are represented, how content is stored and brought on screen, and how progress is saved. Each game is a folder with its own `README.md`, so a later session can continue from it. Conclusions stay tied to a file offset or a function address, and observations stay separate from guesses.
+The interest is game design and construction: how a session is put together, how the world and its actors are represented, how content is stored and brought on screen, how progress is saved, and the mechanics and algorithms that resolve play. Each game is a folder with its own `README.md`, so a later session can continue from it. Conclusions stay tied to a file offset or a function address, and observations stay separate from guesses.
 
 Later analysis sessions follow [procedure.md](procedure.md). How one reading is done, including how a body is decompiled or disassembled, is [LLMs.md](LLMs.md). The shape of a game's notes is [note-shape.md](note-shape.md). Write findings into those notes. A chat reply is not a record the next session can read.
 
@@ -24,6 +24,7 @@ When the session ends, the finding is in the topic file. The next session starts
 | Note | Game | Gaps |
 | --- | --- | --- |
 | [fdps/README.md](fdps/README.md) | Flame Dragon Plus (炎龙骑士团外传), DOS | [fdps/gaps.md](fdps/gaps.md) |
+| [xia/README.md](xia/README.md) | Xia (俠影記), DOS | [xia/gaps.md](xia/gaps.md) |
 
 This table is the index of analysed games. A study adds a row here, a folder with a `README.md`, and a `gaps.md` in that folder. It does not name the game in any other top-level file.
 
